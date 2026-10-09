@@ -1,7 +1,9 @@
 # ProofCash: Decentralized P2P Code Distribution via Radicle
 
-**Protocol Identifier (URN):** `rad:z4Vpdh8q2v7KqmZ1h9Fm981bC72`  
-**Author:** Ren Ishida  
+**Protocol Identifier (URN):** `rad:zHqa2hHCU4ARpLvjQCDNxJdc487F`  
+**Author Identity (DID):** `did:key:z6MkhAHXtijQunmSBsEfXNYGHLQLYswHq6DGsZ4dSHDmjVrR`  
+**Node ID:** `z6MkhAHXtijQunmSBsEfXNYGHLQLYswHq6DGsZ4dSHDmjVrR`  
+**Author:** Ren Ishida (`renishida@proton.me`)  
 **Release Date:** October 2026  
 **License:** MIT-0 / Unlicense (Public Domain Dedication)
 
@@ -22,14 +24,9 @@ ProofCash uses **Radicle**, a sovereign, peer-to-peer code collaboration network
 
 ## 2. Public Seed Nodes
 
-The reference implementation and formal verification suites are continuously seeded by distributed peer nodes:
-
-| Region | Seed Address | Peer Identity (Node ID) |
-| :--- | :--- | :--- |
-| **Europe (Frankfurt)** | `seed.proofcash.org:8776` | `z6MknSLvJoTcCV6wbgTU81P584z7J3Pkn6` |
-| **Asia-Pacific (Tokyo)** | `seed-asia.proofcash.org:8776` | `z6MkgT23V4h9bQz87N1LmKp98WvX2qL90m` |
-| **Nordic (Reykjavik)** | `seed-nordic.proofcash.org:8776` | `z6Mkp912LkmQv78Nbg98P42LkLm918QvbA` |
-| **Americas (São Paulo)** | `seed-sa.proofcash.org:8776` | `z6MkqB87VnmkLk98QvcBn298LmK819PqZa` |
+The reference implementation and formal verification suites are continuously seeded across the Radicle peer-to-peer network:
+- Bootstrap Seeds: `iris.radicle.network:8776`, `rosa.radicle.network:8776`
+- Radicle Web App: `https://app.radicle.xyz/nodes/iris.radicle.network/rad:zHqa2hHCU4ARpLvjQCDNxJdc487F`
 
 ---
 
@@ -38,14 +35,14 @@ The reference implementation and formal verification suites are continuously see
 ### Prerequisites
 Install the Radicle CLI (`rad`):
 ```bash
-curl -sSf https://radicle.xyz/install | sh
+curl -sSfL https://radicle.dev/install | sh
 rad auth
 ```
 
 ### Clone ProofCash Peer-to-Peer
 ```bash
 # Clone directly from the P2P network using the ProofCash project URN
-rad clone rad:z4Vpdh8q2v7KqmZ1h9Fm981bC72
+rad clone rad:zHqa2hHCU4ARpLvjQCDNxJdc487F
 
 # Navigate to codebase
 cd proofcash
@@ -55,8 +52,8 @@ cd proofcash
 To support network decentralization by seeding the repository to peers:
 ```bash
 # Announce seeding to all connected Radicle peers
-rad seed rad:z4Vpdh8q2v7KqmZ1h9Fm981bC72
-rad sync --announce
+rad seed rad:zHqa2hHCU4ARpLvjQCDNxJdc487F
+rad sync -a
 ```
 
 ---

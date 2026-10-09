@@ -8,11 +8,11 @@
 [![Genesis Block](https://img.shields.io/badge/Genesis_Block-Mined_%230-emerald.svg)](release/genesis_block.json)
 [![Formal Proofs](https://img.shields.io/badge/Formal_Verification-Lean_4-purple.svg)](proofcash/formal/proofcash-verify/)
 [![ZK Circuits](https://img.shields.io/badge/ZK_AIR-Plonky3_%26_Binius-cyan.svg)](proofcash/crates/proofcash-circuits/)
-[![Radicle P2P](https://img.shields.io/badge/Radicle_URN-rad%3Az4Vpdh8q2...-orange.svg)](release/RADICLE_SEED.md)
+[![Radicle P2P](https://img.shields.io/badge/Radicle_URN-rad%3AzHqa2hHC...-orange.svg)](release/RADICLE_SEED.md)
 [![PWA Wallet](https://img.shields.io/badge/Passkey_Wallet-WebAuthn_PWA-emerald.svg)](wallet/)
 
 **Author:** Ren Ishida (`renishida@proton.me`)  
-**Canonical P2P Radicle URN:** `rad:z4Vpdh8q2v7KqmZ1h9Fm981bC72`  
+**Canonical P2P Radicle URN:** `rad:zHqa2hHCU4ARpLvjQCDNxJdc487F`  
 **GitHub Mirror:** [https://github.com/Renishidaproject/proofcash](https://github.com/Renishidaproject/proofcash)  
 **Academic Whitepaper:** [PDF Edition](ProofCash_Whitepaper_v1.1.pdf) • [HTML Source](proofcash_whitepaper.html)
 
