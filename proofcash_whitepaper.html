@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ProofCash: A Peer-to-Peer Succinct Settlement System for Humans and Machines (v1.1 Hardened Edition)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 18mm 22mm 18mm;
+    @bottom-center {
+      content: counter(page);
+      font-size: 9.5pt;
+      font-family: 'Times New Roman', Times, serif;
+    }
+  }
+  body {
+    font-family: 'Times New Roman', Times, 'Nimbus Roman No9 L', serif;
+    font-size: 9.8pt;
+    line-height: 1.42;
+    color: #111;
+    text-align: justify;
+    margin: 0;
+    padding: 0;
+  }
+  p {
+    margin: 0 0 7pt 0;
+    text-indent: 1.4em;
+  }
+  p.no-indent {
+    text-indent: 0;
+  }
+  h1.title {
+    text-align: center;
+    font-size: 16pt;
+    font-weight: bold;
+    margin: 0 0 8pt 0;
+    line-height: 1.25;
+  }
+  .author {
+    text-align: center;
+    font-size: 10.5pt;
+    font-weight: bold;
+    margin: 0 0 2pt 0;
+  }
+  .email {
+    text-align: center;
+    font-size: 9pt;
+    font-family: 'Courier New', Courier, monospace;
+    margin: 0 0 2pt 0;
+  }
+  .version-tag {
+    text-align: center;
+    font-size: 8.5pt;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    color: #444;
+    text-transform: uppercase;
+    margin: 0 0 2pt 0;
+  }
+  .date {
+    text-align: center;
+    font-size: 9pt;
+    font-style: italic;
+    margin: 0 0 16pt 0;
+  }
+  .abstract-box {
+    margin: 0 26pt 16pt 26pt;
+    font-size: 8.8pt;
+    line-height: 1.38;
+  }
+  .abstract-title {
+    text-align: center;
+    font-weight: bold;
+    font-size: 9.2pt;
+    margin-bottom: 4pt;
+    letter-spacing: 0.5px;
+  }
+  h2 {
+    font-size: 11pt;
+    font-weight: bold;
+    margin: 14pt 0 5pt 0;
+    border-bottom: 0.5pt solid #bbb;
+    padding-bottom: 1.5pt;
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 9.8pt;
+    font-weight: bold;
+    margin: 9pt 0 3pt 0;
+    page-break-after: avoid;
+  }
+  .diagram-container {
+    text-align: center;
+    margin: 8pt 0;
+    page-break-inside: avoid;
+  }
+  .diagram {
+    display: inline-block;
+    text-align: left;
+    background: #fdfdfd;
+    border: 0.75pt solid #888;
+    padding: 6pt 10pt;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 7.6pt;
+    line-height: 1.18;
+    white-space: pre;
+  }
+  table.academic {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8pt 0;
+    font-size: 8.8pt;
+    page-break-inside: avoid;
+  }
+  table.academic th, table.academic td {
+    padding: 3.5pt 5pt;
+    text-align: left;
+  }
+  table.academic thead tr {
+    border-top: 1.2pt solid #111;
+    border-bottom: 0.8pt solid #111;
+    font-weight: bold;
+  }
+  table.academic tbody tr:last-child {
+    border-bottom: 1.2pt solid #111;
+  }
+  .katex-display {
+    margin: 5pt 0 !important;
+  }
+  ol.references {
+    font-size: 8.2pt;
+    line-height: 1.32;
+    padding-left: 16pt;
+    margin: 5pt 0;
+  }
+  ol.references li {
+    margin-bottom: 3.5pt;
+    text-indent: 0;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="title">ProofCash: A Peer-to-Peer Succinct Settlement System<br>for Humans and Machines</h1>
+<div class="author">Ren Ishida</div>
+<div class="email">renishida@proton.me</div>
+<div class="version-tag">Version 1.1 — Hardened Specification</div>
+<div class="date">October 2026</div>
+
+<div class="abstract-box">
+  <div class="abstract-title">Abstract</div>
+  <p class="no-indent">A purely peer-to-peer electronic cash system must support sovereign human commerce and high-frequency autonomous machine execution without relying on trusted financial intermediaries, centralized RPC gateways, or custodial third parties. Public transparent ledgers compromise privacy and expose users to automated surveillance. Account-based architectures suffer from state expansion, sequential execution bottlenecks, and predatory Maximal Extractable Value (MEV). Proof-of-Stake consensus models decouple governance from physical thermodynamics, inevitably re-establishing financial plutocracies. Furthermore, legacy fixed-supply regimes governed by abrupt 4-year halvings destabilize hashrate and face a terminal security cliff when subsidies expire.</p>
+  <p class="no-indent">We propose <b>ProofCash</b>: a decentralized settlement protocol built on a parallel Extended-UTXO (eUTXO) architecture and secured by Proof-of-Succinct-Work (PoSW). We resolve the state-contention bottleneck of traditional UTXOs through <i>Commutative Delta-UTXOs</i>, enabling concurrent reduction of shared state pools without race locks. Through recursive zero-knowledge validity proofs and <i>Dynamic Vector Accumulators</i>, the entire ledger state is verified in constant $O(1)$ space (~44 Kilobytes), while enabling offline nodes to mathematically self-update unspent coin witnesses without relying on archival providers. Confidentiality is preserved by default through zero-knowledge commitments, while client-side out-of-band epistemic proofs provide verifiable compliance without embedding regulatory hooks into the base protocol. We introduce the <b>Thermodynamic Equilibrium Supply</b>: an absolute ceiling of <b>1,000,000,000 units</b> subdivided into $10^{12}$ machine-addressable <i>Pico-Joules</i>, issued via continuous infinitesimal decay, and stabilized by a PID-damped on-chain Fee Reservoir that permanently guarantees base-layer security without inflation.</p>
+</div>
+
+<h2>1. Introduction</h2>
+<p>Commerce on the internet has outgrown the institutional assumptions of the 20th century. While early digital cash was designed to replace credit cards for human-to-merchant web transactions, the emerging global economy is driven by autonomous algorithmic entities operating at microsecond speeds.</p>
+
+<p>These autonomous software agents have no legal standing, cannot pass biometric KYC, and cannot hold fractional-reserve bank accounts. However, existing cryptocurrency architectures cannot support them:</p>
+
+<p><b>1. The Surveillance Panopticon:</b> Transparent ledgers turn transaction histories into permanent intelligence dossiers. Automated heuristic analytics map wallet clusters, identity endpoints, and merchant flows. Honest commerce requires default confidentiality.</p>
+
+<p><b>2. The Fragility of Shared Global State:</b> Account-based networks process transactions sequentially. This creates unpredictable execution fees, unbounded state growth, and systemic front-running (Maximal Extractable Value, or MEV) that taxes everyday users to enrich block proposers.</p>
+
+<p><b>3. The Plutocracy of Proof-of-Stake:</b> PoS eliminates the physical anchor of consensus. Staked capital compounds risk-free, concentrating ledger governance into passive staking cartels with zero ongoing operational risk.</p>
+
+<p><b>4. The Flaws of Legacy Monetary Design:</b> Abrupt halving cycles (e.g., Bitcoin's 4-year cliff) generate artificial speculative shocks, destabilize miner capital expenditure, and eventually leave the network without a sustained security budget once block rewards near zero.</p>
+
+<p class="no-indent">We present an architecture engineered from first principles: succinct, private by default, parallelized, resistant to MEV, and anchored to physical thermodynamics with a continuous, sustainable monetary policy.</p>
+
+<h2>2. The Parallel Extended-UTXO Ledger & Commutative State</h2>
+<p>Account-based blockchains calculate state transitions sequentially as a function of the entire global memory: $S_{t+1} = \text{Apply}(S_t, T_x)$. This global memory bottleneck creates priority gas auctions, mempool bribery, and sandwich attacks.</p>
+
+<p>ProofCash implements an Extended-UTXO (eUTXO) architecture. State is partitioned strictly across discrete unspent outputs:</p>
+
+$$\text{Output} = \Big( v, \, \mathcal{P}_{\text{guard}}, \, \mathcal{D}_{\text{state}} \Big)$$
+
+<p class="no-indent">where $v$ is the denominated value, $\mathcal{P}_{\text{guard}}$ is the consumption script, and $\mathcal{D}_{\text{state}}$ is a localized state datum.</p>
+
+<h3>2.1 Resolving State Contention: Commutative Delta-UTXOs</h3>
+<p>A known structural defect in naive eUTXO models is the shared-state contention bottleneck: if multiple transactions attempt to interact with the same output within the same block, only one transaction succeeds while all others fail due to double-spend protection. In high-frequency machine economies, this renders shared liquidity pools and automated service coordinators unusable.</p>
+
+<p>ProofCash introduces <b>Commutative Delta-UTXOs ($\Delta$-UTXOs)</b>. For shared state sinks, transactions do not claim an exclusive lock over the base output. Instead, transactions submit signed algebraic balance/state mutations:</p>
+
+$$\Delta_i = \Big( \pm \delta_v, \, \mathcal{F}_{\text{transition}}, \, \sigma_i \Big)$$
+
+<p class="no-indent">Because these operations satisfy the algebraic properties of an abelian monoid (associativity and commutativity), block provers execute an associative reduction tree over all submitted deltas in parallel:</p>
+
+$$\mathcal{D}_{\text{state}}^{(k)} = \mathcal{D}_{\text{state}}^{(k-1)} \;\oplus\; \left( \bigoplus_{i=1}^{M} \Delta_i \right)$$
+
+<p class="no-indent">Thousands of independent user and agent transactions interact with shared state sinks in the exact same block with zero race conditions, zero aborted transactions, and deterministic localized execution.</p>
+
+<div class="diagram-container">
+<div class="diagram">
+┌────────────────────────────────────────────────────────────────────────┐
+│                   COMMUTATIVE DELTA-UTXO PIPELINE                      │
+├────────────────────────────────────────────────────────────────────────┤
+│ Concurrent Client Submissions:                                         │
+│   Tx_1: [Δ_1: +5.0 PCASH] ──┐                                          │
+│   Tx_2: [Δ_2: -2.3 PCASH] ──┼──► [ Associative Monoid Reduction Tree ] │
+│   Tx_3: [Δ_3: +1.1 PCASH] ──┘                 │                        │
+│                                               ▼                        │
+│ Applied in Parallel to Base Output:  UTXO_Sink' = UTXO_Sink ⊕ Σ Δ_i    │
+│ (Zero Race Locks • Zero Aborts • Deterministic Parallel Evaluation)    │
+└────────────────────────────────────────────────────────────────────────┘
+</div>
+</div>
+
+<h2>3. Consensus: Proof-of-Succinct-Work (PoSW)</h2>
+<p>Consensus must remain bound to thermodynamics to prevent plutocratic capture. However, requiring validators to store gigabytes of historical data re-centralizes the network into corporate data centers.</p>
+
+<h3>3.1 Recursive Zero-Knowledge State Compression</h3>
+<p>ProofCash integrates recursive zero-knowledge SNARK proofs ($\pi_k$) directly into the block header. Each block proof verifies the validity of its own transactions and recursively validates the proof of the previous block:</p>
+
+$$\pi_k = \text{Prove}\Big( \text{ValidBlock}(B_k, \rho_k, \rho_{k-1}) \;\land\; \text{Verify}(\pi_{k-1}, \rho_{k-1}) \Big)$$
+
+<p class="no-indent">where $\rho_k$ is the accumulator root of the unspent state at block $k$. A node requires only the latest proof $\pi_{\text{tip}}$ (~44 Kilobytes) and root $\rho_k$ to achieve mathematical certainty that the entire chain history is valid. Verification takes approximately 8 milliseconds on consumer devices.</p>
+
+<h3>3.2 Dynamic Vector Accumulators & Self-Updating Witnesses</h3>
+<p>A fatal failure mode of recursive succinct blockchains is the <i>Lost Witness Paradox</i>: if historical blocks are discarded, offline users cannot reconstruct Merkle authentication paths to prove that their private commitments exist in the state root, leaving funds effectively frozen.</p>
+
+<p>ProofCash eliminates static Merkle trees in favor of <b>Authenticated Dynamic Vector Accumulators</b>. The state accumulator root $\rho_k$ represents an algebraic evaluation of active commitments. When a user goes offline, they do not need historical block bodies upon return; their client updates their local spending witness $w_0 \to w_k$ purely from the intermediate sequence of succinct root transitions:</p>
+
+$$w_k = \text{UpdateWitness}\Big( w_{k-1}, \, \rho_{k-1}, \, \rho_k \Big)$$
+
+<p class="no-indent">Witness maintenance is purely local and evaluated in $O(\log N)$ time, guaranteeing that offline individuals and embedded machines retain absolute spending autonomy without relying on archival full nodes.</p>
+
+<h2>4. Confidentiality and Protocol-Blind Compliance</h2>
+<p>Money cannot function without fungibility. If an asset possesses a public transaction history, coins can be blacklisted or discounted based on past provenance.</p>
+
+<h3>4.1 Shielded State Engine</h3>
+<p>ProofCash operates with default zero-knowledge confidentiality using commitments and nullifiers. Outputs exist on-chain purely as cryptographic commitments: $\mathcal{C} = \text{Commit}(v, \text{pk}_{\text{owner}}, r)$. When spending $\mathcal{C}$, the owner publishes a deterministic Nullifier $\mathcal{N} = \mathcal{H}_{\text{null}}(\text{sk}_{\text{owner}}, \text{Index}_{\mathcal{C}})$ accompanied by a zero-knowledge proof $\pi_{\text{spend}}$ confirming commitment inclusion, nullifier derivation, and value conservation ($\sum v_{\text{in}} = \sum v_{\text{out}} + \text{fee}_{\text{public}}$). No wallet addresses, balances, or transaction graphs are ever published to the public ledger.</p>
+
+<h3>4.2 Protocol Blindness (Preventing the Mandatory Surveillance Trap)</h3>
+<p>A critical systemic hazard of embedding "regulatory compliance hooks" into base consensus is that totalitarian regimes will legislate those hooks to become mandatory, transforming the protocol into an automated CBDC. ProofCash strictly enforces <b>Protocol Blindness</b> at the consensus layer:</p>
+
+<p><b>1. Neutral Consensus:</b> L1 consensus nodes are mathematically blind to compliance predicates. Validators evaluate strictly three invariants: cryptographic commitment inclusion, nullifier non-duplication, and thermodynamic fee sufficiency. The consensus protocol possesses zero opcodes to discriminate between transactions based on regulatory criteria.</p>
+
+<p><b>2. Out-of-Band Epistemic Proofs:</b> Institutional reporting and AML/tax verifications are conducted strictly <i>client-to-client out-of-band</i> using zero-knowledge epistemic statements over viewing keys. An enterprise proves to an auditor: <i>"The inputs to Transaction $T_x$ do not intersect an illicit list,"</i> without revealing balances, transaction paths, or counterparty identities, and without the public ledger ever recording or enforcing the predicate.</p>
+
+<div class="diagram-container">
+<div class="diagram">
+       [ Public Ledger View ]               [ Participant View ]
+       
+   Input:  Nullifier_A (Hash)           Value: 50.0 PCASH
+   Input:  Nullifier_B (Hash)           Value: 25.0 PCASH
+   Output: Commitment_C (Hash)   ──►    Value: 70.0 PCASH (Recipient)
+   Output: Commitment_D (Hash)          Value:  4.99 PCASH (Change)
+   Fee:    0.01 PCASH (Public)          Fee:    0.01 PCASH
+   Proof:  π_spend (Verified)
+   ─────────────────────────────────────────────────────────────
+   Auditor View (Out-of-Band Only): π_audit verifies AML/tax rules
+   Consensus Nodes: 100% Blind to Regulatory/Audit Metadata
+</div>
+</div>
+
+<h2>5. Native Autonomous Agent Primitives</h2>
+<p>Autonomous machines require payment mechanisms capable of executing continuous, sub-cent micro-transactions without congesting the base layer or exhausting memory resources.</p>
+
+<h3>5.1 Native Unidirectional Streaming Channels</h3>
+<p>ProofCash embeds native payment streaming primitives into the eUTXO script engine:</p>
+<p><b>1. Channel Commitment:</b> An agent locks capital $V$ into an eUTXO predicate with a timeout $T$, assigning a recipient agent public key.</p>
+<p><b>2. Sub-Cent Off-Chain Streaming:</b> The sender streams cryptographically signed balance increments $\sigma_i$ at millisecond intervals: $\text{State}_i = (\text{ChannelID}, \, v_i, \, i)$, where $v_i \le V$.</p>
+<p><b>3. Optimistic Settlement:</b> Upon session termination, the recipient submits only the single highest signed state $\text{State}_{\text{final}}$ for settlement on L1.</p>
+
+<h3>5.2 Two-Tier Enclave Delegation (Eliminating Circuit Constraint Bloat)</h3>
+<p>Evaluating non-native Secp256r1 (NIST P-256) curves from mobile Secure Enclaves directly inside arithmetic ZK circuits requires over 350,000 constraints, creating unacceptable battery drain and latency. ProofCash introduces <b>Two-Tier Enclave Delegation</b>:</p>
+
+<div class="diagram-container">
+<div class="diagram">
+Hardware Secure Enclave (P-256 / FaceID)
+                  │
+                  ▼ (Signed ONCE every 30 days)
+Time-Locked Delegation Certificate:  Cert = Sign_P256(pk_session, Timeout)
+                  │
+                  ▼ (Evaluated in Everyday Transactions)
+In-Circuit ZK-Native Key (BabyJubjub / Bandersnatch)
+   ──► Validated in &lt; 2,000 Constraints (~50 ms on Mobile)
+</div>
+</div>
+
+<p class="no-indent">The heavy non-native signature is evaluated only once upon delegation. Everyday transactions use the ZK-native session key, slashing mobile proving overhead by 99.5% and enabling sub-second biometric passkey signing on consumer smartphones.</p>
+
+<h3>5.3 Thermodynamic Refundable State Bonds (Anti-Dust Protection)</h3>
+<p>To prevent autonomous agent swarms from exhausting node memory with trillions of ephemeral, abandoned dust UTXOs, opening a streaming channel or creating localized state data requires a <b>Refundable Thermodynamic Energy Bond</b> locked in PCASH. When a channel is closed, the bond is returned to the owner. Inactive channels abandoned past timeout $T + \Delta$ have their bond swept into the Thermodynamic Fee Reservoir, converting adversarial state spam into network security yield.</p>
+
+<h2>6. Monetary Architecture: The Thermodynamic Equilibrium Supply</h2>
+<p>Rather than duplicating Bitcoin's arbitrary 21,000,000 supply and discontinuous 4-year cliff, ProofCash introduces an economic architecture designed for global human-machine scale.</p>
+
+<table class="academic">
+  <thead>
+    <tr>
+      <th>Parameter</th>
+      <th>Specification</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Total Absolute Hard Cap ($S_{\text{max}}$)</td>
+      <td>1,000,000,000 PCASH (One Billion)</td>
+    </tr>
+    <tr>
+      <td>Base Atomic Sub-unit</td>
+      <td>1 Pico-Joule (pJ) = $10^{-12}$ PCASH</td>
+    </tr>
+    <tr>
+      <td>Total Addressable Units</td>
+      <td>$10^{21}$ pJ (Native u128 Representation)</td>
+    </tr>
+    <tr>
+      <td>Target Block Interval</td>
+      <td>600 seconds (10 minutes)</td>
+    </tr>
+    <tr>
+      <td>Issuance Decay Model</td>
+      <td>Continuous Smooth Exponential Decay (Per-Block)</td>
+    </tr>
+    <tr>
+      <td>Security Reservoir Damping</td>
+      <td>PID Dynamic Controller Coupled to Hash Difficulty</td>
+    </tr>
+    <tr>
+      <td>Premine / Founder Allocation</td>
+      <td>0.000000000000 PCASH (Strictly Zero)</td>
+    </tr>
+    <tr>
+      <td>Foundation Tax / Dev Fee</td>
+      <td>0.000000000000 PCASH (Strictly Zero)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>6.1 Scale Calibration: The One-Billion Ceiling</h3>
+<p>With a global population exceeding 8 billion, an absolute cap of 1,000,000,000 PCASH provides an intuitive unit bias for everyday human commerce. Each coin is divided into 1,000,000,000,000 sub-units named <b>Pico-Joules (pJ)</b>, yielding $10^{21}$ discrete units. This matches 128-bit unsigned integer registers (<code>u128</code>) without arithmetic truncation or overflow, providing precision down to atomic computational cycles.</p>
+
+<h3>6.2 Continuous Per-Block Emission (Eliminating the Halving Cliff)</h3>
+<p>Discontinuous step-function halvings induce violent speculative bubbles, sudden miner revenue shocks, and hashrate drawdowns. ProofCash replaces 4-year halvings with <b>continuous infinitesimal decay</b>. The block subsidy $R(b)$ decays smoothly on every individual block $b$:</p>
+
+$$R(b) = R_0 \cdot e^{-\lambda b}$$
+
+<p class="no-indent">where $R_0 = 100 \text{ PCASH}$ is the initial block reward at Genesis, and decay constant $\lambda = 1.0 \times 10^{-7}$ ensures that cumulative issuance asymptotically approaches $1,000,000,000 \text{ PCASH}$:</p>
+
+$$\int_{0}^{\infty} R(b) \, db = 1{,}000{,}000{,}000 \text{ PCASH}$$
+
+<h3>6.3 The PID-Damped Thermodynamic Fee Reservoir</h3>
+<p>To eliminate the terminal security cliff without violating the hard cap, transaction fees are split between a <b>50% Base Burn</b> (creating velocity deflation) and a <b>50% Reservoir Smoothing Pool</b>. To prevent miner gaming or security starvation during prolonged economic droughts, reservoir payouts are regulated by a Proportional-Integral-Derivative (PID) dynamic controller coupled to global difficulty:</p>
+
+$$\text{Payout}(b) = K_p \, e(b) + K_i \int e(t) \, dt + K_d \, \frac{de(b)}{dt}$$
+
+<p class="no-indent">where $e(b) = D_{\text{target}} - D(b)$ represents hashrate deviation from baseline thermodynamic security. If economic volume drops, the reservoir automatically increases smoothing payouts to maintain a perpetual security floor; during high-volume periods, excess fees accumulate into the reservoir, guaranteeing uninterrupted base-layer security.</p>
+
+<div class="diagram-container">
+<div class="diagram">
+Transaction Fee Submitted
+          │
+          ├───► 50% Permanently Incinerated (Base Burn: Velocity Deflation)
+          │
+          └───► 50% Allocated to the Protocol Fee Reservoir
+                      │
+                      ▼
+        Regulated via PID Controller Coupled to Hashrate Difficulty
+        ──► Guarantees Perpetual Security Floor (Zero Inflation Beyond Cap)
+</div>
+</div>
+
+<h2>7. Security Analysis & Prover Decentralization</h2>
+<h3>7.1 State Invalidation Resistance</h3>
+<p>Because every block contains a recursive zero-knowledge validity proof $\pi_k$, consensus security is partitioned from execution correctness. Even if an adversary controls 99% of physical hashrate, they cannot forge a single invalid coin or manipulate an account balance. Any block containing an invalid state transition fails verification and is immediately rejected by every full node. 51% attacks are constrained exclusively to transaction reordering or denial of service: $P(\text{Reorg success}) = (q/p)^k$, for $q < p$.</p>
+
+<h3>7.2 Binius Tower-Field Pipelining</h3>
+<p>To prevent industrial data-center monopolies from centralizing block proof construction, ProofCash execution circuits utilize <b>Binius tower-field arithmetic</b> over binary fields $\mathbb{F}_{2^k}$. Binary field arithmetic maps directly onto standard 64-bit and 128-bit SIMD hardware instructions (AVX-512, ARM Neon) without foreign-field multiplication penalties. Prover memory footprints are strictly bounded below <b>12 Gigabytes of VRAM</b>, enabling commodity gaming GPUs to construct proofs concurrently with industrial clusters.</p>
+
+<h2>8. Conclusion</h2>
+<p>Bitcoin proved that decentralized digital scarcity was possible, but its 2008 architecture was incomplete: it left transactions vulnerable to global surveillance, relied on disruptive step-function halvings, faced an unresolved security cliff, and could not scale to the sub-cent velocity demanded by modern machine intelligence.</p>
+
+<p>ProofCash v1.1 delivers a hardened monetary system for the modern era: (1) $O(1)$ recursive succinctness with self-updating vector accumulators, (2) Commutative Delta-UTXOs eliminating shared-state contention, (3) default shielded privacy with protocol-blind compliance, (4) two-tier enclave delegation for instant mobile passkey signing, (5) refundable thermodynamic state bonds eliminating agent dust, and (6) the Thermodynamic Equilibrium Supply capping issuance at 1,000,000,000 PCASH with smooth decay and a PID-damped security reservoir. The protocol operates without founders, without foundations, and without privilege—anchored strictly in mathematics and the laws of physical energy.</p>
+
+<h2>References</h2>
+<ol class="references">
+  <li><b>Back, A.</b> (2002). <i>Hashcash - A Denial of Service Countermeasure.</i></li>
+  <li><b>Chaum, D.</b> (1983). <i>Blind Signatures for Untraceable Payments.</i> Advances in Cryptology - CRYPTO '82.</li>
+  <li><b>Bitcoin Project</b> (2008). <i>Bitcoin: A Peer-to-Peer Electronic Cash System.</i></li>
+  <li><b>Ben-Sasson, E. et al.</b> (2018). <i>Scalable, Transparent, and Post-Quantum Secure Computational Integrity.</i> Cryptology ePrint Archive.</li>
+  <li><b>Bowe, S., Grigg, J., & Hopwood, D.</b> (2020). <i>Recursive Proof Composition without a Trusted Setup.</i> Cryptology ePrint Archive.</li>
+  <li><b>Boneh, D., Bünz, B., & Fisch, B.</b> (2019). <i>Batching Techniques for Accumulators with Applications to IOPs and Stateless Blockchains.</i> CRYPTO 2019.</li>
+  <li><b>Chakravarty, M. et al.</b> (2020). <i>The Extended UTXO Model.</i> Financial Cryptography and Data Security.</li>
+  <li><b>Diamond, B. & Posen, J.</b> (2024). <i>Binius: Highly Efficient Proofs over Binary Towers.</i> Cryptology ePrint Archive.</li>
+  <li><b>Roughgarden, T.</b> (2021). <i>Transaction Fee Mechanism Design for the Ethereum Blockchain: An Economic Analysis of EIP-1559.</i> ACM EC '21.</li>
+</ol>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: "$$", right: "$$", display: true},
+        {left: "$", right: "$", display: false}
+      ]
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Rust / Cargo build artifacts
+target/
+Cargo.lock.bak
+**/*.rs.bk
+
+# Lean 4 / Lake build artifacts
+.lake/
+lake-packages/
+
+# Environments, Secrets & Local Credentials
+.env
+.env.*
+*.secret
+*.key
+*.pem
+!ren_ishida_key.asc
+id_rsa*
+*.pfx
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Logs and databases
+*.log
+*.sqlite
+*.db-journal
+
+# IDEs & Editor configs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# Temporary scratch and staging
+scratch/
+tmp/
+*.tmp

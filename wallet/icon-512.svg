@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1329"/>
+      <stop offset="100%" stop-color="#050811"/>
+    </linearGradient>
+    <linearGradient id="emeraldGrad512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="cyanGrad512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <filter id="glow512" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Rounded Rect -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad512)"/>
+  <rect width="504" height="504" x="4" y="4" rx="108" fill="none" stroke="#10b981" stroke-width="2" stroke-opacity="0.3"/>
+
+  <!-- Energy Rings -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#10b981" stroke-width="2" stroke-opacity="0.15" stroke-dasharray="8 12"/>
+  <circle cx="256" cy="256" r="140" fill="#10b981" fill-opacity="0.03"/>
+
+  <!-- Glowing Core Symbol (Enclave + PoSW Bolt) -->
+  <g filter="url(#glow512)">
+    <!-- Shield / Enclave Outline -->
+    <path d="M 256 110 L 350 152 C 350 250 310 334 256 376 C 202 334 162 250 162 152 Z" 
+          fill="none" stroke="url(#emeraldGrad512)" stroke-width="8" stroke-linejoin="round"/>
+    
+    <!-- Thermodynamic Energy Lightning Bolt Inside Enclave -->
+    <path d="M 264 168 L 214 250 L 254 250 L 246 322 L 304 238 L 262 238 Z" 
+          fill="url(#emeraldGrad512)" stroke="#6ee7b7" stroke-width="2"/>
+  </g>
+
+  <!-- Biometric Waves at Bottom -->
+  <path d="M 230 405 A 30 30 0 0 1 282 405" fill="none" stroke="url(#cyanGrad512)" stroke-width="4" stroke-linecap="round"/>
+  <path d="M 220 417 A 45 45 0 0 1 292 417" fill="none" stroke="url(#cyanGrad512)" stroke-width="4" stroke-opacity="0.7" stroke-linecap="round"/>
+  <circle cx="256" cy="392" r="6" fill="#38bdf8"/>
+</svg>

@@ -1,0 +1,21 @@
+[package]
+name = "proofcash-node"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Node daemon (proofcashd) and CLI tooling for ProofCash"
+
+[[bin]]
+name = "proofcashd"
+path = "src/main.rs"
+
+[dependencies]
+proofcash-crypto = { path = "../proofcash-crypto" }
+proofcash-core = { path = "../proofcash-core" }
+proofcash-engine = { path = "../proofcash-engine" }
+proofcash-circuits = { path = "../proofcash-circuits" }
+proofcash-storage = { path = "../proofcash-storage" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+bincode = "1.3"

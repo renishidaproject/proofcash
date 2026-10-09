@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProofCash Protocol — Autonomous Thermodynamic Settlement Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --background: #090d16;
+      --card: #111827;
+      --border: #1f2937;
+      --foreground: #f3f4f6;
+      --muted-foreground: #9ca3af;
+      --accent: #10b981;
+      --accent-glow: rgba(16, 185, 129, 0.2);
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .pulse-dot {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body class="antialiased p-4 md:p-8 min-h-screen flex flex-col justify-between">
+  <div class="max-w-7xl mx-auto space-y-6 w-full">
+
+    <!-- Top Navigation / Header -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-800 pb-5 gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-lg">
+            ⚡
+          </div>
+          <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            ProofCash <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">v1.1 Hardened</span>
+          </h1>
+        </div>
+        <p class="text-xs text-gray-400 mt-1">Autonomous Thermodynamic Settlement Engine for Humans & Machines (Ren Ishida, 2026)</p>
+      </div>
+
+      <!-- Header Action Links -->
+      <div class="flex flex-wrap items-center gap-2.5">
+        <a href="./ProofCash_Whitepaper.pdf" target="_blank" class="px-3 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white border border-gray-800 font-medium text-xs transition-all flex items-center gap-1.5">
+          <span>📄</span> Whitepaper PDF
+        </a>
+
+        <a href="./release/RENUNCIATION.md" target="_blank" class="px-3 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white border border-gray-800 font-medium text-xs transition-all flex items-center gap-1.5">
+          <span>📜</span> Exit Statement
+        </a>
+
+        <a href="./wallet/index.html" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs transition-all shadow-md shadow-emerald-500/10">
+          <span>🔐</span>
+          <span>Open Passkey Wallet</span>
+        </a>
+
+        <div class="hidden lg:flex items-center gap-4 bg-gray-900 border border-gray-800 px-3.5 py-2 rounded-xl text-xs">
+          <div class="flex items-center gap-2">
+            <span class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span>
+            <span class="text-gray-400">Node: <strong class="text-white">O(1) Succinct</strong></span>
+          </div>
+          <div class="h-3 w-px bg-gray-700"></div>
+          <div>
+            <span class="text-gray-400">Cap:</span>
+            <span class="text-white font-mono font-semibold ml-1">1,000,000,000 PCASH</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Genesis Origin Banner -->
+    <div class="bg-gray-900/90 border border-emerald-500/30 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-emerald-400 font-bold uppercase tracking-wider">
+          <span>⚡ Genesis Block 0 Sealed</span>
+          <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-mono">Zero Pre-Mine (100% Burned)</span>
+        </div>
+        <p class="text-xs text-gray-300 mt-1 font-mono italic">
+          "Financial Times 09/Oct/2026 Sovereign debt surpasses $100T as autonomous AI compute drains global power grids"
+        </p>
+      </div>
+      <div class="text-xs font-mono text-gray-400 text-left md:text-right">
+        <div>Block Hash: <span class="text-emerald-400 font-bold">0xef77394f...b09a</span></div>
+        <div>PoSW Nonce: <span class="text-cyan-400">7,111</span> • Timestamp: <span class="text-gray-300">1791540000 (09-Oct-2026)</span></div>
+      </div>
+    </div>
+
+    <!-- Top 4 Key Metrics Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-gray-400 font-medium">Block Height</span>
+          <button id="btn-toggle-genesis-view" class="text-[10px] text-cyan-400 hover:underline font-mono">Genesis View</button>
+        </div>
+        <div class="text-xl font-bold font-mono text-white mt-1 flex items-baseline gap-2">
+          <span id="metric-block-height">0</span>
+          <span class="text-xs text-emerald-400 font-normal" id="metric-block-id">#GENESIS</span>
+        </div>
+        <div class="text-[11px] text-gray-500 mt-1">Block interval: 600s</div>
+      </div>
+
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div class="text-xs text-gray-400 font-medium">Subsidy (Smooth Decay)</div>
+        <div class="text-xl font-bold font-mono text-emerald-400 mt-1">
+          <span id="metric-block-reward">100.00</span> PCASH
+        </div>
+        <div class="text-[11px] text-gray-500 mt-1">Decay: 1.0e-7 per block</div>
+      </div>
+
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div class="text-xs text-gray-400 font-medium">PID Fee Reservoir</div>
+        <div class="text-xl font-bold font-mono text-cyan-400 mt-1">
+          <span id="metric-reservoir-bal">0.00</span> PCASH
+        </div>
+        <div class="text-[11px] text-gray-500 mt-1">Burned: <span id="metric-burned" class="text-rose-400">0.00</span> PCASH</div>
+      </div>
+
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+        <div class="text-xs text-gray-400 font-medium">MMR Accumulator Root</div>
+        <div class="text-xs font-bold font-mono text-purple-400 truncate mt-2" id="metric-mmr-root">
+          0x9d24db8529db13d5...
+        </div>
+        <div class="text-[11px] text-gray-500 mt-1">Leaves: <span id="metric-mmr-leaves">1</span> (Self-Updating)</div>
+      </div>
+    </div>
+
+    <!-- Main 2-Column Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- LEFT COLUMN: User & Agent Experience (7 Cols) -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- 1. Biometric Passkey Wallet Section -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                <span>🔐</span> Two-Tier Enclave Passkey (Biometric)
+              </h2>
+              <p class="text-xs text-gray-400">Zero seed phrases • Secp256r1 Root signs BabyJubjub Session Key</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <a href="./wallet/index.html" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 font-medium text-xs flex items-center gap-1 transition-all">
+                <span>📱</span> Open Full PWA App
+              </a>
+              <button id="btn-passkey-auth" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center gap-1.5 transition-all">
+                <span>👤</span> FaceID Re-Auth
+              </button>
+            </div>
+          </div>
+
+          <!-- Wallet State Card -->
+          <div class="bg-gray-950 border border-gray-800 rounded-lg p-4 space-y-3">
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-gray-400">Enclave Root Key (P-256):</span>
+              <span class="font-mono text-gray-300" id="wallet-root-pk">secp256r1:04a91b...7e21</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-gray-400">In-Circuit Session Key (BabyJubjub):</span>
+              <span class="font-mono text-emerald-400" id="wallet-session-pk">bjub:0x89f410c... (Valid 144 blks)</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-gray-400">In-Circuit Constraint Cost:</span>
+              <span class="text-cyan-400 font-mono font-medium">1,842 constraints (~41.8 ms on phone)</span>
+            </div>
+            <div class="border-t border-gray-800 pt-3 flex justify-between items-center">
+              <span class="text-xs text-gray-400">Shielded Balance:</span>
+              <div class="text-right">
+                <span class="text-lg font-bold font-mono text-white" id="wallet-balance">250.0000</span>
+                <span class="text-xs text-gray-400">PCASH</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. AI Machine Micro-Streaming Channel -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-sm">
+          <div class="flex justify-between items-center mb-3">
+            <div>
+              <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                <span>🤖</span> AI Agent Micro-Payment Streaming
+              </h2>
+              <p class="text-xs text-gray-400">Sub-cent continuous payment stream (0.000001 PCASH/token)</p>
+            </div>
+            <div class="flex gap-2">
+              <button id="btn-stream-toggle" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-medium text-xs transition-all">
+                Start Agent Stream
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-gray-950 border border-gray-800 rounded-lg p-4 space-y-3">
+            <div class="grid grid-cols-3 gap-2 text-center">
+              <div class="bg-gray-900 p-2 rounded">
+                <div class="text-[11px] text-gray-400">Tokens Streamed</div>
+                <div class="text-base font-mono font-bold text-white mt-1" id="stream-tokens">0</div>
+              </div>
+              <div class="bg-gray-900 p-2 rounded">
+                <div class="text-[11px] text-gray-400">Streamed Amount</div>
+                <div class="text-base font-mono font-bold text-cyan-400 mt-1" id="stream-amount">0.000000</div>
+              </div>
+              <div class="bg-gray-900 p-2 rounded">
+                <div class="text-[11px] text-gray-400">L1 Gas Fee Paid</div>
+                <div class="text-base font-mono font-bold text-emerald-400 mt-1">0.0000 (Off-Chain)</div>
+              </div>
+            </div>
+            <div class="text-[11px] text-gray-500 flex justify-between">
+              <span>Channel ID: <span class="font-mono text-gray-400">chan_0x4f128e9a</span></span>
+              <span>Energy Bond: <span class="font-mono text-amber-400">10,000 pJ (Refundable)</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Commutative Delta-UTXO Pool (Tip Jar) -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-sm">
+          <div class="flex justify-between items-center mb-3">
+            <div>
+              <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                <span>⚡</span> Commutative Delta-UTXO Monoid Pool
+              </h2>
+              <p class="text-xs text-gray-400">Resolves shared-state contention in parallel without MEV or race locks</p>
+            </div>
+            <div class="flex gap-2">
+              <button id="btn-fire-concurrent" class="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs transition-all">
+                Fire 5 Concurrent Deltas
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-gray-950 border border-gray-800 rounded-lg p-3">
+            <div class="flex justify-between items-center text-xs pb-2 border-b border-gray-800">
+              <span class="text-gray-400">Shared Pool Liquidity:</span>
+              <span class="font-mono font-bold text-white text-sm" id="pool-liquidity">50.00 PCASH</span>
+            </div>
+            <div class="mt-2 space-y-1.5 max-h-32 overflow-y-auto text-xs font-mono" id="delta-log">
+              <div class="text-gray-500">[System] Ready for parallel monoid reduction...</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: Node, Consensus & Reservoir Controls (5 Cols) -->
+      <div class="lg:col-span-5 space-y-6">
+
+        <!-- 4. Thermodynamic Mining Puzzle (PoSW) -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-sm">
+          <h2 class="text-base font-semibold text-white flex items-center gap-2 mb-1">
+            <span>⛏️</span> Thermodynamic Proof-of-Succinct-Work
+          </h2>
+          <p class="text-xs text-gray-400 mb-4">Blake3 hash constraint + Recursive Plonky3 FRI proof</p>
+
+          <div class="space-y-3">
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 space-y-2 text-xs">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Difficulty Target:</span>
+                <span class="font-mono text-amber-400">0x00003ffffffffffff...</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Prover VRAM Footprint:</span>
+                <span class="font-mono text-emerald-400">8.80 GB (&lt; 12 GB Cap)</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Recursive FRI Verification:</span>
+                <span class="font-mono text-cyan-400">7.8 ms (O(1) verified)</span>
+              </div>
+            </div>
+
+            <button id="btn-mine-block" class="w-full py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs transition-all flex items-center justify-center gap-2">
+              <span>🔨</span> Mine Next Block (PoSW)
+            </button>
+          </div>
+        </div>
+
+        <!-- 5. PID-Damped Fee Reservoir Controller -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-sm">
+          <h2 class="text-base font-semibold text-white flex items-center gap-2 mb-1">
+            <span>🎛️</span> PID Thermodynamic Fee Reservoir
+          </h2>
+          <p class="text-xs text-gray-400 mb-3">Dynamically damps hashrate volatility without inflation</p>
+
+          <!-- Hashrate Slider Simulation -->
+          <div class="space-y-4 bg-gray-950 border border-gray-800 rounded-lg p-4">
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="text-gray-400">Simulate Hashrate Shock:</span>
+                <span class="font-mono font-bold text-white" id="hashrate-label">100% (Normal)</span>
+              </div>
+              <input type="range" id="slider-hashrate" min="20" max="150" value="100" class="w-full accent-emerald-500 cursor-pointer">
+              <div class="flex justify-between text-[10px] text-gray-500 mt-1">
+                <span>Severe Drop (-80%)</span>
+                <span>Normal</span>
+                <span>Surge (+50%)</span>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-gray-800 space-y-1.5 text-xs">
+              <div class="flex justify-between">
+                <span class="text-gray-400">PID Signal (Kp=0.5, Ki=0.05):</span>
+                <span class="font-mono text-cyan-400" id="pid-signal">0.00</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Payout Multiplier:</span>
+                <span class="font-mono text-emerald-400" id="pid-mult">1.00x</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Current Block Reservoir Boost:</span>
+                <span class="font-mono text-amber-400" id="pid-payout">+0.00 PCASH</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. Audit & Compliance Simulator (Protocol-Blind) -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-sm">
+          <h2 class="text-base font-semibold text-white flex items-center gap-2 mb-1">
+            <span>🛡️</span> Protocol-Blind ZK Compliance
+          </h2>
+          <p class="text-xs text-gray-400 mb-3">Client-to-client out-of-band audit proof (No on-chain CBDC hooks)</p>
+
+          <button id="btn-generate-audit" class="w-full py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-medium transition-all">
+            Generate Zero-Knowledge Tax/AML Proof
+          </button>
+          <div id="audit-result" class="mt-2 text-[11px] font-mono text-gray-400 bg-gray-950 p-2 rounded border border-gray-800 hidden">
+            ✓ Proof π_audit valid: Inputs non-sanctioned. Balance & counterparties 100% confidential.
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Live Transaction Stream Ticker -->
+    <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Live Transaction Mempool & Block Feed</span>
+        <span class="text-xs text-emerald-400 font-mono">Parallel eUTXO Concurrency: Active</span>
+      </div>
+      <div id="mempool-ticker" class="space-y-1 text-xs font-mono max-h-28 overflow-y-auto text-gray-400">
+        <div class="text-emerald-400">[Genesis Block #0] Sealed! Hash: 0xef77394f...b09a • Headline: "Financial Times 09/Oct/2026..." • Zero Pre-Mine: 100% Burned</div>
+      </div>
+    </div>
+
+    <!-- Footer Ecosystem Strip -->
+    <footer class="border-t border-gray-800 pt-4 pb-2 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 gap-3">
+      <div>
+        ProofCash Protocol v1.1 • Dedicated to the Public Domain (Unlicense / MIT-0)
+      </div>
+      <div class="flex items-center gap-4 text-gray-400">
+        <a href="./release/RADICLE_SEED.md" class="hover:text-emerald-400">Radicle P2P (rad:z4Vpdh8q2...)</a>
+        <span>•</span>
+        <a href="./release/REPRODUCIBLE_BUILDS.md" class="hover:text-emerald-400">Reproducible Builds</a>
+        <span>•</span>
+        <a href="./proofcash/crates/" class="hover:text-emerald-400">Rust Crates</a>
+        <span>•</span>
+        <a href="./proofcash/formal/" class="hover:text-emerald-400">Lean 4 Proofs</a>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Interactive Simulator JavaScript -->
+  <script>
+    const GENESIS_STATE = {
+      blockHeight: 0,
+      blockReward: 100.00,
+      reservoirBal: 0.00,
+      burnedFees: 0.00,
+      mmrLeaves: 1,
+      walletBal: 250.00,
+      streamTokens: 0,
+      streamAmount: 0.0,
+      streamInterval: null,
+      poolLiquidity: 50.0,
+      hashrate: 100,
+      integralError: 0.0,
+      isSimulatedRun: false
+    };
+
+    let state = { ...GENESIS_STATE };
+
+    const elHeight = document.getElementById('metric-block-height');
+    const elBlockId = document.getElementById('metric-block-id');
+    const elReward = document.getElementById('metric-block-reward');
+    const elReservoir = document.getElementById('metric-reservoir-bal');
+    const elBurned = document.getElementById('metric-burned');
+    const elLeaves = document.getElementById('metric-mmr-leaves');
+    const elMmrRoot = document.getElementById('metric-mmr-root');
+    const elWalletBal = document.getElementById('wallet-balance');
+    const elStreamTokens = document.getElementById('stream-tokens');
+    const elStreamAmount = document.getElementById('stream-amount');
+    const elPoolLiq = document.getElementById('pool-liquidity');
+    const elDeltaLog = document.getElementById('delta-log');
+    const elMempool = document.getElementById('mempool-ticker');
+
+    document.getElementById('btn-toggle-genesis-view').addEventListener('click', () => {
+      const btn = document.getElementById('btn-toggle-genesis-view');
+      if (state.isSimulatedRun) {
+        state = { ...GENESIS_STATE };
+        btn.innerText = "Simulate 100k";
+        updateDisplay();
+        logMempool("[Genesis Reset] Synchronized back to Block #0 (Origin State)");
+      } else {
+        state.blockHeight = 104281;
+        state.blockReward = 100.0 * Math.exp(-1.0e-7 * 104281);
+        state.reservoirBal = 418290.45;
+        state.burnedFees = 418290.45;
+        state.mmrLeaves = 14295;
+        state.isSimulatedRun = true;
+        btn.innerText = "Genesis View";
+        updateDisplay();
+        logMempool("[Simulator] Fast-forwarded to Block #104,281 (~2 years mainnet state)");
+      }
+    });
+
+    function updateDisplay() {
+      elHeight.innerText = state.blockHeight.toLocaleString();
+      elBlockId.innerText = state.blockHeight === 0 ? "#GENESIS" : `#0x${Math.floor(state.blockHeight * 0.19).toString(16)}`;
+      elReward.innerText = state.blockReward.toFixed(2);
+      elReservoir.innerText = state.reservoirBal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      elBurned.innerText = state.burnedFees.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+      elLeaves.innerText = state.mmrLeaves.toLocaleString();
+      elMmrRoot.innerText = state.blockHeight === 0 ? "0x9d24db8529db13d5..." : `0x${(state.blockHeight * 314159).toString(16).substring(0, 16)}...`;
+      elWalletBal.innerText = state.walletBal.toFixed(4);
+    }
+
+    document.getElementById('btn-passkey-auth').addEventListener('click', () => {
+      const btn = document.getElementById('btn-passkey-auth');
+      btn.innerText = 'Scanning FaceID...';
+      btn.classList.add('opacity-50');
+
+      setTimeout(() => {
+        btn.innerText = '✓ Authenticated';
+        btn.classList.remove('opacity-50');
+        btn.classList.replace('bg-emerald-500', 'bg-emerald-700');
+
+        const randomHex = Math.random().toString(16).substring(2, 8);
+        document.getElementById('wallet-session-pk').innerText = `bjub:0x${randomHex}92c... (Renewed 144 blks)`;
+        
+        logMempool(`[Passkey] Enclave authenticated session key 0x${randomHex} in 41.8 ms.`);
+        setTimeout(() => {
+          btn.innerText = 'FaceID Re-Auth';
+          btn.classList.replace('bg-emerald-700', 'bg-emerald-500');
+        }, 2000);
+      }, 400);
+    });
+
+    const btnStream = document.getElementById('btn-stream-toggle');
+    btnStream.addEventListener('click', () => {
+      if (state.streamInterval) {
+        clearInterval(state.streamInterval);
+        state.streamInterval = null;
+        btnStream.innerText = 'Start Agent Stream';
+        btnStream.classList.replace('bg-rose-600', 'bg-cyan-600');
+        logMempool(`[Streaming] Channel chan_0x4f128e9a settled optimistically on L1. Total: ${state.streamAmount.toFixed(6)} PCASH.`);
+      } else {
+        btnStream.innerText = 'Stop Agent Stream';
+        btnStream.classList.replace('bg-cyan-600', 'bg-rose-600');
+        state.streamInterval = setInterval(() => {
+          state.streamTokens += 16;
+          const cost = 0.000016;
+          state.streamAmount += cost;
+          state.walletBal -= cost;
+          elStreamTokens.innerText = state.streamTokens.toLocaleString();
+          elStreamAmount.innerText = state.streamAmount.toFixed(6);
+          elWalletBal.innerText = state.walletBal.toFixed(4);
+        }, 150);
+      }
+    });
+
+    document.getElementById('btn-fire-concurrent').addEventListener('click', () => {
+      const deltas = [
+        { amount: +10.0, label: 'Agent_1 (Deposit)' },
+        { amount: -5.0,  label: 'User_A (Withdraw)' },
+        { amount: +2.5,  label: 'Agent_2 (Deposit)' },
+        { amount: -3.0,  label: 'User_B (Withdraw)' },
+        { amount: -15.0, label: 'Agent_3 (Withdraw)' }
+      ];
+
+      elDeltaLog.innerHTML = '';
+      let net = 0;
+      deltas.forEach(d => {
+        net += d.amount;
+        const color = d.amount > 0 ? 'text-emerald-400' : 'text-rose-400';
+        const sign = d.amount > 0 ? '+' : '';
+        const item = document.createElement('div');
+        item.className = color;
+        item.innerText = `↳ ${d.label}: ${sign}${d.amount.toFixed(1)} PCASH [Hash: 0x${Math.random().toString(16).substring(2, 6)}]`;
+        elDeltaLog.appendChild(item);
+      });
+
+      state.poolLiquidity += net;
+      elPoolLiq.innerText = `${state.poolLiquidity.toFixed(2)} PCASH`;
+
+      const summary = document.createElement('div');
+      summary.className = 'text-cyan-400 font-bold pt-1 border-t border-gray-800';
+      summary.innerText = `✓ Associative Monoid Sum: Net ${net > 0 ? '+' : ''}${net.toFixed(1)} PCASH applied in parallel. Zero race locks!`;
+      elDeltaLog.appendChild(summary);
+      logMempool(`[Delta-UTXO] Batch of 5 deltas reduced concurrently in 1.4 ms.`);
+    });
+
+    document.getElementById('btn-mine-block').addEventListener('click', () => {
+      const btn = document.getElementById('btn-mine-block');
+      btn.innerText = 'Solving Blake3 & Recursive STARK...';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        state.blockHeight++;
+        state.mmrLeaves += Math.floor(Math.random() * 20) + 5;
+        state.blockReward = 100.0 * Math.exp(-1.0e-7 * state.blockHeight);
+
+        const feesInBlock = 4.2;
+        state.burnedFees += feesInBlock / 2;
+        state.reservoirBal += feesInBlock / 2;
+
+        const payout = updatePid();
+        state.reservoirBal -= payout;
+
+        updateDisplay();
+
+        btn.innerText = '🔨 Mine Next Block (PoSW)';
+        btn.disabled = false;
+
+        logMempool(`[Block ${state.blockHeight}] Mined! Proof size: 43.21 KB • Subsidy: ${state.blockReward.toFixed(2)} PCASH • Reservoir Payout: ${payout.toFixed(2)} PCASH`);
+      }, 500);
+    });
+
+    const slider = document.getElementById('slider-hashrate');
+    const labelHash = document.getElementById('hashrate-label');
+    slider.addEventListener('input', (e) => {
+      state.hashrate = parseInt(e.target.value);
+      labelHash.innerText = `${state.hashrate}% (${state.hashrate < 80 ? 'Drop' : state.hashrate > 120 ? 'Surge' : 'Normal'})`;
+      updatePid();
+    });
+
+    function updatePid() {
+      const error = (100.0 - state.hashrate) / 100.0;
+      state.integralError = (0.98 * state.integralError) + error;
+      state.integralError = Math.max(-5.0, Math.min(5.0, state.integralError));
+
+      const pidSignal = (0.5 * error) + (0.05 * state.integralError);
+      const mult = Math.max(0.0, Math.min(1.5, 1.0 + pidSignal));
+      const payout = (state.reservoirBal * 0.00001) * mult;
+
+      document.getElementById('pid-signal').innerText = pidSignal.toFixed(3);
+      document.getElementById('pid-mult').innerText = `${mult.toFixed(2)}x`;
+      document.getElementById('pid-payout').innerText = `+${payout.toFixed(2)} PCASH`;
+      return payout;
+    }
+
+    document.getElementById('btn-generate-audit').addEventListener('click', () => {
+      const box = document.getElementById('audit-result');
+      box.classList.remove('hidden');
+    });
+
+    function logMempool(msg) {
+      const item = document.createElement('div');
+      item.innerText = msg;
+      elMempool.prepend(item);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "title": "ProofCash: A Decentralized Thermodynamic Settlement Protocol with Commutative Delta-UTXOs, O(1) Recursive STARKs, and Two-Tier Enclave Delegation",
+  "authors": [
+    {
+      "name": "Ren Ishida",
+      "email": "renishida@proton.me",
+      "affiliation": "Independent Cryptographic Researcher"
+    }
+  ],
+  "abstract": "Decentralized peer-to-peer cash systems face structural failures in the modern era: non-programmable UTXO models induce fatal state contention under concurrent execution; discrete halving supply schedules create catastrophic fee cliffs and hashrate instability; transparent ledgers enable total global financial surveillance; and unbounded linear ledger growth degrades decentralization into centralized archival oligopolies. Concurrently, the emerging autonomous artificial intelligence economy demands sub-cent, high-velocity streaming settlements without the latency of Layer-1 block confirmation. In this work, we introduce ProofCash, a thermodynamic Layer-1 monetary settlement protocol designed from first principles. ProofCash replaces halving shocks with a continuous exponential decay subsidy decaying to a strict asymptotic cap of 1,000,000,000 PCASH (10^21 pico-Joules), dynamically stabilized by a Proportional-Integral-Derivative (PID) damped thermodynamic fee reservoir. Concurrent execution contention is eliminated via Commutative Delta-UTXOs reducing over an associative monoid tree without MEV or race locks. Full state validation is compressed to O(1) succinctness (~43.2 KB) via recursive STARKs over binary tower fields, verifiable on consumer devices in under 8 ms. Mobile client custody is achieved with zero seed phrases using Two-Tier Enclave Delegation, authorizing an ephemeral BabyJubjub session key via native hardware WebAuthn (Secp256r1) at an in-circuit cost of under 1,850 constraints.",
+  "category": "cryptographic protocols / consensus / zero knowledge",
+  "keywords": [
+    "Zero-Knowledge Proofs",
+    "Extended UTXO",
+    "Thermodynamic Consensus",
+    "Commutative Monoids",
+    "WebAuthn",
+    "Binius",
+    "Plonky3"
+  ],
+  "license": "CC-BY-4.0",
+  "year": 2026
+}

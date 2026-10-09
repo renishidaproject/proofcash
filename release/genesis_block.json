@@ -1,0 +1,15 @@
+{
+  "height": 0,
+  "prev_block_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "state_root": "9d24db8529db13d58549346b8ec1a4e8d23ce7130389e3e9b70fe25863b9a46c",
+  "nullifier_root": "0000000000000000000000000000000000000000000000000000000000000000",
+  "target": "00003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "nonce": 7111,
+  "timestamp": 1791540000,
+  "reservoir_payout": 0,
+  "headline": "Financial Times 09/Oct/2026 Sovereign debt surpasses $100T as autonomous AI compute drains global power grids",
+  "coinbase_commitment": "fd8613449fc24fd4b5f69f68b19449669f9d7adffc75b9c52cfbebe69e631589",
+  "posw_hash": "00000b4aec2efa365cbe1b7d181863846ba3f2f5d188c51d9666d5da488ab222",
+  "recursive_proof_size_kb": 43.21,
+  "block_hash": "ef77394f7adbc68ef6f7b084b9e9d54896f6b3347e550577a3b39bce5e4cb09a"
+}

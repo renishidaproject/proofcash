@@ -1,0 +1,17 @@
+{
+  "name": "proofcash",
+  "description": "ProofCash Reference Node, Recursive STARK Circuits & Formal Verification Suite",
+  "defaultBranch": "main",
+  "urn": "rad:z4Vpdh8q2v7KqmZ1h9Fm981bC72",
+  "maintainers": [
+    "did:key:z6MknSLvJoTcCV6wbgTU81P584z7J3Pkn6"
+  ],
+  "delegate": "did:key:z6MknSLvJoTcCV6wbgTU81P584z7J3Pkn6",
+  "version": "1.1.0",
+  "seeds": [
+    "seed.proofcash.org:8776",
+    "seed-asia.proofcash.org:8776",
+    "seed-nordic.proofcash.org:8776",
+    "seed-sa.proofcash.org:8776"
+  ]
+}

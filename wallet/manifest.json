@@ -1,0 +1,42 @@
+{
+  "name": "ProofCash Passkey Wallet",
+  "short_name": "ProofCash",
+  "description": "Native WebAuthn Biometric Passkey Wallet with Two-Tier Enclave Delegation and ZK Client Proving for ProofCash (PCASH)",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["finance", "utilities", "cryptocurrency"],
+  "shortcuts": [
+    {
+      "name": "Send PCASH",
+      "url": "./index.html#send",
+      "description": "Send shielded ProofCash"
+    },
+    {
+      "name": "Receive PCASH",
+      "url": "./index.html#receive",
+      "description": "View receive address and QR code"
+    },
+    {
+      "name": "AI Stream",
+      "url": "./index.html#stream",
+      "description": "Open micro-payment streaming channel"
+    }
+  ]
+}

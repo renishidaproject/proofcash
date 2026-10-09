@@ -1,0 +1,12 @@
+[package]
+name = "proofcash-engine"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Parallel eUTXO execution engine, commutative monoid reducer, and PID fee reservoir for ProofCash"
+
+[dependencies]
+proofcash-crypto = { path = "../proofcash-crypto" }
+proofcash-core = { path = "../proofcash-core" }
+serde = { version = "1.0", features = ["derive"] }

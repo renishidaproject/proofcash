@@ -1,0 +1,40 @@
+# ProofCash Deterministic Hermetic Build Container
+# Reproducible build recipe ensuring bit-for-bit identical SHA-256 binary outputs
+# Author: Ren Ishida (October 2026)
+
+FROM rust:1.80-slim-bookworm AS builder
+
+# Set hermetic deterministic environment variables
+ENV SOURCE_DATE_EPOCH=1767225600 \
+    TZ=UTC \
+    LANG=C.UTF-8 \
+    LC_ALL=C \
+    CARGO_INCREMENTAL=0 \
+    RUSTFLAGS="-C target-cpu=generic -C strip=symbols --remap-path-prefix=/workspace=/build"
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    git \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace
+
+# Copy complete repository
+COPY proofcash /workspace/proofcash
+
+# Build reference node binary in release mode
+WORKDIR /workspace/proofcash
+RUN cargo build --release -p proofcash-node --bin proofcashd
+
+# Output SHA-256 digest
+RUN sha256sum target/release/proofcashd > /workspace/proofcashd.sha256 && \
+    cat /workspace/proofcashd.sha256
+
+# Export stage
+FROM scratch AS export
+COPY --from=builder /workspace/proofcash/target/release/proofcashd /proofcashd
+COPY --from=builder /workspace/proofcashd.sha256 /proofcashd.sha256
