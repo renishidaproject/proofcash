@@ -47,3 +47,5 @@ $RECYCLE.BIN/
 scratch/
 tmp/
 *.tmp
+rad.bat
+rad.ps1
