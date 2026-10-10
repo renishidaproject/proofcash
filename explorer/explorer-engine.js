@@ -216,10 +216,23 @@ class ProofCashExplorerEngine {
           try {
             const data = JSON.parse(line);
             if (data.event === 'message' && data.message) {
-              const txPacket = JSON.parse(data.message);
+              const txPacket = typeof data.message === 'string' ? JSON.parse(data.message) : data.message;
               this.handleP2pPacket(txPacket);
             }
           } catch (err) {}
+        }
+      }
+    } catch (err) {}
+
+    // Check local relay
+    try {
+      const localResp = await fetch('http://127.0.0.1:8332/p2p/recent');
+      if (localResp.ok) {
+        const localData = await localResp.json();
+        if (localData && Array.isArray(localData.transactions)) {
+          for (const tx of localData.transactions) {
+            this.handleP2pPacket(tx);
+          }
         }
       }
     } catch (err) {}

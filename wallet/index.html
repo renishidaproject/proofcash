@@ -655,15 +655,15 @@
 
   <!-- Modal: Send Shielded Transaction -->
   <div id="modal-send" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-card rounded-2xl max-w-md w-full p-6 border border-gray-800 relative space-y-4">
+    <div class="glass-card rounded-2xl max-w-md w-full p-6 border border-gray-800 relative space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
       <div class="flex justify-between items-center">
         <h3 class="text-base font-bold text-white flex items-center gap-2">
           <span>📤</span> Send Shielded PCASH
         </h3>
-        <button id="btn-close-send" class="text-gray-400 hover:text-white text-lg">✕</button>
+        <button id="btn-close-send" class="text-gray-400 hover:text-white text-lg cursor-pointer">✕</button>
       </div>
 
-      <div class="space-y-3">
+      <div id="send-form-inputs" class="space-y-3">
         <div>
           <label class="text-xs text-gray-400">Recipient ProofCash Address or Agent URI:</label>
           <input type="text" id="send-input-recipient" placeholder="pc1q... or agent://..." class="w-full mt-1 bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500">
@@ -676,7 +676,7 @@
           </div>
           <div class="relative mt-1">
             <input type="number" id="send-input-amount" placeholder="10.0" step="0.1" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 pr-14 text-sm font-mono text-white focus:outline-none focus:border-emerald-500">
-            <button id="btn-send-max" class="absolute right-2 top-2 px-2 py-0.5 rounded bg-gray-800 text-[10px] text-gray-300 hover:text-white">MAX</button>
+            <button id="btn-send-max" class="absolute right-2 top-2 px-2 py-0.5 rounded bg-gray-800 text-[10px] text-gray-300 hover:text-white cursor-pointer">MAX</button>
           </div>
         </div>
 
@@ -705,26 +705,75 @@
           </div>
         </div>
 
-        <button id="btn-confirm-send" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-2 transition-all">
+        <button id="btn-confirm-send" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
           <span>Sign &amp; Broadcast Shielded Spend</span>
         </button>
       </div>
+
+      <!-- Post-Send Voucher & Confirmation Receipt Card -->
+      <div id="send-receipt-container" class="hidden p-4 rounded-xl bg-gray-950 border border-emerald-500/40 space-y-3 font-mono text-xs">
+        <div class="flex items-center justify-between">
+          <span class="text-emerald-400 font-bold flex items-center gap-1.5">
+            <span>✓</span> Spend Executed &amp; Settled
+          </span>
+          <span id="send-receipt-time" class="text-[10px] text-gray-500">Just now</span>
+        </div>
+
+        <div class="space-y-1.5 text-[11px] text-gray-300">
+          <div class="flex justify-between">
+            <span class="text-gray-500">Sent Amount:</span>
+            <span id="send-receipt-amount" class="text-white font-bold">0.0000 PCASH</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Recipient:</span>
+            <span id="send-receipt-recipient" class="text-cyan-400 truncate max-w-[200px]">pc1q...</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Network Relay:</span>
+            <span id="send-receipt-relay" class="text-emerald-400">● Global P2P Mesh (Live)</span>
+          </div>
+        </div>
+
+        <!-- Transfer Voucher Box -->
+        <div class="p-3 rounded-lg bg-gray-900 border border-gray-800 space-y-1.5">
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="text-gray-300 font-semibold flex items-center gap-1">
+              <span>🎟️</span> eUTXO Transfer Voucher
+            </span>
+            <span class="text-[10px] text-emerald-400">Guaranteed 1-Click Credit</span>
+          </div>
+          <p class="text-[10px] text-gray-400 font-sans leading-tight">
+            If Browser B doesn&apos;t reflect automatically (due to ad-blockers, private tabs, or isolated networks), copy this voucher and redeem it directly in Browser B&apos;s Receive modal:
+          </p>
+          <div class="flex gap-2">
+            <input type="text" id="send-receipt-voucher-input" readonly class="flex-1 bg-black border border-gray-700 rounded px-2 py-1 text-[10px] font-mono text-emerald-300 select-all truncate cursor-text">
+            <button id="btn-copy-voucher" class="px-3 py-1 rounded bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-[11px] shrink-0 transition-all cursor-pointer">
+              📋 Copy
+            </button>
+          </div>
+        </div>
+
+        <button id="btn-done-send" class="w-full py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-medium text-xs transition-all cursor-pointer">
+          Done / Close
+        </button>
+      </div>
+
     </div>
   </div>
 
-  <!-- Modal: Receive Address & QR -->
+  <!-- Modal: Receive Address, QR & Instant Voucher Redemption -->
   <div id="modal-receive" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="glass-card rounded-2xl max-w-sm w-full p-6 border border-gray-800 relative space-y-4 text-center">
+    <div class="glass-card rounded-2xl max-w-md w-full p-6 border border-gray-800 relative space-y-4 text-center max-h-[90vh] overflow-y-auto custom-scroll">
       <div class="flex justify-between items-center text-left">
         <h3 class="text-base font-bold text-white flex items-center gap-2">
           <span>📥</span> Receive ProofCash
         </h3>
-        <button id="btn-close-receive" class="text-gray-400 hover:text-white text-lg">✕</button>
+        <button id="btn-close-receive" class="text-gray-400 hover:text-white text-lg cursor-pointer">✕</button>
       </div>
 
-      <div class="p-4 bg-white rounded-xl inline-block mx-auto shadow-xl">
+      <div class="p-3 bg-white rounded-xl inline-block mx-auto shadow-xl">
         <!-- SVG QR Code -->
-        <svg class="w-48 h-48" viewBox="0 0 100 100" fill="black">
+        <svg class="w-40 h-40" viewBox="0 0 100 100" fill="black">
           <rect width="100" height="100" fill="white"/>
           <!-- Position Markers -->
           <rect x="10" y="10" width="24" height="24" fill="black"/>
@@ -759,16 +808,44 @@
         </svg>
       </div>
 
-      <div class="space-y-2">
-        <div class="text-[11px] text-gray-400">Scan to pay or copy address below:</div>
-        <div class="p-2.5 bg-gray-950 rounded-lg border border-gray-800 text-xs font-mono text-gray-200 break-all select-all" id="recv-disp-address">
+      <div class="space-y-1.5 text-left">
+        <div class="text-[11px] text-gray-400">Vault Receiving Address:</div>
+        <div class="p-2 bg-gray-950 rounded-lg border border-gray-800 text-xs font-mono text-gray-200 break-all select-all" id="recv-disp-address">
           pc1q...
         </div>
       </div>
 
-      <button id="btn-recv-copy" class="w-full py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-medium text-xs transition-all">
-        Copy Address to Clipboard
+      <button id="btn-recv-copy" class="w-full py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-medium text-xs transition-all cursor-pointer">
+        📋 Copy Address to Clipboard
       </button>
+
+      <!-- Instant eUTXO Voucher Redemption Card -->
+      <div class="pt-3 border-t border-gray-800 text-left space-y-2.5">
+        <div class="flex justify-between items-center">
+          <span class="text-xs font-bold text-white flex items-center gap-1.5">
+            <span>⚡</span> Instant Voucher Redemption
+          </span>
+          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
+            Air-Gap Guaranteed
+          </span>
+        </div>
+        <p class="text-[10px] text-gray-400 leading-tight">
+          Paste an eUTXO Transfer Voucher from another browser or device to credit your balance immediately:
+        </p>
+        <div class="space-y-2">
+          <input type="text" id="input-redeem-voucher" placeholder="Paste PCASH-VOUCHER:... here" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500">
+          <div class="grid grid-cols-2 gap-2">
+            <button id="btn-redeem-voucher" class="py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+              <span>⚡</span> <span>Redeem Voucher</span>
+            </button>
+            <button id="btn-sync-mesh-now" class="py-2 px-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 font-medium text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer" title="Force sync with cloud &amp; local relay mesh">
+              <span>🔄</span> <span>Sync Mesh Now</span>
+            </button>
+          </div>
+          <div id="disp-voucher-status" class="hidden text-[11px] font-mono p-2 rounded"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -1017,8 +1094,8 @@
   <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-2 pointer-events-none"></div>
 
   <!-- Core Scripts with Cache Buster -->
-  <script src="passkey-crypto.js?v=1.3.2"></script>
-  <script src="wallet-engine.js?v=1.3.2"></script>
+  <script src="passkey-crypto.js?v=1.4.0"></script>
+  <script src="wallet-engine.js?v=1.4.0"></script>
 
   <script>
     // --- UI Controller & Event Wireup ---
@@ -1337,13 +1414,121 @@
     function setupModals() {
       // Send Modal
       const modalSend = document.getElementById('modal-send');
-      document.getElementById('btn-open-send').addEventListener('click', () => modalSend.classList.remove('hidden'));
-      document.getElementById('btn-close-send').addEventListener('click', () => modalSend.classList.add('hidden'));
+      const resetSendModal = () => {
+        document.getElementById('send-form-inputs')?.classList.remove('hidden');
+        document.getElementById('send-receipt-container')?.classList.add('hidden');
+        document.getElementById('send-prover-progress')?.classList.add('hidden');
+        const btn = document.getElementById('btn-confirm-send');
+        if (btn) btn.disabled = false;
+        const amtInput = document.getElementById('send-input-amount');
+        if (amtInput) amtInput.value = '';
+      };
+      document.getElementById('btn-open-send').addEventListener('click', () => {
+        resetSendModal();
+        modalSend.classList.remove('hidden');
+      });
+      document.getElementById('btn-close-send').addEventListener('click', () => {
+        modalSend.classList.add('hidden');
+        resetSendModal();
+      });
+      const btnDoneSend = document.getElementById('btn-done-send');
+      if (btnDoneSend) {
+        btnDoneSend.addEventListener('click', () => {
+          modalSend.classList.add('hidden');
+          resetSendModal();
+        });
+      }
+
+      // Copy Voucher button
+      const btnCopyVoucher = document.getElementById('btn-copy-voucher');
+      if (btnCopyVoucher) {
+        btnCopyVoucher.addEventListener('click', () => {
+          const input = document.getElementById('send-receipt-voucher-input');
+          if (input && input.value) {
+            navigator.clipboard.writeText(input.value);
+            btnCopyVoucher.innerText = "✓ Copied!";
+            setTimeout(() => { btnCopyVoucher.innerText = "📋 Copy"; }, 1500);
+            showToast("Voucher copied to clipboard!", 'cyan');
+          }
+        });
+      }
 
       // Receive Modal
       const modalRecv = document.getElementById('modal-receive');
       document.getElementById('btn-open-receive').addEventListener('click', () => modalRecv.classList.remove('hidden'));
       document.getElementById('btn-close-receive').addEventListener('click', () => modalRecv.classList.add('hidden'));
+
+      // Redeem Voucher Wireup
+      const btnRedeemVoucher = document.getElementById('btn-redeem-voucher');
+      if (btnRedeemVoucher) {
+        btnRedeemVoucher.addEventListener('click', () => {
+          const input = document.getElementById('input-redeem-voucher');
+          const status = document.getElementById('disp-voucher-status');
+          const voucherStr = input ? input.value.trim() : "";
+
+          if (!voucherStr) {
+            alert("Please paste a valid voucher code (PCASH-VOUCHER:...)");
+            return;
+          }
+
+          try {
+            const res = wallet.redeemTransferVoucher(voucherStr);
+            if (status) {
+              status.className = 'text-[11px] font-mono p-2.5 bg-emerald-950/60 text-emerald-300 rounded border border-emerald-500/40';
+              status.innerText = `✓ Successfully redeemed +${res.amountPcash} PCASH! TxID: ${res.txid.substring(0, 14)}...`;
+              status.classList.remove('hidden');
+            }
+            if (input) input.value = '';
+            showToast(`🎉 Redeemed +${res.amountPcash} PCASH!`, 'emerald');
+            setTimeout(() => {
+              modalRecv.classList.add('hidden');
+              if (status) status.classList.add('hidden');
+            }, 1800);
+          } catch (err) {
+            if (status) {
+              status.className = 'text-[11px] font-mono p-2.5 bg-rose-950/60 text-rose-300 rounded border border-rose-500/40';
+              status.innerText = `✕ ${err.message}`;
+              status.classList.remove('hidden');
+            }
+            alert("Voucher Error: " + err.message);
+          }
+        });
+      }
+
+      // Manual Mesh Sync Wireup
+      const btnSyncMeshNow = document.getElementById('btn-sync-mesh-now');
+      if (btnSyncMeshNow) {
+        btnSyncMeshNow.addEventListener('click', async () => {
+          btnSyncMeshNow.disabled = true;
+          const origText = btnSyncMeshNow.innerHTML;
+          btnSyncMeshNow.innerHTML = `<span>⏳</span> <span>Syncing...</span>`;
+          const status = document.getElementById('disp-voucher-status');
+
+          try {
+            const credited = await wallet.fetchMeshBacklog();
+            if (credited > 0) {
+              showToast(`🎉 Network Sync: Received +${credited} new incoming transfer(s)!`, 'emerald');
+              if (status) {
+                status.className = 'text-[11px] font-mono p-2.5 bg-emerald-950/60 text-emerald-300 rounded border border-emerald-500/40';
+                status.innerText = `✓ Synced with Mesh: +${credited} transfer(s) credited to your wallet!`;
+                status.classList.remove('hidden');
+              }
+            } else {
+              showToast("✓ Mesh Synced: No pending transfers for this address.", 'cyan');
+              if (status) {
+                status.className = 'text-[11px] font-mono p-2.5 bg-gray-900 text-gray-300 rounded border border-gray-800';
+                status.innerText = `✓ Network synced. No uncredited transfers found for ${wallet.state.address?.substring(0, 12)}...`;
+                status.classList.remove('hidden');
+              }
+            }
+          } catch (e) {
+            showToast("Sync warning: " + e.message, 'amber');
+          } finally {
+            btnSyncMeshNow.disabled = false;
+            btnSyncMeshNow.innerHTML = origText;
+          }
+        });
+      }
 
       // Settings Modal
       const modalSettings = document.getElementById('modal-settings');
@@ -1772,12 +1957,33 @@
           stage.innerText = "✓ Proof π_spend verified & broadcasted!";
           bar.style.width = "100%";
 
-          setTimeout(() => {
+          // Show confirmation receipt with voucher
+          const receiptContainer = document.getElementById('send-receipt-container');
+          const receiptAmount = document.getElementById('send-receipt-amount');
+          const receiptRecipient = document.getElementById('send-receipt-recipient');
+          const receiptRelay = document.getElementById('send-receipt-relay');
+          const receiptVoucherInput = document.getElementById('send-receipt-voucher-input');
+          const sendFormElements = document.getElementById('send-form-inputs');
+
+          if (receiptContainer) {
+            if (receiptAmount) receiptAmount.innerText = `${res.amountPcash} PCASH`;
+            if (receiptRecipient) receiptRecipient.innerText = res.recipient;
+            if (receiptVoucherInput) receiptVoucherInput.value = res.voucher;
+            if (receiptRelay) {
+              if (res.cloudRelaySuccess) {
+                receiptRelay.innerHTML = `<span class="text-emerald-400">● Global P2P Mesh (Broadcast Confirmed)</span>`;
+              } else if (res.localRelaySuccess) {
+                receiptRelay.innerHTML = `<span class="text-cyan-400">● Local Daemon Relay (Broadcast Confirmed)</span>`;
+              } else {
+                receiptRelay.innerHTML = `<span class="text-amber-400">● Air-Gap Mode (Use Voucher below for 1-click credit)</span>`;
+              }
+            }
+            if (sendFormElements) sendFormElements.classList.add('hidden');
             progress.classList.add('hidden');
-            btn.disabled = false;
-            document.getElementById('modal-send').classList.add('hidden');
-            document.getElementById('send-input-amount').value = '';
-          }, 800);
+            receiptContainer.classList.remove('hidden');
+          }
+
+          showToast(`✓ Broadcasted ${res.amountPcash} PCASH! Voucher ready.`, 'emerald');
         } catch (err) {
           alert("Send Error: " + err.message);
           progress.classList.add('hidden');

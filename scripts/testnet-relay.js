@@ -30,6 +30,36 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (req.method === 'GET' && req.url === '/health') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ status: "ok", height: blockHeight, mempool_txs: mempool.length }));
+    return;
+  }
+
+  if (req.method === 'GET' && req.url.startsWith('/p2p/recent')) {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ transactions: mempool.slice(-50) }));
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === '/p2p/broadcast') {
+    let body = '';
+    req.on('data', chunk => body += chunk);
+    req.on('end', () => {
+      try {
+        const packet = JSON.parse(body);
+        mempool.push(packet);
+        console.log(`[P2P Relay] Broadcast received: ${packet.amountPcash || packet.amount} PCASH -> ${packet.recipient} (txid: ${packet.txid})`);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, count: mempool.length, txid: packet.txid }));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      }
+    });
+    return;
+  }
+
   if (req.method === 'POST') {
     let body = '';
     req.on('data', chunk => body += chunk);
@@ -76,12 +106,6 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ error: err.message }));
       }
     });
-    return;
-  }
-
-  if (req.method === 'GET' && req.url === '/health') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ status: "ok", height: blockHeight, mempool_txs: mempool.length }));
     return;
   }
 
