@@ -148,18 +148,26 @@ While mirrored on public code platforms for accessibility, the primary, sovereig
 
 ```bash
 # Clone directly over P2P gossip
-rad clone rad:z4Vpdh8q2v7KqmZ1h9Fm981bC72
+rad clone rad:zHqa2hHCU4ARpLvjQCDNxJdc487F
 ```
 
 **Active Distributed Seed Mesh:**
-- `seed.proofcash.org:8776` (Europe)
-- `seed-asia.proofcash.org:8776` (Asia-Pacific)
-- `seed-nordic.proofcash.org:8776` (Nordic)
-- `seed-sa.proofcash.org:8776` (Americas)
+- `iris.radicle.network:8776` (Radicle Bootstrap Seed)
+- `rosa.radicle.network:8776` (Radicle Bootstrap Seed)
+- `seed.proofcash.org:8776` (Primary Community Seed)
 
 ---
 
-## 6. Deterministic Reproducible Builds
+## 6. Operational & Implementation Guides
+
+Comprehensive reference guides for operators, miners, and community contributors:
+
+* 📖 [**Mining & Account Recovery Guide**](docs/MINING_AND_RECOVERY_GUIDE.md): Detailed walkthroughs for Mobile Edge Mining, CPU Reference Mining, GPU Prover Rigs, AI Agent Streaming, and the 4 biometric passkey account recovery mechanisms (Zero seed phrases).
+* 🌐 [**Official Domain Setup & Integration Guide**](docs/DOMAIN_INTEGRATION_GUIDE.md): Complete deployment blueprint for `proofcash.org`, including DNS records, GitHub Pages SSL binding, WebAuthn Relying Party domain security, P2P seed nodes (`seed.proofcash.org`), and high-speed JSON-RPC gateways (`rpc.proofcash.org`).
+
+---
+
+## 7. Deterministic Reproducible Builds
 
 Verify the bit-for-bit SHA-256 hash of the release binaries using the hermetic container:
 
@@ -186,7 +194,7 @@ Primary key fingerprint: 7E02 B49F C61A 3381 92D5  0E4A 8871 4F2C B901 2026
 
 ---
 
-## 7. Renunciation of Authority
+## 8. Renunciation of Authority
 
 On October 9, 2026, the creator **Ren Ishida** permanently stepped away from the project:
 * **Zero Pre-Mine:** 100% of Genesis Block 0 reward is burned to nullifier `0x00...00`.
@@ -199,6 +207,6 @@ Read the signed farewell statement: [`release/RENUNCIATION.md`](release/RENUNCIA
 
 ---
 
-## 8. License
+## 9. License
 
 Dedicated to the public domain under the [Unlicense / MIT-0](https://opensource.org/licenses/MIT-0). Use, modify, verify, and run without restriction.
