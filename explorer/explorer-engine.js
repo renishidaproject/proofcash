@@ -153,6 +153,13 @@ class ProofCashExplorerEngine {
 
     // Connect to Option 2 Public WebSocket Relay for cross-device live sync
     this.connectPublicRelay();
+
+    // Active Polling Fallback (every 4s)
+    if (!this.pollInterval) {
+      this.pollInterval = setInterval(() => {
+        this.fetchRelayBacklog('proofcash_settlement_mesh_v1');
+      }, 4000);
+    }
   }
 
   connectPublicRelay() {

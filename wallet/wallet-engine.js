@@ -51,7 +51,6 @@ class ProofCashWalletEngine {
 
     this.subscribers = [];
     this.processedTxids = new Set();
-    this.initP2pMesh();
   }
 
   // --- Network Storage Key & Countdown Helpers ---
@@ -101,6 +100,9 @@ class ProofCashWalletEngine {
 
     // Ping proofcashd node in background
     this.pingNode();
+
+    // Initialize P2P Mesh AFTER state and active address are fully initialized
+    this.initP2pMesh();
 
     return this.state;
   }
@@ -285,6 +287,13 @@ class ProofCashWalletEngine {
 
     // 3. Connect to Public Global WebSocket Relay (Syncing across different browsers, phones & PCs)
     this.connectPublicRelay();
+
+    // 4. Active Heartbeat & Polling Fallback (every 4s) to guarantee arrival even if WebSocket disconnects
+    if (!this.pollInterval) {
+      this.pollInterval = setInterval(() => {
+        this.fetchMeshBacklog();
+      }, 4000);
+    }
   }
 
   connectPublicRelay() {
@@ -353,7 +362,7 @@ class ProofCashWalletEngine {
         }
       }
     } catch (err) {
-      console.warn("[P2P Mesh] Backlog sync skipped:", err);
+      // Background catch-up fail is silent
     }
   }
 
@@ -361,7 +370,11 @@ class ProofCashWalletEngine {
     if (!packet || !packet.txid || !packet.recipient) return;
     if (packet.network && packet.network !== this.state.networkMode) return; // Strict network isolation
     if (this.processedTxids.has(packet.txid)) return;
-    this.processedTxids.add(packet.txid);
+
+    // Guard: State must have loaded an address
+    if (!this.state.address && (!this.state.accounts || this.state.accounts.length === 0)) {
+      return;
+    }
 
     const targetAddr = (packet.recipient || "").trim().toLowerCase();
     const currentAddr = (this.state.address || "").trim().toLowerCase();
@@ -386,6 +399,7 @@ class ProofCashWalletEngine {
         status: "CONFIRMED"
       };
       this.state.txHistory.unshift(receiveRecord);
+      this.processedTxids.add(packet.txid);
       matched = true;
     } else {
       // Check if target matches any other account in our multi-account list
@@ -406,11 +420,13 @@ class ProofCashWalletEngine {
           timestamp: packet.timestamp || Date.now(),
           status: "CONFIRMED"
         });
+        this.processedTxids.add(packet.txid);
         matched = true;
       }
     }
 
     if (matched) {
+      console.info(`[P2P Mesh] Matched incoming transfer! Credited +${amountPcash} PCASH to ${packet.recipient.trim()}`);
       this.saveState();
       this.notifySubscribers();
 
@@ -619,12 +635,15 @@ class ProofCashWalletEngine {
 
     // 7. Publish to Global WebSocket Relay (instant push across all browsers & devices)
     try {
-      fetch(`https://ntfy.sh/${this.meshTopic || 'proofcash_settlement_mesh_v1'}`, {
+      console.info("[P2P Mesh] Broadcasting transfer to:", recipient.trim(), "Amount:", amountPcash, "TxID:", txEntry.txid);
+      const pubRes = await fetch(`https://ntfy.sh/${this.meshTopic || 'proofcash_settlement_mesh_v1'}`, {
         method: 'POST',
-        headers: { 'Title': 'ProofCash Transfer', 'Priority': 'high' },
         body: JSON.stringify(p2pPacket)
-      }).catch(e => console.warn("[P2P Mesh] Publish error:", e));
-    } catch (err) {}
+      });
+      console.info("[P2P Mesh] Broadcast HTTP result:", pubRes.status);
+    } catch (err) {
+      console.warn("[P2P Mesh] Broadcast error:", err);
+    }
 
     // 8. Broadcast to proofcashd RPC node
     this.broadcastTransaction(txEntry);
