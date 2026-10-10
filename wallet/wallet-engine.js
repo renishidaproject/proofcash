@@ -992,6 +992,31 @@ class ProofCashWalletEngine {
 
     this.state.txHistory.unshift(txEntry);
     this.saveState();
+
+    // Broadcast newly mined block to Explorer and P2P Mesh
+    const blockPacket = {
+      type: "PROOF_OF_SAMPLING_BLOCK",
+      height: this.state.currentBlockHeight,
+      hash: "0x0000" + hash.substring(0, 24),
+      nonce: nonce,
+      miner: this.state.address,
+      subsidy: subsidyPcash,
+      timestamp: Date.now(),
+      status: "CONFIRMED"
+    };
+
+    if (this.channel) {
+      try { this.channel.postMessage(blockPacket); } catch (e) {}
+    }
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem('proofcash_p2p_mined_block', JSON.stringify({ ...blockPacket, _t: Date.now() }));
+      } catch (e) {}
+    }
+
+    // Broadcast to public relays
+    this.broadcastToPublicRelays(blockPacket);
+
     return {
       balance: this.formatPcash(this.state.balance_pJ),
       height: this.state.currentBlockHeight,

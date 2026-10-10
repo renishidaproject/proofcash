@@ -317,6 +317,18 @@
       <div id="activity-feed" class="space-y-2.5">
         <!-- Dynamically Populated by wallet-engine.js -->
       </div>
+
+      <!-- Activity Feed Pagination -->
+      <div id="feed-pagination" class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 px-1 text-xs font-mono text-gray-400 border-t border-gray-900 hidden">
+        <div>
+          Showing events <span id="disp-feed-range" class="text-white font-bold">1-8</span> of <span id="disp-feed-total" class="text-cyan-300 font-bold">0</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button id="btn-feed-prev" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">◀ Prev</button>
+          <span id="disp-feed-page" class="px-2 text-white font-bold">Page 1</span>
+          <button id="btn-feed-next" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">Next ▶</button>
+        </div>
+      </div>
     </div>
 
     <!-- Panel 2: AI Machine Micro-Payment Streaming -->
@@ -1387,6 +1399,8 @@
     // --- UI Controller & Event Wireup ---
     let wallet = null;
     let deferredPrompt = null;
+    let feedCurrentPage = 1;
+    const feedPageSize = 8;
 
     // PWA Install Prompt Handler
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -1593,13 +1607,22 @@
         }
       }
 
-      // Activity Feed
+      // Activity Feed with Pagination
       const feed = document.getElementById('activity-feed');
+      const feedPagination = document.getElementById('feed-pagination');
       feed.innerHTML = '';
-      if (state.txHistory.length === 0) {
+      const totalHistory = state.txHistory.length;
+
+      if (totalHistory === 0) {
         feed.innerHTML = `<div class="text-xs text-gray-500 py-4 text-center">No transactions yet. Claim faucet or send PCASH to begin.</div>`;
+        if (feedPagination) feedPagination.classList.add('hidden');
       } else {
-        state.txHistory.slice(0, 12).forEach(tx => {
+        const totalPages = Math.max(1, Math.ceil(totalHistory / feedPageSize));
+        if (feedCurrentPage > totalPages) feedCurrentPage = totalPages;
+        const startIndex = (feedCurrentPage - 1) * feedPageSize;
+        const pageItems = state.txHistory.slice(startIndex, startIndex + feedPageSize);
+
+        pageItems.forEach(tx => {
           const item = document.createElement('div');
           item.className = 'bg-gray-950/80 p-3 rounded-xl border border-gray-900 flex justify-between items-center text-xs';
           
@@ -1667,6 +1690,25 @@
           `;
           feed.appendChild(item);
         });
+
+        // Update pagination controls
+        if (feedPagination) {
+          feedPagination.classList.remove('hidden');
+          const dispRange = document.getElementById('disp-feed-range');
+          const dispTotal = document.getElementById('disp-feed-total');
+          const dispPage = document.getElementById('disp-feed-page');
+          const btnPrev = document.getElementById('btn-feed-prev');
+          const btnNext = document.getElementById('btn-feed-next');
+
+          const startNum = startIndex + 1;
+          const endNum = Math.min(startIndex + pageItems.length, totalHistory);
+
+          if (dispRange) dispRange.innerText = `${startNum}-${endNum}`;
+          if (dispTotal) dispTotal.innerText = totalHistory;
+          if (dispPage) dispPage.innerText = `Page ${feedCurrentPage} of ${totalPages}`;
+          if (btnPrev) btnPrev.disabled = feedCurrentPage <= 1;
+          if (btnNext) btnNext.disabled = feedCurrentPage >= totalPages;
+        }
       }
     }
 
@@ -2142,6 +2184,27 @@
 
       document.getElementById('btn-copy-address').addEventListener('click', () => copyFn('disp-address', 'copy-text'));
       document.getElementById('btn-recv-copy').addEventListener('click', () => copyFn('recv-disp-address', 'btn-recv-copy'));
+
+      // Feed pagination controls
+      const btnFeedPrev = document.getElementById('btn-feed-prev');
+      const btnFeedNext = document.getElementById('btn-feed-next');
+      if (btnFeedPrev) {
+        btnFeedPrev.addEventListener('click', () => {
+          if (feedCurrentPage > 1) {
+            feedCurrentPage--;
+            renderState(wallet.state);
+          }
+        });
+      }
+      if (btnFeedNext) {
+        btnFeedNext.addEventListener('click', () => {
+          const totalPages = Math.ceil(wallet.state.txHistory.length / feedPageSize);
+          if (feedCurrentPage < totalPages) {
+            feedCurrentPage++;
+            renderState(wallet.state);
+          }
+        });
+      }
     }
 
     function showToast(message, color = 'emerald') {

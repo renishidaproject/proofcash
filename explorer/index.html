@@ -174,6 +174,9 @@
       <button class="tab-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 whitespace-nowrap cursor-pointer flex items-center gap-1.5" data-target="panel-txs">
         <span>⚡</span> Shielded Transactions Feed
       </button>
+      <button class="tab-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 whitespace-nowrap cursor-pointer flex items-center gap-1.5" data-target="panel-miners">
+        <span>⛏️</span> Miner Nodes &amp; Subsidies
+      </button>
       <button class="tab-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 whitespace-nowrap cursor-pointer flex items-center gap-1.5" data-target="panel-genesis">
         <span>🏛️</span> Genesis Block #0 Invariants
       </button>
@@ -209,6 +212,20 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Blocks Pagination Controls -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-mono pt-2 px-1 text-gray-400">
+        <div>
+          Showing blocks <span id="disp-blocks-range" class="text-white font-bold">1-10</span> of <span id="disp-blocks-total" class="text-cyan-300 font-bold">104,281</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button id="btn-blocks-first" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">⏮ First</button>
+          <button id="btn-blocks-prev" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">◀ Prev</button>
+          <span id="disp-blocks-page" class="px-2 text-cyan-300 font-bold">Page 1</span>
+          <button id="btn-blocks-next" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">Next ▶</button>
+          <button id="btn-blocks-last" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">Last ⏭</button>
+        </div>
+      </div>
     </div>
 
     <!-- Panel 2: Shielded Transactions Feed -->
@@ -235,6 +252,61 @@
             <!-- Dynamically Rendered -->
           </tbody>
         </table>
+      </div>
+
+      <!-- Transactions Pagination Controls -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-mono pt-2 px-1 text-gray-400">
+        <div>
+          Showing transactions <span id="disp-txs-range" class="text-white font-bold">1-10</span> of <span id="disp-txs-total" class="text-purple-300 font-bold">0</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button id="btn-txs-prev" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">◀ Prev</button>
+          <span id="disp-txs-page" class="px-2 text-purple-300 font-bold">Page 1</span>
+          <button id="btn-txs-next" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">Next ▶</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 3: Miner Nodes & Coinbase Activity -->
+    <div id="panel-miners" class="tab-panel hidden space-y-3">
+      <div class="p-3.5 rounded-xl bg-amber-950/20 border border-amber-500/30 text-amber-200 text-xs">
+        <strong class="text-amber-300 flex items-center gap-1.5"><span>ℹ️</span> Why does ProofCash have no public "Holders / Rich List" for personal wallets?</strong>
+        <p class="text-gray-300 text-[11px] mt-1 leading-relaxed">
+          Unlike transparent surveillance blockchains (Bitcoin, Ethereum) where anyone can look up your wallet address and inspect your total balance, ProofCash is a <strong>Zero-Knowledge Shielded Currency</strong> (eUTXO + ZK-STARKs). Personal wallet balances and transaction amounts are cryptographically private and hidden on-chain behind ZK commitments and nullifiers.
+        </p>
+        <p class="text-gray-400 text-[11px] mt-1">
+          Below is the public <strong>Coinbase Mining Rewards &amp; Active Node Miners</strong> ledger verified by thermodynamic Proof of Sampling Work (PoSW). When you run the Mobile Edge Miner in your wallet, your mined blocks and earned subsidies appear here live!
+        </p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs font-mono glass-card rounded-xl border border-gray-800">
+          <thead>
+            <tr class="border-b border-gray-800 text-gray-400 bg-gray-950/60">
+              <th class="p-3">Miner Node Address</th>
+              <th class="p-3 text-center">Blocks Mined</th>
+              <th class="p-3 text-right">Total Subsidies Won</th>
+              <th class="p-3">Latest Block Found</th>
+              <th class="p-3 text-center">Node Type</th>
+              <th class="p-3 text-right">Status</th>
+            </tr>
+          </thead>
+          <tbody id="table-miners-body" class="divide-y divide-gray-850">
+            <!-- Dynamically Rendered -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Miners Pagination Controls -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-mono pt-2 px-1 text-gray-400">
+        <div>
+          Showing miners <span id="disp-miners-range" class="text-white font-bold">1-10</span> of <span id="disp-miners-total" class="text-amber-300 font-bold">0</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button id="btn-miners-prev" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">◀ Prev</button>
+          <span id="disp-miners-page" class="px-2 text-amber-300 font-bold">Page 1</span>
+          <button id="btn-miners-next" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">Next ▶</button>
+        </div>
       </div>
     </div>
 
@@ -368,6 +440,12 @@
   <script src="explorer-engine.js?v=1.4.0"></script>
   <script>
     let explorer = null;
+    let blocksPage = 1;
+    const blocksPerPage = 10;
+    let txsPage = 1;
+    const txsPerPage = 10;
+    let minersPage = 1;
+    const minersPerPage = 10;
 
     window.addEventListener('DOMContentLoaded', () => {
       explorer = new ProofCashExplorerEngine();
@@ -381,6 +459,7 @@
       });
 
       setupTabs();
+      setupPagination();
       setupSearch();
       setupVerifier();
     });
@@ -393,10 +472,19 @@
       document.getElementById('metric-subsidy').innerText = `${state.currentSubsidy} PCASH/blk`;
       document.getElementById('metric-burned').innerText = state.totalBurnedPcash;
 
-      // Render Blocks Table
+      renderBlocksTable();
+      renderTxsTable();
+      renderMinersTable();
+    }
+
+    function renderBlocksTable() {
+      if (!explorer) return;
+      const data = explorer.getBlocksPage(blocksPage, blocksPerPage);
       const blocksBody = document.getElementById('table-blocks-body');
+      if (!blocksBody) return;
       blocksBody.innerHTML = '';
-      state.recentBlocks.forEach(blk => {
+
+      data.items.forEach(blk => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-gray-900/60 transition-colors cursor-pointer';
         tr.onclick = () => openBlockModal(blk);
@@ -416,10 +504,32 @@
         blocksBody.appendChild(tr);
       });
 
-      // Render Transactions Table
+      // Update blocks pagination display
+      const rangeEl = document.getElementById('disp-blocks-range');
+      const totalEl = document.getElementById('disp-blocks-total');
+      const pageEl = document.getElementById('disp-blocks-page');
+      const btnFirst = document.getElementById('btn-blocks-first');
+      const btnPrev = document.getElementById('btn-blocks-prev');
+      const btnNext = document.getElementById('btn-blocks-next');
+      const btnLast = document.getElementById('btn-blocks-last');
+
+      if (rangeEl) rangeEl.innerText = `${data.startIndex.toLocaleString()}-${data.endIndex.toLocaleString()}`;
+      if (totalEl) totalEl.innerText = data.total.toLocaleString();
+      if (pageEl) pageEl.innerText = `Page ${data.page.toLocaleString()} of ${data.totalPages.toLocaleString()}`;
+      if (btnFirst) btnFirst.disabled = data.page <= 1;
+      if (btnPrev) btnPrev.disabled = data.page <= 1;
+      if (btnNext) btnNext.disabled = data.page >= data.totalPages;
+      if (btnLast) btnLast.disabled = data.page >= data.totalPages;
+    }
+
+    function renderTxsTable() {
+      if (!explorer) return;
+      const data = explorer.getTransactionsPage(txsPage, txsPerPage);
       const txsBody = document.getElementById('table-txs-body');
+      if (!txsBody) return;
       txsBody.innerHTML = '';
-      state.recentTransactions.forEach(tx => {
+
+      data.items.forEach(tx => {
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-gray-900/60 transition-colors cursor-pointer';
         tr.onclick = () => openTxModal(tx);
@@ -435,6 +545,145 @@
         `;
         txsBody.appendChild(tr);
       });
+
+      // Update txs pagination display
+      const rangeEl = document.getElementById('disp-txs-range');
+      const totalEl = document.getElementById('disp-txs-total');
+      const pageEl = document.getElementById('disp-txs-page');
+      const btnPrev = document.getElementById('btn-txs-prev');
+      const btnNext = document.getElementById('btn-txs-next');
+
+      if (rangeEl) rangeEl.innerText = `${data.startIndex}-${data.endIndex}`;
+      if (totalEl) totalEl.innerText = data.total.toLocaleString();
+      if (pageEl) pageEl.innerText = `Page ${data.page} of ${data.totalPages}`;
+      if (btnPrev) btnPrev.disabled = data.page <= 1;
+      if (btnNext) btnNext.disabled = data.page >= data.totalPages;
+    }
+
+    function renderMinersTable() {
+      if (!explorer) return;
+      const data = explorer.getMinersPage(minersPage, minersPerPage);
+      const minersBody = document.getElementById('table-miners-body');
+      if (!minersBody) return;
+      minersBody.innerHTML = '';
+
+      data.items.forEach(m => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-900/60 transition-colors';
+        const isLive = m.status && m.status.includes('Online');
+
+        tr.innerHTML = `
+          <td class="p-3 text-gray-300 font-mono">
+            <div class="truncate max-w-[220px] text-cyan-300 font-semibold" title="${m.address}">${m.address}</div>
+          </td>
+          <td class="p-3 text-center text-emerald-400 font-bold">${m.blocksMined.toLocaleString()}</td>
+          <td class="p-3 text-right text-emerald-400 font-bold">+${Number(m.totalEarned).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 4})} PCASH</td>
+          <td class="p-3 text-gray-400 font-mono">#${Number(m.latestBlock).toLocaleString()}</td>
+          <td class="p-3 text-center">
+            <span class="text-[10px] px-2 py-0.5 rounded bg-gray-900 border border-gray-800 text-gray-300 font-mono">${m.nodeType}</span>
+          </td>
+          <td class="p-3 text-right">
+            <span class="text-[10px] px-2 py-0.5 rounded font-mono ${isLive ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-gray-800 text-gray-400'}">${m.status}</span>
+          </td>
+        `;
+        minersBody.appendChild(tr);
+      });
+
+      // Update miners pagination display
+      const rangeEl = document.getElementById('disp-miners-range');
+      const totalEl = document.getElementById('disp-miners-total');
+      const pageEl = document.getElementById('disp-miners-page');
+      const btnPrev = document.getElementById('btn-miners-prev');
+      const btnNext = document.getElementById('btn-miners-next');
+
+      if (rangeEl) rangeEl.innerText = `${data.startIndex}-${data.endIndex}`;
+      if (totalEl) totalEl.innerText = data.total.toLocaleString();
+      if (pageEl) pageEl.innerText = `Page ${data.page} of ${data.totalPages}`;
+      if (btnPrev) btnPrev.disabled = data.page <= 1;
+      if (btnNext) btnNext.disabled = data.page >= data.totalPages;
+    }
+
+    function setupPagination() {
+      // Blocks Pagination
+      const btnBlocksFirst = document.getElementById('btn-blocks-first');
+      const btnBlocksPrev = document.getElementById('btn-blocks-prev');
+      const btnBlocksNext = document.getElementById('btn-blocks-next');
+      const btnBlocksLast = document.getElementById('btn-blocks-last');
+
+      if (btnBlocksFirst) {
+        btnBlocksFirst.addEventListener('click', () => {
+          blocksPage = 1;
+          renderBlocksTable();
+        });
+      }
+      if (btnBlocksPrev) {
+        btnBlocksPrev.addEventListener('click', () => {
+          if (blocksPage > 1) {
+            blocksPage--;
+            renderBlocksTable();
+          }
+        });
+      }
+      if (btnBlocksNext) {
+        btnBlocksNext.addEventListener('click', () => {
+          const totalPages = Math.ceil((explorer.currentHeight + 1) / blocksPerPage);
+          if (blocksPage < totalPages) {
+            blocksPage++;
+            renderBlocksTable();
+          }
+        });
+      }
+      if (btnBlocksLast) {
+        btnBlocksLast.addEventListener('click', () => {
+          const totalPages = Math.ceil((explorer.currentHeight + 1) / blocksPerPage);
+          blocksPage = totalPages;
+          renderBlocksTable();
+        });
+      }
+
+      // Transactions Pagination
+      const btnTxsPrev = document.getElementById('btn-txs-prev');
+      const btnTxsNext = document.getElementById('btn-txs-next');
+
+      if (btnTxsPrev) {
+        btnTxsPrev.addEventListener('click', () => {
+          if (txsPage > 1) {
+            txsPage--;
+            renderTxsTable();
+          }
+        });
+      }
+      if (btnTxsNext) {
+        btnTxsNext.addEventListener('click', () => {
+          const totalPages = Math.ceil(explorer.transactions.length / txsPerPage);
+          if (txsPage < totalPages) {
+            txsPage++;
+            renderTxsTable();
+          }
+        });
+      }
+
+      // Miners Pagination
+      const btnMinersPrev = document.getElementById('btn-miners-prev');
+      const btnMinersNext = document.getElementById('btn-miners-next');
+
+      if (btnMinersPrev) {
+        btnMinersPrev.addEventListener('click', () => {
+          if (minersPage > 1) {
+            minersPage--;
+            renderMinersTable();
+          }
+        });
+      }
+      if (btnMinersNext) {
+        btnMinersNext.addEventListener('click', () => {
+          const totalPages = Math.ceil(explorer.miners.length / minersPerPage);
+          if (minersPage < totalPages) {
+            minersPage++;
+            renderMinersTable();
+          }
+        });
+      }
     }
 
     function setupTabs() {
