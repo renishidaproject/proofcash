@@ -10,11 +10,13 @@
 [![ZK Circuits](https://img.shields.io/badge/ZK_AIR-Plonky3_%26_Binius-cyan.svg)](proofcash/crates/proofcash-circuits/)
 [![Radicle P2P](https://img.shields.io/badge/Radicle_URN-rad%3AzHqa2hHC...-orange.svg)](release/RADICLE_SEED.md)
 [![PWA Wallet](https://img.shields.io/badge/Passkey_Wallet-WebAuthn_PWA-emerald.svg)](wallet/)
+[![Release: v1.3](https://img.shields.io/badge/Release-v1.3_Hick's_Law-blue.svg)](https://github.com/Renishidaproject/proofcash/releases/tag/v1.3)
 
 **Author:** Ren Ishida (`renishida@proton.me`)  
 **Canonical P2P Radicle URN:** `rad:zHqa2hHCU4ARpLvjQCDNxJdc487F`  
 **GitHub Mirror:** [https://github.com/Renishidaproject/proofcash](https://github.com/Renishidaproject/proofcash)  
-**Academic Whitepaper:** [PDF Edition](ProofCash_Whitepaper_v1.1.pdf) • [HTML Source](proofcash_whitepaper.html)
+**Academic Whitepaper:** [PDF Edition](ProofCash_Whitepaper_v1.1.pdf) • [HTML Source](proofcash_whitepaper.html)  
+**Latest Version:** **v1.3 (Hick's Law Refactor & Genesis Countdown)**
 
 </div>
 

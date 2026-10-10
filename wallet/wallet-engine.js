@@ -11,7 +11,9 @@
 class ProofCashWalletEngine {
   constructor() {
     this.crypto = new PasskeyCrypto();
-    this.STORAGE_KEY = 'proofcash_wallet_v1';
+    this.TESTNET_STORAGE_KEY = 'proofcash_wallet_testnet_v1';
+    this.MAINNET_STORAGE_KEY = 'proofcash_wallet_mainnet_v1';
+    this.MAINNET_LAUNCH_TIMESTAMP = 1793491200000; // November 1, 2026 00:00:00 UTC
     this.DEFAULT_RPC = (typeof window !== 'undefined' && window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
       ? 'http://127.0.0.1:8332'
       : 'https://rpc.proofcash.org';
@@ -35,7 +37,7 @@ class ProofCashWalletEngine {
       currentBlockHeight: 104281,
       activeAccountId: 'acc_1',
       accounts: [],
-      balance_pJ: 250000000000000n, // 250.0 PCASH default initial test balance
+      balance_pJ: 0n, // Strictly 0.0000 PCASH default initial balance (zero hardcoding)
       address: null,
       credentials: [], // Registered Passkeys
       activeCredentialId: null,
@@ -52,6 +54,23 @@ class ProofCashWalletEngine {
     this.initP2pMesh();
   }
 
+  // --- Network Storage Key & Countdown Helpers ---
+
+  getStorageKey() {
+    return this.state.networkMode === 'mainnet' ? this.MAINNET_STORAGE_KEY : this.TESTNET_STORAGE_KEY;
+  }
+
+  getMainnetCountdown() {
+    const now = Date.now();
+    const diff = Math.max(0, this.MAINNET_LAUNCH_TIMESTAMP - now);
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+    const isLaunched = diff <= 0;
+    return { days, hours, minutes, seconds, totalMs: diff, isLaunched };
+  }
+
   // --- Persistence & Multi-Account Initialization ---
 
   async init() {
@@ -60,17 +79,20 @@ class ProofCashWalletEngine {
     // Initialize Default Accounts if none exist
     if (!this.state.accounts || this.state.accounts.length === 0) {
       const defaultAddr = this.state.address || ("pc1q" + PasskeyCrypto.bufferToHex(crypto.getRandomValues(new Uint8Array(20))));
+      const defaultName = this.state.networkMode === 'mainnet' ? 'Account 1 (Mainnet Vault)' : 'Account 1 (Testnet Vault)';
       this.state.accounts = [
         {
           id: 'acc_1',
-          name: 'Account 1 (Main Vault)',
+          name: defaultName,
           address: defaultAddr,
-          balance_pJ: (this.state.balance_pJ || 250000000000000n).toString(),
-          txHistory: this.state.txHistory || []
+          balance_pJ: "0",
+          txHistory: []
         }
       ];
       this.state.activeAccountId = 'acc_1';
       this.state.address = defaultAddr;
+      this.state.balance_pJ = 0n;
+      this.state.txHistory = [];
       this.saveState();
     } else {
       // Sync active account fields to top-level state
@@ -85,16 +107,32 @@ class ProofCashWalletEngine {
 
   loadState() {
     try {
-      const raw = localStorage.getItem(this.STORAGE_KEY);
+      const raw = localStorage.getItem(this.getStorageKey());
       if (raw) {
         const parsed = JSON.parse(raw);
         this.state = {
           ...this.state,
           ...parsed,
-          networkMode: parsed.networkMode || 'testnet',
+          networkMode: this.state.networkMode, // Retain selected network mode
           rpcUrl: parsed.rpcUrl || this.DEFAULT_RPC,
-          balance_pJ: BigInt(parsed.balance_pJ || "250000000000000"),
+          balance_pJ: BigInt(parsed.balance_pJ || "0"),
           accounts: parsed.accounts || []
+        };
+      } else {
+        // Reset state for new network to guarantee strict isolation
+        this.state = {
+          ...this.state,
+          currentBlockHeight: this.state.networkMode === 'mainnet' ? 0 : 104281,
+          activeAccountId: 'acc_1',
+          accounts: [],
+          balance_pJ: 0n,
+          address: null,
+          activeCredentialId: null,
+          activeDelegation: null,
+          activeSessionKey: null,
+          utxos: [],
+          txHistory: [],
+          streamingChannel: null
         };
       }
     } catch (e) {
@@ -127,7 +165,7 @@ class ProofCashWalletEngine {
           y: this.state.activeSessionKey.y
         } : null
       };
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(serialized));
+      localStorage.setItem(this.getStorageKey(), JSON.stringify(serialized));
       this.notifySubscribers();
     } catch (e) {
       console.error("[WalletEngine] Failed to persist state:", e);
@@ -163,24 +201,15 @@ class ProofCashWalletEngine {
     const newAddress = "pc1q" + PasskeyCrypto.bufferToHex(crypto.getRandomValues(new Uint8Array(20)));
     const newId = `acc_${Date.now()}`;
 
-    // Fresh accounts start with 25 PCASH initial test balance
-    const initBalance = 25000000000000n; // 25.0 PCASH
+    // Fresh accounts start with 0.0000 PCASH strictly (zero hardcoding)
+    const initBalance = 0n;
 
     const newAcc = {
       id: newId,
       name: accountName,
       address: newAddress,
       balance_pJ: initBalance.toString(),
-      txHistory: [
-        {
-          type: "ACCOUNT_GENESIS",
-          txid: "0xacc_" + newAddress.substring(4, 12),
-          amount: "25.0000",
-          height: this.state.currentBlockHeight,
-          timestamp: Date.now(),
-          status: "CONFIRMED"
-        }
-      ]
+      txHistory: []
     };
 
     this.state.accounts.push(newAcc);
@@ -283,6 +312,7 @@ class ProofCashWalletEngine {
 
   handleIncomingP2pTransfer(packet) {
     if (!packet || !packet.txid || !packet.recipient) return;
+    if (packet.network && packet.network !== this.state.networkMode) return; // Strict network isolation
     if (this.processedTxids.has(packet.txid)) return;
     this.processedTxids.add(packet.txid);
 
@@ -517,6 +547,7 @@ class ProofCashWalletEngine {
     // 6. Broadcast P2P Packet to other open Tabs / Windows
     const p2pPacket = {
       type: "PCASH_TRANSFER",
+      network: this.state.networkMode,
       txid: txEntry.txid,
       sender: this.state.address,
       recipient: recipient.trim(),
@@ -681,6 +712,9 @@ class ProofCashWalletEngine {
   // --- Testnet Faucet ---
 
   claimFaucet(amountPcash = "50.0") {
+    if (this.state.networkMode === 'mainnet') {
+      throw new Error("Faucet is strictly disabled on Mainnet. ProofCash Genesis strictly enforces 0 pre-mine; coins can only be acquired via PoSW mining or peer-to-peer transfers.");
+    }
     const claim_pJ = this.pcashToPJ(amountPcash);
     this.state.balance_pJ += claim_pJ;
 
@@ -781,20 +815,44 @@ class ProofCashWalletEngine {
   }
 
   setNetworkMode(mode) {
+    if (this.state.networkMode === mode) return;
+    this.saveState(); // Persist current network mode ledger first
     this.state.networkMode = mode;
-    if (mode === 'mainnet') {
-      this.state.currentBlockHeight = 0; // Genesis block anchor
+    this.loadState(); // Load target network mode ledger from isolated storage key
+
+    // If no accounts exist in the newly loaded network state, initialize a clean zero-balance vault
+    if (!this.state.accounts || this.state.accounts.length === 0) {
+      const defaultAddr = "pc1q" + PasskeyCrypto.bufferToHex(crypto.getRandomValues(new Uint8Array(20)));
+      const defaultName = mode === 'mainnet' ? 'Account 1 (Mainnet Vault)' : 'Account 1 (Testnet Vault)';
+      this.state.accounts = [
+        {
+          id: 'acc_1',
+          name: defaultName,
+          address: defaultAddr,
+          balance_pJ: "0",
+          txHistory: []
+        }
+      ];
+      this.state.activeAccountId = 'acc_1';
+      this.state.address = defaultAddr;
+      this.state.balance_pJ = 0n;
+      this.state.txHistory = [];
+      this.state.currentBlockHeight = (mode === 'mainnet') ? 0 : 104281;
+      this.saveState();
     } else {
-      if (this.state.currentBlockHeight === 0) {
-        this.state.currentBlockHeight = 104281; // Testnet simulation tip
+      this.syncActiveAccountFromList();
+      if (mode === 'mainnet' && this.state.currentBlockHeight !== 0) {
+        this.state.currentBlockHeight = 0;
+      } else if (mode === 'testnet' && this.state.currentBlockHeight === 0) {
+        this.state.currentBlockHeight = 104281;
       }
     }
-    this.saveState();
+    this.notifySubscribers();
     this.pingNode();
   }
 
   resetWallet() {
-    localStorage.removeItem(this.STORAGE_KEY);
+    localStorage.removeItem(this.getStorageKey());
     window.location.reload();
   }
 }
