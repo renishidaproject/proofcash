@@ -447,16 +447,36 @@ class PasskeyCrypto {
    * Constraint Cost: 1,842 constraints vs 350,000 constraints for P-256!
    */
   async signSessionTransaction(babyjubjubKey, txHashHex) {
+    if (!babyjubjubKey) {
+      throw new Error("No active BabyJubjub session key available. Please re-authorize enclave.");
+    }
+
+    let secretBytes = babyjubjubKey.secretScalarBytes;
+    if (!secretBytes && babyjubjubKey.secretScalarHex) {
+      secretBytes = PasskeyCrypto.hexToBuffer(babyjubjubKey.secretScalarHex);
+    }
+    if (!secretBytes) {
+      throw new Error("BabyJubjub session key private scalar missing or expired. Please re-authorize enclave.");
+    }
+
+    let pubBytes = babyjubjubKey.publicPointBytes;
+    if (!pubBytes && babyjubjubKey.publicPointHex) {
+      pubBytes = PasskeyCrypto.hexToBuffer(babyjubjubKey.publicPointHex);
+    }
+    if (!pubBytes) {
+      pubBytes = new Uint8Array(32);
+    }
+
     const msgBytes = PasskeyCrypto.hexToBuffer(txHashHex);
     const combined = new Uint8Array(32 + msgBytes.length);
-    combined.set(babyjubjubKey.secretScalarBytes, 0);
+    combined.set(secretBytes, 0);
     combined.set(msgBytes, 32);
 
     const rHash = new Uint8Array(await crypto.subtle.digest("SHA-256", combined));
-    const sCombined = new Uint8Array(rHash.length + babyjubjubKey.publicPointBytes.length + msgBytes.length);
+    const sCombined = new Uint8Array(rHash.length + pubBytes.length + msgBytes.length);
     sCombined.set(rHash, 0);
-    sCombined.set(babyjubjubKey.publicPointBytes, rHash.length);
-    sCombined.set(msgBytes, rHash.length + babyjubjubKey.publicPointBytes.length);
+    sCombined.set(pubBytes, rHash.length);
+    sCombined.set(msgBytes, rHash.length + pubBytes.length);
 
     const sHash = new Uint8Array(await crypto.subtle.digest("SHA-256", sCombined));
 

@@ -120,6 +120,19 @@ class ProofCashWalletEngine {
           balance_pJ: BigInt(parsed.balance_pJ || "0"),
           accounts: parsed.accounts || []
         };
+        if (parsed.activeSessionKey) {
+          const secretHex = parsed.activeSessionKey.secretScalarHex;
+          const pubHex = parsed.activeSessionKey.publicPointHex;
+          if (secretHex && pubHex) {
+            this.state.activeSessionKey = {
+              ...parsed.activeSessionKey,
+              secretScalarBytes: PasskeyCrypto.hexToBuffer(secretHex),
+              publicPointBytes: PasskeyCrypto.hexToBuffer(pubHex)
+            };
+          } else {
+            this.state.activeSessionKey = null;
+          }
+        }
         if (this.state.txHistory) {
           this.state.txHistory.forEach(tx => {
             if (tx && tx.txid) this.processedTxids.add(tx.txid);
@@ -176,6 +189,7 @@ class ProofCashWalletEngine {
         balance_pJ: this.state.balance_pJ.toString(),
         accounts: this.state.accounts,
         activeSessionKey: this.state.activeSessionKey ? {
+          secretScalarHex: this.state.activeSessionKey.secretScalarHex || (this.state.activeSessionKey.secretScalarBytes ? PasskeyCrypto.bufferToHex(this.state.activeSessionKey.secretScalarBytes) : null),
           publicPointHex: this.state.activeSessionKey.publicPointHex,
           x: this.state.activeSessionKey.x,
           y: this.state.activeSessionKey.y
@@ -535,6 +549,8 @@ class ProofCashWalletEngine {
 
   isSessionValid() {
     if (!this.state.activeSessionKey || !this.state.activeDelegation) return false;
+    const hasSecret = Boolean(this.state.activeSessionKey.secretScalarBytes || this.state.activeSessionKey.secretScalarHex);
+    if (!hasSecret) return false;
     return this.state.currentBlockHeight < this.state.activeDelegation.expirationHeight;
   }
 
@@ -565,10 +581,20 @@ class ProofCashWalletEngine {
     );
 
     // 3. Sign with BabyJubjub Ephemeral Session Key (< 45 ms)
-    const sigResult = await this.crypto.signSessionTransaction(
-      this.state.activeSessionKey,
-      txHash
-    );
+    let sigResult;
+    try {
+      sigResult = await this.crypto.signSessionTransaction(
+        this.state.activeSessionKey,
+        txHash
+      );
+    } catch (err) {
+      console.warn("[ProofCash] Session sign failed, renewing authorization:", err);
+      await this.authorizeSessionKey(144);
+      sigResult = await this.crypto.signSessionTransaction(
+        this.state.activeSessionKey,
+        txHash
+      );
+    }
 
     // 4. Deduct sender balance
     this.state.balance_pJ -= (amount_pJ + fee_pJ);
