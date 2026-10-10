@@ -138,7 +138,7 @@ class PasskeyCrypto {
           rawIdHex: PasskeyCrypto.bufferToHex(credential.rawId),
           sec1PubkeyHex: sec1PubkeyHex || "04" + PasskeyCrypto.bufferToHex(crypto.getRandomValues(new Uint8Array(64))),
           isHardwareEnclave: true,
-          authenticatorType: "Hardware Secure Enclave (FaceID/TouchID/Hello)",
+          authenticatorType: "Hardware Secure Enclave (Platform Biometrics)",
           timestamp: Date.now()
         };
       } catch (err) {
@@ -237,7 +237,7 @@ class PasskeyCrypto {
           expirationHeight: expirationHeight,
           derSignatureHex: PasskeyCrypto.bufferToHex(derSignature),
           parsedSig: this.parseDerSignature(derSignature),
-          method: "WebAuthn Biometric Assertion (FaceID/TouchID)",
+          method: "WebAuthn Biometric Assertion (Platform Enclave)",
           timestamp: Date.now()
         };
       } catch (err) {
