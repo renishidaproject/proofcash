@@ -542,6 +542,88 @@ class PasskeyCrypto {
       remainingBlocks: isExpired ? 0 : Number(delta)
     };
   }
+
+  /**
+   * Encodes a 32-byte (256-bit) entropy Uint8Array into 24 BIP-39 words with checksum.
+   */
+  static async entropyToMnemonic(entropyBytes) {
+    if (!entropyBytes || entropyBytes.length !== 32) {
+      throw new Error("Entropy must be exactly 32 bytes (256 bits).");
+    }
+    const wordsList = (typeof window !== 'undefined' && window.BIP39_EN_WORDS) ? window.BIP39_EN_WORDS : (typeof BIP39_EN_WORDS !== 'undefined' ? BIP39_EN_WORDS : null);
+    if (!wordsList || wordsList.length !== 2048) {
+      throw new Error("Canonical BIP-39 English wordlist is not loaded.");
+    }
+
+    const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", entropyBytes));
+    const checksumByte = hash[0];
+
+    const totalBytes = new Uint8Array(33);
+    totalBytes.set(entropyBytes, 0);
+    totalBytes[32] = checksumByte;
+
+    const words = [];
+    for (let i = 0; i < 24; i++) {
+      const bitStart = i * 11;
+      const byteStart = Math.floor(bitStart / 8);
+      const bitOffset = bitStart % 8;
+
+      const b0 = totalBytes[byteStart];
+      const b1 = byteStart + 1 < totalBytes.length ? totalBytes[byteStart + 1] : 0;
+      const b2 = byteStart + 2 < totalBytes.length ? totalBytes[byteStart + 2] : 0;
+
+      const combined32 = (b0 << 16) | (b1 << 8) | b2;
+      const shift = 24 - 11 - bitOffset;
+      const index = (combined32 >> shift) & 0x7FF;
+
+      words.push(wordsList[index]);
+    }
+    return words;
+  }
+
+  /**
+   * Decodes 24 BIP-39 words into 32-byte (256-bit) entropy Uint8Array with checksum verification.
+   */
+  static async mnemonicToEntropy(words) {
+    if (!Array.isArray(words) || words.length !== 24) {
+      throw new Error("Mnemonic phrase must contain exactly 24 words.");
+    }
+    const wordsList = (typeof window !== 'undefined' && window.BIP39_EN_WORDS) ? window.BIP39_EN_WORDS : (typeof BIP39_EN_WORDS !== 'undefined' ? BIP39_EN_WORDS : null);
+    if (!wordsList || wordsList.length !== 2048) {
+      throw new Error("Canonical BIP-39 English wordlist is not loaded.");
+    }
+
+    const indices = words.map(w => {
+      const clean = w.toLowerCase().trim();
+      const idx = wordsList.indexOf(clean);
+      if (idx === -1) throw new Error(`Invalid BIP-39 word: "${clean}"`);
+      return idx;
+    });
+
+    const totalBytes = new Uint8Array(33);
+    for (let i = 0; i < 24; i++) {
+      const idx = indices[i];
+      const bitStart = i * 11;
+      for (let b = 0; b < 11; b++) {
+        const bitVal = (idx >> (10 - b)) & 1;
+        const targetBit = bitStart + b;
+        const byteIdx = Math.floor(targetBit / 8);
+        const bitInByte = 7 - (targetBit % 8);
+        if (bitVal) {
+          totalBytes[byteIdx] |= (1 << bitInByte);
+        }
+      }
+    }
+
+    const recoveredEntropy = totalBytes.slice(0, 32);
+    const recoveredChecksum = totalBytes[32];
+
+    const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", recoveredEntropy));
+    if (hash[0] !== recoveredChecksum) {
+      throw new Error("Checksum verification failed: The 24-word phrase is invalid or in the wrong order.");
+    }
+    return recoveredEntropy;
+  }
 }
 
 // Global export for wallet use

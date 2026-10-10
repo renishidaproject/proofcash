@@ -1007,12 +1007,15 @@
           <label class="font-semibold text-gray-300">Set Backup Passphrase (min 6 chars):</label>
           <input type="password" id="input-export-passphrase" placeholder="Choose a secure passphrase..." class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500">
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <button id="btn-export-download" class="py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
-            <span>💾</span> <span>Download File (.json)</span>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <button id="btn-export-download" class="py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+            <span>💾</span> <span>Download File</span>
           </button>
-          <button id="btn-export-cloud" class="py-2.5 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer" title="Save encrypted backup to Google Drive or Apple iCloud">
-            <span>☁️</span> <span>Save to Google / Apple Cloud</span>
+          <button id="btn-export-cloud" class="py-2.5 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer" title="Save encrypted backup to Google Drive or Apple iCloud">
+            <span>☁️</span> <span>Save to Cloud</span>
+          </button>
+          <button id="btn-export-copy" class="py-2.5 px-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer" title="Copy encrypted keystore JSON to clipboard">
+            <span>📋</span> <span>Copy JSON</span>
           </button>
         </div>
 
@@ -1030,25 +1033,53 @@
             <span class="px-2 py-0.5 rounded bg-cyan-900/50 border border-cyan-700/60">🔐 End-to-End Encrypted</span>
           </div>
         </div>
-        <div id="export-status-msg" class="hidden text-[11px] font-mono text-emerald-400 p-2 bg-gray-950 rounded border border-gray-900"></div>
+        <div id="export-status-msg" class="hidden text-[11px] font-mono text-emerald-400 p-2.5 bg-gray-950 rounded border border-gray-900 leading-relaxed"></div>
       </div>
 
-      <!-- Section 2: Restore from Backup File -->
+      <!-- Section 2: Restore from Backup File or 24-Word Seed -->
       <div id="section-backup-import" class="space-y-3 text-xs hidden">
-        <p class="text-gray-400">
-          Select an exported ProofCash keystore <code class="text-emerald-400">.json</code> file and provide your passphrase to recover all accounts and funds.
-        </p>
-        <div class="space-y-1">
-          <label class="font-semibold text-gray-300">Select Backup File:</label>
-          <input type="file" id="input-import-file" accept=".json" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-gray-300 cursor-pointer">
+        <!-- Sub-selector: File vs 24-Word Seed -->
+        <div class="flex bg-gray-950 p-1 rounded-xl border border-gray-800 gap-1">
+          <button id="restore-mode-file" class="flex-1 py-1.5 rounded-lg bg-cyan-600 text-white font-bold text-xs transition-all cursor-pointer">
+            📁 Keystore File (.json)
+          </button>
+          <button id="restore-mode-mnemonic" class="flex-1 py-1.5 rounded-lg bg-transparent text-gray-400 hover:text-gray-200 font-medium text-xs transition-all cursor-pointer">
+            🔑 24-Word Recovery Seed
+          </button>
         </div>
-        <div class="space-y-1">
-          <label class="font-semibold text-gray-300">Decryption Passphrase:</label>
-          <input type="password" id="input-import-passphrase" placeholder="Enter your passphrase..." class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500">
+
+        <!-- Mode A: Keystore File -->
+        <div id="restore-panel-file" class="space-y-3">
+          <p class="text-gray-400">
+            Select an exported ProofCash keystore <code class="text-emerald-400">.json</code> file and provide your passphrase to recover all accounts and funds.
+          </p>
+          <div class="space-y-1">
+            <label class="font-semibold text-gray-300">Select Backup File:</label>
+            <input type="file" id="input-import-file" accept=".json" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-gray-300 cursor-pointer">
+          </div>
+          <div class="space-y-1">
+            <label class="font-semibold text-gray-300">Decryption Passphrase:</label>
+            <input type="password" id="input-import-passphrase" placeholder="Enter your passphrase..." class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500">
+          </div>
+          <button id="btn-import-restore" class="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-black font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+            <span>📥</span> Decrypt &amp; Restore Vault
+          </button>
         </div>
-        <button id="btn-import-restore" class="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-black font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
-          <span>📥</span> Decrypt &amp; Restore Vault
-        </button>
+
+        <!-- Mode B: 24-Word Mnemonic -->
+        <div id="restore-panel-mnemonic" class="space-y-3 hidden">
+          <p class="text-gray-400">
+            Type or paste your 24-word ZK recovery seed separated by spaces. Your deterministic root key, address, and balance history will be derived and recovered.
+          </p>
+          <div class="space-y-1">
+            <label class="font-semibold text-gray-300">24-Word Seed Phrase:</label>
+            <textarea id="input-import-mnemonic" rows="3" placeholder="e.g. apple banana castle drift eagle ... (24 words)" class="w-full bg-gray-950 border border-gray-800 rounded-lg p-2.5 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 placeholder-gray-600 resize-none"></textarea>
+          </div>
+          <button id="btn-import-mnemonic-restore" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+            <span>🔑</span> Restore Vault from 24 Words
+          </button>
+        </div>
+
         <div id="import-status-msg" class="hidden text-[11px] font-mono p-2.5 bg-gray-950 rounded border"></div>
       </div>
 
@@ -1326,7 +1357,7 @@
           <div class="p-3 rounded-xl bg-gray-950 border border-gray-850 space-y-1 guide-item">
             <div class="font-bold text-white text-xs">Q: What happens if I clear my browser cookies or switch to a new phone?</div>
             <p class="text-gray-400 text-[11px]">
-              Because ProofCash is a decentralized PWA running in your browser, always use <strong>Backup &amp; Recovery</strong> to export your encrypted keystore file or save it to Google Drive / Apple iCloud. You can restore your vaults in seconds on any device.
+              Because ProofCash is a decentralized PWA running in your browser, always use <strong>Backup &amp; Recovery</strong> to export your encrypted keystore file, save it to Google Drive / Apple iCloud, or write down your unique <strong>24-Word ZK Recovery Phrase</strong>. You can restore your vaults in seconds on any device with either method.
             </p>
           </div>
 
@@ -1392,8 +1423,9 @@
   <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-2 pointer-events-none"></div>
 
   <!-- Core Scripts with Cache Buster -->
-  <script src="passkey-crypto.js?v=1.4.0"></script>
-  <script src="wallet-engine.js?v=1.4.0"></script>
+  <script src="bip39-words.js?v=1.4.3"></script>
+  <script src="passkey-crypto.js?v=1.4.3"></script>
+  <script src="wallet-engine.js?v=1.4.3"></script>
 
   <script>
     // --- UI Controller & Event Wireup ---
@@ -1896,7 +1928,7 @@
           const mnemonicGrid = document.getElementById('mnemonic-grid');
           if (mnemonicGrid) {
             mnemonicGrid.innerHTML = '';
-            const words = wallet.getZkRecoveryMnemonic();
+            const words = await wallet.getZkRecoveryMnemonic();
             words.forEach((w, idx) => {
               const cell = document.createElement('div');
               cell.className = 'p-1.5 rounded bg-gray-900/80 border border-gray-800 text-gray-300 text-[10px] flex items-center justify-between';
@@ -1972,37 +2004,89 @@
             const fileName = `proofcash-backup-${(wallet.state.address || 'vault').substring(0, 10)}-${Date.now()}.json`;
             const file = new File([envelopeJson], fileName, { type: 'application/json' });
 
+            let sharedNatively = false;
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
-              await navigator.share({
-                title: 'ProofCash Encrypted Vault Keystore',
-                text: 'Save this encrypted ProofCash vault backup to Google Drive or Apple iCloud Drive.',
-                files: [file]
-              });
-              showToast("✓ Shared to Cloud Storage!", 'cyan');
-            } else {
-              // Fallback to trigger download and show guidance
-              const blob = new Blob([envelopeJson], { type: 'application/json' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = fileName;
-              a.click();
-              URL.revokeObjectURL(url);
-              if (statusEl) {
-                statusEl.innerHTML = "✓ Keystore downloaded! Move this <code class='text-white font-bold'>" + fileName + "</code> into your <strong>Google Drive</strong> or <strong>Apple iCloud Drive</strong> folder for safe keeping.";
-                statusEl.classList.remove('hidden');
+              try {
+                await navigator.share({
+                  title: 'ProofCash Encrypted Vault Keystore',
+                  text: 'Save this encrypted ProofCash vault backup to Google Drive or Apple iCloud Drive.',
+                  files: [file]
+                });
+                sharedNatively = true;
+                showToast("✓ Shared to Cloud Storage!", 'cyan');
+                if (statusEl) {
+                  statusEl.innerHTML = "✓ Handed over to system share. Select <strong>Google Drive</strong> or <strong>iCloud Drive</strong> in the options.";
+                  statusEl.classList.remove('hidden');
+                }
+                return;
+              } catch (shareErr) {
+                // If user deliberately cancelled the share picker dialog
+                if (shareErr.name === 'AbortError') return;
+                // Otherwise (e.g. Windows Chrome DOMException Permission denied), gracefully fall through to direct file download
               }
-              showToast("✓ Downloaded: Move to Google Drive / iCloud Drive", 'cyan');
             }
+
+            // Fallback: Trigger direct file download and provide clear instructions for Google Drive / iCloud Drive
+            const blob = new Blob([envelopeJson], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+            if (statusEl) {
+              statusEl.innerHTML = "✓ <strong>Keystore file saved!</strong><br>To backup to cloud: Move <code class='text-white font-bold'>" + fileName + "</code> into your <strong>Google Drive</strong> or <strong>Apple iCloud Drive</strong> folder for safe keeping.";
+              statusEl.classList.remove('hidden');
+            }
+            showToast("✓ Keystore Downloaded: Move to Drive/iCloud", 'cyan');
           } catch (err) {
-            if (err.name !== 'AbortError') {
-              alert(err.message);
-            }
+            alert(err.message);
           }
         });
       }
 
-      // Restore backup
+      // Copy encrypted keystore JSON to clipboard
+      const btnExportCopy = document.getElementById('btn-export-copy');
+      if (btnExportCopy) {
+        btnExportCopy.addEventListener('click', async () => {
+          const pass = document.getElementById('input-export-passphrase').value;
+          const statusEl = document.getElementById('export-status-msg');
+          try {
+            const envelopeJson = await wallet.exportEncryptedBackup(pass);
+            await navigator.clipboard.writeText(envelopeJson);
+            if (statusEl) {
+              statusEl.innerText = "✓ Encrypted keystore JSON copied to clipboard! Paste and store it into your password manager or secure notes.";
+              statusEl.classList.remove('hidden');
+            }
+            showToast("✓ Keystore JSON Copied!", 'emerald');
+          } catch (err) {
+            alert(err.message);
+          }
+        });
+      }
+
+      // Restore Mode Subtabs (File vs 24-Word Seed)
+      const restoreModeFile = document.getElementById('restore-mode-file');
+      const restoreModeMnemonic = document.getElementById('restore-mode-mnemonic');
+      const restorePanelFile = document.getElementById('restore-panel-file');
+      const restorePanelMnemonic = document.getElementById('restore-panel-mnemonic');
+
+      if (restoreModeFile && restoreModeMnemonic) {
+        restoreModeFile.addEventListener('click', () => {
+          restoreModeFile.className = 'flex-1 py-1.5 rounded-lg bg-cyan-600 text-white font-bold text-xs transition-all cursor-pointer';
+          restoreModeMnemonic.className = 'flex-1 py-1.5 rounded-lg bg-transparent text-gray-400 hover:text-gray-200 font-medium text-xs transition-all cursor-pointer';
+          if (restorePanelFile) restorePanelFile.classList.remove('hidden');
+          if (restorePanelMnemonic) restorePanelMnemonic.classList.add('hidden');
+        });
+        restoreModeMnemonic.addEventListener('click', () => {
+          restoreModeMnemonic.className = 'flex-1 py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-xs transition-all cursor-pointer';
+          restoreModeFile.className = 'flex-1 py-1.5 rounded-lg bg-transparent text-gray-400 hover:text-gray-200 font-medium text-xs transition-all cursor-pointer';
+          if (restorePanelMnemonic) restorePanelMnemonic.classList.remove('hidden');
+          if (restorePanelFile) restorePanelFile.classList.add('hidden');
+        });
+      }
+
+      // Restore from Keystore File (.json)
       const btnImportRestore = document.getElementById('btn-import-restore');
       if (btnImportRestore) {
         btnImportRestore.addEventListener('click', async () => {
@@ -2041,17 +2125,52 @@
         });
       }
 
+      // Restore from 24-Word ZK Recovery Mnemonic
+      const btnImportMnemonicRestore = document.getElementById('btn-import-mnemonic-restore');
+      if (btnImportMnemonicRestore) {
+        btnImportMnemonicRestore.addEventListener('click', async () => {
+          const mnemonicInput = document.getElementById('input-import-mnemonic');
+          const statusEl = document.getElementById('import-status-msg');
+          const rawMnemonic = mnemonicInput ? mnemonicInput.value : '';
+
+          try {
+            btnImportMnemonicRestore.disabled = true;
+            btnImportMnemonicRestore.innerText = 'Verifying Checksum & Restoring...';
+
+            const res = await wallet.importZkRecoveryMnemonic(rawMnemonic);
+            if (statusEl) {
+              statusEl.className = 'text-[11px] font-mono p-2.5 bg-emerald-950/40 text-emerald-300 rounded border border-emerald-500/40';
+              statusEl.innerText = `✓ Restored successfully! Primary Address: ${res.restoredAddress}`;
+              statusEl.classList.remove('hidden');
+            }
+            showToast("✓ Vault Restored from 24-Word Seed!", 'emerald');
+            setTimeout(() => {
+              modalBackup.classList.add('hidden');
+            }, 1800);
+          } catch (err) {
+            if (statusEl) {
+              statusEl.className = 'text-[11px] font-mono p-2.5 bg-rose-950/40 text-rose-300 rounded border border-rose-500/40';
+              statusEl.innerText = `✕ Error: ${err.message}`;
+              statusEl.classList.remove('hidden');
+            }
+          } finally {
+            btnImportMnemonicRestore.disabled = false;
+            btnImportMnemonicRestore.innerHTML = '<span>🔑</span> Restore Vault from 24 Words';
+          }
+        });
+      }
+
       // Copy Mnemonic
       const btnCopyMnemonic = document.getElementById('btn-copy-mnemonic');
       if (btnCopyMnemonic) {
-        btnCopyMnemonic.addEventListener('click', () => {
-          const words = wallet.getZkRecoveryMnemonic().join(' ');
-          navigator.clipboard.writeText(words);
+        btnCopyMnemonic.addEventListener('click', async () => {
+          const words = (await wallet.getZkRecoveryMnemonic()).join(' ');
+          await navigator.clipboard.writeText(words);
           btnCopyMnemonic.innerText = '✓ 24-Word Seed Copied!';
           setTimeout(() => {
             btnCopyMnemonic.innerText = '📋 Copy 24-Word Seed to Clipboard';
-          }, 1500);
-          showToast("24-Word Seed Copied to Clipboard", 'amber');
+          }, 2500);
+          showToast("✓ 24-Word Seed Copied to Clipboard", 'amber');
         });
       }
 

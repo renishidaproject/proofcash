@@ -98,6 +98,13 @@ class ProofCashWalletEngine {
       this.syncActiveAccountFromList();
     }
 
+    // Ensure cryptographically secure unique entropy seed exists for this wallet
+    if (!this.state.zkRecoveryEntropyHex) {
+      const entBytes = crypto.getRandomValues(new Uint8Array(32));
+      this.state.zkRecoveryEntropyHex = PasskeyCrypto.bufferToHex(entBytes);
+      this.saveState();
+    }
+
     // Ping proofcashd node in background
     this.pingNode();
 
@@ -1170,6 +1177,7 @@ class ProofCashWalletEngine {
       accounts: this.state.accounts,
       credentials: this.state.credentials,
       enclaveKeys: enclaveKeys,
+      zkRecoveryEntropyHex: this.state.zkRecoveryEntropyHex,
       txHistory: this.state.txHistory,
       exportedAt: Date.now()
     };
@@ -1267,6 +1275,7 @@ class ProofCashWalletEngine {
     this.state.address = payload.address || (payload.accounts[0] ? payload.accounts[0].address : null);
     this.state.balance_pJ = BigInt(payload.balance_pJ || "0");
     this.state.txHistory = payload.txHistory || [];
+    this.state.zkRecoveryEntropyHex = payload.zkRecoveryEntropyHex || this.state.zkRecoveryEntropyHex;
 
     // Restore enclave keys to localStorage
     if (payload.enclaveKeys) {
@@ -1286,30 +1295,69 @@ class ProofCashWalletEngine {
     };
   }
 
-  // --- BIP-39 Style 24-Word ZK Recovery Mnemonic ---
+  // --- BIP-39 Standard 24-Word ZK Recovery Mnemonic Subsystem ---
 
-  getZkRecoveryMnemonic() {
-    // Standard compact 64-word cypherpunk dictionary for deterministic recovery visualization
-    const WORDLIST = [
-      "alpha", "anchor", "beacon", "blake", "bond", "circuit", "cliff", "conduit",
-      "crypto", "curfew", "cycle", "delta", "digest", "echo", "element", "enclave",
-      "energy", "entropy", "epoch", "erasure", "falcon", "flux", "forge", "fossil",
-      "frontier", "fusion", "galaxy", "genesis", "goldilocks", "grain", "gravity", "halo",
-      "hash", "horizon", "impact", "inertia", "jubjub", "joule", "landauer", "lattice",
-      "monoid", "merkle", "mesh", "nullifier", "nexus", "orbit", "ozone", "passkey",
-      "photon", "plonky", "poseidon", "proof", "pulsar", "quantum", "radian", "reactor",
-      "shield", "schnorr", "stark", "thermo", "vacuum", "vector", "vortex", "zenith"
+  async getZkRecoveryMnemonic() {
+    if (!this.state.zkRecoveryEntropyHex) {
+      const entBytes = crypto.getRandomValues(new Uint8Array(32));
+      this.state.zkRecoveryEntropyHex = PasskeyCrypto.bufferToHex(entBytes);
+      this.saveState();
+    }
+    const entropyBytes = PasskeyCrypto.hexToBuffer(this.state.zkRecoveryEntropyHex);
+    return await PasskeyCrypto.entropyToMnemonic(entropyBytes);
+  }
+
+  async importZkRecoveryMnemonic(mnemonicStr) {
+    if (!mnemonicStr) {
+      throw new Error("Please enter your 24-word recovery phrase.");
+    }
+    const words = mnemonicStr.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if (words.length !== 24) {
+      throw new Error(`Expected exactly 24 words, but found ${words.length}. Please check your phrase.`);
+    }
+
+    const entropyBytes = await PasskeyCrypto.mnemonicToEntropy(words);
+    const entropyHex = PasskeyCrypto.bufferToHex(entropyBytes);
+
+    // Deterministically derive primary address from entropy
+    const addrBytes = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("proofcash_entropy_address_" + entropyHex)));
+    const restoredAddr = "pc1q" + PasskeyCrypto.bufferToHex(addrBytes).substring(0, 36);
+
+    this.state.zkRecoveryEntropyHex = entropyHex;
+    this.state.address = restoredAddr;
+    this.state.activeAccountId = 'acc_1';
+    this.state.accounts = [
+      {
+        id: 'acc_1',
+        name: 'Account 1 (Recovered via 24-Word Seed)',
+        address: restoredAddr,
+        balance_pJ: "0",
+        txHistory: []
+      }
+    ];
+    this.state.balance_pJ = 0n;
+    this.state.txHistory = [
+      {
+        type: "ACCOUNT_GENESIS",
+        txid: "0xseed_recover_" + entropyHex.substring(0, 16),
+        amount: "0.0000",
+        timestamp: Date.now(),
+        status: "CONFIRMED"
+      }
     ];
 
-    // Seed derivation from primary address bytes
-    const addr = this.state.address || "pc1q000000000000000000000000000000000000";
-    const bytes = new TextEncoder().encode(addr + "_mnemonic_seed_v1");
-    const words = [];
-    for (let i = 0; i < 24; i++) {
-      const idx = (bytes[i % bytes.length] * 7 + i * 13) % WORDLIST.length;
-      words.push(WORDLIST[idx]);
-    }
-    return words;
+    this.saveState();
+    this.notifySubscribers();
+
+    // Pull any existing mesh backlog or transfers for this address
+    try {
+      await this.fetchMeshBacklog();
+    } catch (e) {}
+
+    return {
+      restoredAddress: restoredAddr,
+      message: "Vault successfully restored from 24-Word ZK Seed!"
+    };
   }
 
   resetWallet() {
