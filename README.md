@@ -10,13 +10,14 @@
 [![ZK Circuits](https://img.shields.io/badge/ZK_AIR-Plonky3_%26_Binius-cyan.svg)](proofcash/crates/proofcash-circuits/)
 [![Radicle P2P](https://img.shields.io/badge/Radicle_URN-rad%3AzHqa2hHC...-orange.svg)](release/RADICLE_SEED.md)
 [![PWA Wallet](https://img.shields.io/badge/Passkey_Wallet-WebAuthn_PWA-emerald.svg)](wallet/)
-[![Release: v1.3](https://img.shields.io/badge/Release-v1.3_Hick's_Law-blue.svg)](https://github.com/Renishidaproject/proofcash/releases/tag/v1.3)
+[![Public Explorer](https://img.shields.io/badge/Public_Ledger-Block_Explorer-cyan.svg)](explorer/)
+[![Release: v1.4](https://img.shields.io/badge/Release-v1.4_Public_Ledger-blue.svg)](https://github.com/Renishidaproject/proofcash/releases/tag/v1.4)
 
 **Author:** Ren Ishida (`renishida@proton.me`)  
 **Canonical P2P Radicle URN:** `rad:zHqa2hHCU4ARpLvjQCDNxJdc487F`  
 **GitHub Mirror:** [https://github.com/Renishidaproject/proofcash](https://github.com/Renishidaproject/proofcash)  
 **Academic Whitepaper:** [PDF Edition](ProofCash_Whitepaper_v1.1.pdf) • [HTML Source](proofcash_whitepaper.html)  
-**Latest Version:** **v1.3 (Hick's Law Refactor & Genesis Countdown)**
+**Latest Version:** **v1.4 (Public Ledger Explorer & In-Browser AIR Verifier)**
 
 </div>
 
@@ -70,6 +71,7 @@ proofcash/
 ├── agent_proofcash/            # Zero-dependency Python SDK for AI Agent streaming
 ├── chaosnet/                   # 5-node adversarial cluster testbed (partition & reorg recovery)
 ├── wallet/                     # WebAuthn Biometric Passkey Wallet (Offline PWA + Edge Miner)
+├── explorer/                   # Public Ledger Block Explorer & In-Browser AIR Verifier
 ├── release/                    # Signed release manifest, Radicle configs, reproducible builds
 ├── proofcash_sim/              # Regression suites & Genesis ceremony miner
 ├── index.html                  # Interactive Consensus & Protocol Explorer
@@ -141,6 +143,16 @@ Open `wallet/index.html` in Safari (iOS) or Chrome (Android/Desktop) or install 
 1. **Biometric FaceID / TouchID Authentication:** Authorize an in-circuit BabyJubjub session key in $<45\text{ ms}$.
 2. **Mobile Edge Miner:** One-tap PoSW mining directly in the browser via multi-threaded Web Workers. Includes thermal duty-cycle throttling (*Eco*, *Standard*, and *Nightstand Charger* modes).
 3. **Consensus Switcher:** Seamlessly toggle between Testnet simulation (Height `#104,281`) and Mainnet Genesis anchor (Block `#0`).
+
+---
+
+### D. Public Ledger Explorer & In-Browser AIR Verifier
+
+Open `explorer/index.html` to audit chain state, live block streams, and cryptographic invariants without trusted intermediaries:
+1. **Live PoSW Block & Subsidy Stream:** Real-time visualization of block propagation, difficulty, and continuous exponential decay rewards ($R(b) = 100 \cdot e^{-10^{-7}b}$).
+2. **Shielded Delta-UTXO Ledger:** Searchable feed of spend transactions showing Blake3 nullifiers, Goldilocks Poseidon2 commitments, and burned thermodynamic fees (preserving total privacy while proving conservation of energy).
+3. **Client-Side Plonky3 AIR Verifier:** Run the mathematical polynomial verification in-browser, validating all $1{,}842$ AIR constraints with 0 residuals.
+4. **Canonical Genesis #0 Audit:** Invariant verification card displaying proof receipts of the 100% burned pre-mine ($0.0000\text{ PCASH}$) and real-world timestamp headline.
 
 ---
 

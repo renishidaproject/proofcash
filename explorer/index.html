@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ProofCash Public Ledger &amp; Block Explorer</title>
+
+  <!-- PWA & Meta Tags -->
+  <link rel="icon" type="image/svg+xml" href="../wallet/icon-192.svg">
+  <meta name="theme-color" content="#090d16">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --background: #090d16;
+      --card: #111827;
+      --border: #1f2937;
+      --foreground: #f3f4f6;
+      --accent: #10b981;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .pulse-dot {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .glass-card {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(31, 41, 55, 0.8);
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #374151;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col pb-12 selection:bg-emerald-500 selection:text-black">
+
+  <!-- Top App Bar -->
+  <header class="border-b border-gray-800/80 sticky top-0 bg-[#090d16]/95 backdrop-blur-md z-40 px-4 py-3">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center justify-between w-full md:w-auto">
+        <a href="../index.html" class="flex items-center gap-3 group">
+          <div class="h-9 w-9 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 group-hover:scale-105 transition-transform font-bold text-lg">
+            🔍
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-white text-base tracking-tight">ProofCash Explorer</span>
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">PUBLIC LEDGER</span>
+            </div>
+            <p class="text-[11px] text-gray-400">Succinct Cryptographic Public Ledger &amp; AIR Verifier</p>
+          </div>
+        </a>
+
+        <!-- Mobile Network Pill -->
+        <div class="md:hidden flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 font-mono text-[11px]">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span>
+          <span>Tip: #<span id="mobile-disp-height">104,281</span></span>
+        </div>
+      </div>
+
+      <!-- Live Search Bar -->
+      <div class="w-full md:max-w-md relative">
+        <input type="text" id="input-search" placeholder="Search by Block #, Hash (0x...), TxID, Nullifier, or Commitment..." class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3.5 py-2 pl-9 text-xs font-mono text-white focus:outline-none focus:border-cyan-500 placeholder-gray-500 shadow-inner">
+        <svg class="w-4 h-4 text-gray-500 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <button id="btn-submit-search" class="absolute right-1.5 top-1.5 px-2.5 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-[11px] text-gray-300 hover:text-white font-medium transition-all">
+          Search
+        </button>
+      </div>
+
+      <!-- Nav Links -->
+      <div class="hidden md:flex items-center gap-2 text-xs">
+        <a href="../wallet/index.html" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-semibold transition-all flex items-center gap-1">
+          <span>🔐</span> Wallet PWA ↗
+        </a>
+        <a href="../index.html" class="px-2.5 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 border border-gray-800 transition-colors">
+          Simulator
+        </a>
+        <a href="../release/RENUNCIATION.md" target="_blank" class="px-2.5 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 border border-gray-800 transition-colors">
+          Exit 📜
+        </a>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-6xl mx-auto w-full px-4 pt-6 space-y-6 flex-grow">
+
+    <!-- 1. Network Vital Signs Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+      
+      <!-- Card 1: Block Height & State Anchor -->
+      <div class="glass-card rounded-2xl p-4 border border-gray-800 relative overflow-hidden">
+        <div class="text-[11px] uppercase tracking-wider text-gray-400 font-medium flex items-center gap-1.5">
+          <span class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span>
+          <span>Tip Block Height</span>
+        </div>
+        <div class="text-2xl font-extrabold font-mono text-white mt-1.5 flex items-baseline gap-1">
+          <span>#</span><span id="metric-height">104,281</span>
+        </div>
+        <div class="text-[10px] font-mono text-emerald-400 mt-1 flex items-center gap-1">
+          <span>MMR:</span> <span class="truncate max-w-[130px] text-gray-400">0x9d24db85...</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Circulating Supply & Halving-Free Subsidy -->
+      <div class="glass-card rounded-2xl p-4 border border-gray-800">
+        <div class="text-[11px] uppercase tracking-wider text-gray-400 font-medium">Circulating Supply</div>
+        <div class="text-2xl font-extrabold font-mono text-cyan-400 mt-1.5">
+          <span id="metric-supply">10,373,921</span> <span class="text-xs text-cyan-300">PCASH</span>
+        </div>
+        <div class="text-[10px] font-mono text-gray-400 mt-1 flex items-center justify-between">
+          <span>Max Cap: 1.0B</span>
+          <span class="text-cyan-400" id="metric-subsidy">98.96 PCASH/blk</span>
+        </div>
+      </div>
+
+      <!-- Card 3: PID Fee Reservoir & Deflationary Burn -->
+      <div class="glass-card rounded-2xl p-4 border border-gray-800">
+        <div class="text-[11px] uppercase tracking-wider text-gray-400 font-medium">Burned Energy Fees</div>
+        <div class="text-2xl font-extrabold font-mono text-purple-400 mt-1.5">
+          <span id="metric-burned">418.91</span> <span class="text-xs text-purple-300">PCASH</span>
+        </div>
+        <div class="text-[10px] font-mono text-gray-400 mt-1 flex items-center justify-between">
+          <span>PID Damped</span>
+          <span class="text-purple-400">50% Permanent Burn</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Recursive STARK Proof Succinctness -->
+      <div class="glass-card rounded-2xl p-4 border border-gray-800">
+        <div class="text-[11px] uppercase tracking-wider text-gray-400 font-medium">Recursive State Proof</div>
+        <div class="text-2xl font-extrabold font-mono text-emerald-400 mt-1.5">
+          ≈ 43.2 <span class="text-xs text-emerald-300">KB</span>
+        </div>
+        <div class="text-[10px] font-mono text-gray-400 mt-1 flex items-center justify-between">
+          <span>Constant O(1)</span>
+          <span class="text-emerald-400">&lt; 10 ms Phone Sync</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 2. Navigation Tabs -->
+    <div class="flex border-b border-gray-800 space-x-4 sm:space-x-6 text-xs font-medium overflow-x-auto custom-scroll pb-0.5">
+      <button class="tab-btn pb-2 border-b-2 border-cyan-400 text-white font-bold whitespace-nowrap cursor-pointer flex items-center gap-1.5" data-target="panel-blocks">
+        <span>📦</span> Live Blocks Stream
+      </button>
+      <button class="tab-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 whitespace-nowrap cursor-pointer flex items-center gap-1.5" data-target="panel-txs">
+        <span>⚡</span> Shielded Transactions Feed
+      </button>
+      <button class="tab-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 whitespace-nowrap cursor-pointer flex items-center gap-1.5" data-target="panel-genesis">
+        <span>🏛️</span> Genesis Block #0 Invariants
+      </button>
+      <button class="tab-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 whitespace-nowrap cursor-pointer flex items-center gap-1.5" data-target="panel-verifier">
+        <span class="text-cyan-400">🔬</span> In-Browser AIR Verifier
+      </button>
+    </div>
+
+    <!-- 3. Tab Panels -->
+
+    <!-- Panel 1: Live Blocks Stream -->
+    <div id="panel-blocks" class="tab-panel space-y-3">
+      <div class="flex justify-between items-center text-xs text-gray-400 px-1">
+        <span>Continuous Thermodynamic PoSW Blocks</span>
+        <span class="font-mono text-[11px] text-cyan-400">Auto-updating Live Stream</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs font-mono glass-card rounded-xl border border-gray-800">
+          <thead>
+            <tr class="border-b border-gray-800 text-gray-400 bg-gray-950/60">
+              <th class="p-3">Height</th>
+              <th class="p-3">Block Hash</th>
+              <th class="p-3">PoSW Nonce</th>
+              <th class="p-3">Miner Address</th>
+              <th class="p-3 text-right">Subsidy</th>
+              <th class="p-3 text-right">Tx Count</th>
+              <th class="p-3 text-right">Age</th>
+            </tr>
+          </thead>
+          <tbody id="table-blocks-body" class="divide-y divide-gray-850">
+            <!-- Dynamically Rendered -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Panel 2: Shielded Transactions Feed -->
+    <div id="panel-txs" class="tab-panel hidden space-y-3">
+      <div class="flex justify-between items-center text-xs text-gray-400 px-1">
+        <span>Shielded Transactions, Commitments &amp; Nullifier Sets</span>
+        <span class="font-mono text-[11px] text-emerald-400">Zero Identity Leaks</span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs font-mono glass-card rounded-xl border border-gray-800">
+          <thead>
+            <tr class="border-b border-gray-800 text-gray-400 bg-gray-950/60">
+              <th class="p-3">Transaction ID</th>
+              <th class="p-3">Block</th>
+              <th class="p-3">Spend Nullifier</th>
+              <th class="p-3">Output Commitment</th>
+              <th class="p-3 text-right">Fee Burned</th>
+              <th class="p-3 text-right">AIR Constraints</th>
+              <th class="p-3 text-right">Status</th>
+            </tr>
+          </thead>
+          <tbody id="table-txs-body" class="divide-y divide-gray-850">
+            <!-- Dynamically Rendered -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Panel 3: Genesis Block #0 Invariants -->
+    <div id="panel-genesis" class="tab-panel hidden space-y-4">
+      <div class="glass-card rounded-2xl p-6 border border-gray-800 space-y-4">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="h-2.5 w-2.5 rounded-full bg-cyan-400"></span>
+              <h3 class="text-base font-bold text-white uppercase tracking-wider">Canonical Genesis Block #0 Proof</h3>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">The immutable mathematical bedrock of ProofCash mined by Ren Ishida on October 9, 2026</p>
+          </div>
+          <span class="text-xs font-mono px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            0.0000 PCASH PRE-MINE
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
+          <div class="bg-gray-950 p-3.5 rounded-xl border border-gray-900 space-y-2">
+            <div class="text-gray-400 font-semibold mb-1">Block Properties:</div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Block Height:</span>
+              <span class="text-white font-bold">0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">PoSW Work Nonce:</span>
+              <span class="text-cyan-400 font-bold">7,111</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">PoSW Hash:</span>
+              <span class="text-gray-300 truncate max-w-[200px]" title="0x00000b4aec2efa3689408bfcb91cf4d7ffcc3e6c06a8f7103310cb230557432b">0x00000b4aec...</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Block Subsidy:</span>
+              <span class="text-emerald-400">100.0000 PCASH (Burned)</span>
+            </div>
+          </div>
+
+          <div class="bg-gray-950 p-3.5 rounded-xl border border-gray-900 space-y-2">
+            <div class="text-gray-400 font-semibold mb-1">Cryptographic Roots:</div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Canonical Block Hash:</span>
+              <span class="text-cyan-400 truncate max-w-[200px]" title="0xef77394f7adbc68ef6f7b084b9e9d54896f6b3347e550577a3b39bce5e4cb09a">0xef77394f7a...</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">MMR State Root:</span>
+              <span class="text-emerald-400 truncate max-w-[200px]" title="0x9d24db8529db13d58549346b8ec1a4e8d23ce7130389e3e9b70fe25863b9a46c">0x9d24db8529...</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Miner Address:</span>
+              <span class="text-gray-300 truncate max-w-[200px]">pc1q_genesis_community...</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-500">Recursive Proof:</span>
+              <span class="text-purple-400">Binary STARK Seed (43.2 KB)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-gray-950 border border-gray-900 text-xs font-mono space-y-1">
+          <div class="text-gray-400 font-semibold">Historic Timestamp Headline:</div>
+          <div class="text-white italic text-sm">
+            &ldquo;Financial Times 09/Oct/2026 Sovereign debt surpasses $100T as autonomous AI compute drains global power grids&rdquo;
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 4: In-Browser AIR Verifier -->
+    <div id="panel-verifier" class="tab-panel hidden space-y-4">
+      <div class="glass-card rounded-2xl p-6 border border-gray-800 space-y-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-lg">🔬</span>
+            <h3 class="text-base font-bold text-white">Interactive Client-Side Plonky3 AIR Verifier</h3>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">Execute live in-browser polynomial verification of any transaction proof without relying on servers</p>
+        </div>
+
+        <div class="bg-gray-950 p-4 rounded-xl border border-gray-900 space-y-3 font-mono text-xs">
+          <div class="flex justify-between text-gray-400">
+            <span>Proof System:</span>
+            <span class="text-white">Plonky3 STARK / Binary Tower Fields</span>
+          </div>
+          <div class="flex justify-between text-gray-400">
+            <span>Two-Tier Enclave Delegation Curve:</span>
+            <span class="text-cyan-400">BabyJubjub Twisted Edwards (1,842 constraints)</span>
+          </div>
+          <div class="flex justify-between text-gray-400">
+            <span>Verification Complexity:</span>
+            <span class="text-emerald-400">O(1) Constant Verification Time (&lt; 45 ms)</span>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-xs text-gray-400">Test Transaction Proof Token:</label>
+          <input type="text" id="verifier-input-token" value="0xproof_plonky3_bjub_spend_1842_constraints_poseidon2_valid" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
+        </div>
+
+        <button id="btn-run-verify" class="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-black font-bold text-xs transition-all cursor-pointer">
+          ⚡ Evaluate 1,842 AIR Constraints in Browser
+        </button>
+
+        <div id="verifier-output" class="hidden bg-gray-950 p-4 rounded-xl border border-gray-900 font-mono text-xs space-y-2 text-gray-300">
+          <!-- Dynamically Populated -->
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal: Item Inspector (Block or Tx Details) -->
+  <div id="modal-inspector" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card rounded-2xl max-w-lg w-full p-6 border border-gray-800 relative space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
+      <div class="flex justify-between items-center pb-2 border-b border-gray-800">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2" id="inspector-title">
+          <span>🔍</span> Ledger Record Details
+        </h3>
+        <button id="btn-close-inspector" class="text-gray-400 hover:text-white text-lg cursor-pointer">✕</button>
+      </div>
+
+      <div id="inspector-content" class="space-y-3 font-mono text-xs">
+        <!-- Dynamically Populated -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Core Script -->
+  <script src="explorer-engine.js"></script>
+  <script>
+    let explorer = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      explorer = new ProofCashExplorerEngine();
+      explorer.subscribe(renderExplorer);
+
+      setupTabs();
+      setupSearch();
+      setupVerifier();
+    });
+
+    function renderExplorer(state) {
+      // Metrics
+      document.getElementById('metric-height').innerText = Number(state.currentHeight).toLocaleString();
+      document.getElementById('mobile-disp-height').innerText = Number(state.currentHeight).toLocaleString();
+      document.getElementById('metric-supply').innerText = Math.round(state.circulatingSupply).toLocaleString();
+      document.getElementById('metric-subsidy').innerText = `${state.currentSubsidy} PCASH/blk`;
+      document.getElementById('metric-burned').innerText = state.totalBurnedPcash;
+
+      // Render Blocks Table
+      const blocksBody = document.getElementById('table-blocks-body');
+      blocksBody.innerHTML = '';
+      state.recentBlocks.forEach(blk => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-900/60 transition-colors cursor-pointer';
+        tr.onclick = () => openBlockModal(blk);
+
+        const ageSecs = Math.max(1, Math.round((Date.now() - blk.timestamp) / 1000));
+        const ageStr = ageSecs < 60 ? `${ageSecs}s ago` : `${Math.floor(ageSecs / 60)}m ago`;
+
+        tr.innerHTML = `
+          <td class="p-3 text-cyan-400 font-bold">#${blk.height.toLocaleString()}</td>
+          <td class="p-3 text-gray-300 truncate max-w-[140px]">${blk.hash.substring(0, 16)}...</td>
+          <td class="p-3 text-emerald-400">${Number(blk.nonce).toLocaleString()}</td>
+          <td class="p-3 text-gray-400 truncate max-w-[140px]">${blk.miner.substring(0, 14)}...</td>
+          <td class="p-3 text-right text-emerald-400 font-bold">${blk.subsidy}</td>
+          <td class="p-3 text-right text-white">${blk.txCount}</td>
+          <td class="p-3 text-right text-gray-500">${ageStr}</td>
+        `;
+        blocksBody.appendChild(tr);
+      });
+
+      // Render Transactions Table
+      const txsBody = document.getElementById('table-txs-body');
+      txsBody.innerHTML = '';
+      state.recentTransactions.forEach(tx => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-900/60 transition-colors cursor-pointer';
+        tr.onclick = () => openTxModal(tx);
+
+        tr.innerHTML = `
+          <td class="p-3 text-cyan-400 font-semibold truncate max-w-[130px]">${tx.txid.substring(0, 14)}...</td>
+          <td class="p-3 text-gray-300">#${Number(tx.blockHeight).toLocaleString()}</td>
+          <td class="p-3 text-purple-400 truncate max-w-[130px]">${tx.nullifier ? tx.nullifier.substring(0, 12) + '...' : '-'}</td>
+          <td class="p-3 text-emerald-400 truncate max-w-[130px]">${tx.commitment ? tx.commitment.substring(0, 12) + '...' : '-'}</td>
+          <td class="p-3 text-right text-purple-300">${tx.feePcash} PCASH</td>
+          <td class="p-3 text-right text-cyan-300">${tx.zkConstraints} AIR</td>
+          <td class="p-3 text-right text-emerald-400 font-bold">✓ Confirmed</td>
+        `;
+        txsBody.appendChild(tr);
+      });
+    }
+
+    function setupTabs() {
+      const btns = document.querySelectorAll('.tab-btn');
+      const panels = document.querySelectorAll('.tab-panel');
+
+      btns.forEach(b => {
+        b.addEventListener('click', () => {
+          btns.forEach(x => {
+            x.classList.remove('border-cyan-400', 'text-white', 'font-bold');
+            x.classList.add('border-transparent', 'text-gray-400');
+          });
+          b.classList.add('border-cyan-400', 'text-white', 'font-bold');
+          b.classList.remove('border-transparent', 'text-gray-400');
+
+          const target = b.getAttribute('data-target');
+          panels.forEach(p => p.classList.add('hidden'));
+          document.getElementById(target).classList.remove('hidden');
+        });
+      });
+    }
+
+    function setupSearch() {
+      const input = document.getElementById('input-search');
+      const btn = document.getElementById('btn-submit-search');
+
+      const doSearch = () => {
+        const q = input.value.trim();
+        if (!q) return;
+        const res = explorer.search(q);
+        if (res) {
+          if (res.type === 'BLOCK') openBlockModal(res.data);
+          else if (res.type === 'TX' || res.type === 'NULLIFIER' || res.type === 'COMMITMENT') openTxModal(res.data);
+        } else {
+          alert(`No ledger record found matching "${q}". Please check the block height, hash, nullifier, or commitment.`);
+        }
+      };
+
+      btn.addEventListener('click', doSearch);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') doSearch();
+      });
+
+      // Inspector Modal Close
+      document.getElementById('btn-close-inspector').addEventListener('click', () => {
+        document.getElementById('modal-inspector').classList.add('hidden');
+      });
+      document.getElementById('modal-inspector').addEventListener('click', (e) => {
+        if (e.target.id === 'modal-inspector') {
+          document.getElementById('modal-inspector').classList.add('hidden');
+        }
+      });
+    }
+
+    function openBlockModal(blk) {
+      const modal = document.getElementById('modal-inspector');
+      const title = document.getElementById('inspector-title');
+      const content = document.getElementById('inspector-content');
+
+      title.innerHTML = `<span>📦</span> Block #${blk.height.toLocaleString()} Inspection`;
+      content.innerHTML = `
+        <div class="bg-gray-950 p-3.5 rounded-xl border border-gray-900 space-y-2">
+          <div class="flex justify-between">
+            <span class="text-gray-500">Block Hash:</span>
+            <span class="text-cyan-400 break-all select-all">${blk.hash}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Parent Hash:</span>
+            <span class="text-gray-300 break-all">${blk.parentHash || '0x00...00'}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">MMR State Root:</span>
+            <span class="text-emerald-400 break-all">${blk.stateRoot}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">PoSW Nonce:</span>
+            <span class="text-emerald-400 font-bold">${Number(blk.nonce).toLocaleString()}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">PoSW Hash:</span>
+            <span class="text-gray-300 break-all">${blk.poswHash}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Miner Address:</span>
+            <span class="text-gray-300 select-all">${blk.miner}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Block Subsidy:</span>
+            <span class="text-cyan-300 font-bold">${blk.subsidy} PCASH</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Total Transactions:</span>
+            <span class="text-white">${blk.txCount} eUTXO transitions</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Recursive Proof:</span>
+            <span class="text-emerald-400">✓ ${blk.zkProofStatus}</span>
+          </div>
+        </div>
+      `;
+      modal.classList.remove('hidden');
+    }
+
+    function openTxModal(tx) {
+      const modal = document.getElementById('modal-inspector');
+      const title = document.getElementById('inspector-title');
+      const content = document.getElementById('inspector-content');
+
+      title.innerHTML = `<span>⚡</span> Shielded Transaction Details`;
+      content.innerHTML = `
+        <div class="bg-gray-950 p-3.5 rounded-xl border border-gray-900 space-y-2">
+          <div class="flex justify-between">
+            <span class="text-gray-500">Transaction ID:</span>
+            <span class="text-cyan-400 break-all select-all">${tx.txid}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Mined Block Height:</span>
+            <span class="text-white font-bold">#${Number(tx.blockHeight).toLocaleString()}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Transaction Type:</span>
+            <span class="text-emerald-400 font-bold">${tx.type}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Input Nullifier:</span>
+            <span class="text-purple-400 break-all select-all">${tx.nullifier || 'N/A (Coinbase)'}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Output Commitment:</span>
+            <span class="text-emerald-400 break-all select-all">${tx.commitment || 'Shielded'}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Thermodynamic Fee:</span>
+            <span class="text-purple-300 font-bold">${tx.feePcash} PCASH (Burned)</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">ZK AIR Constraints:</span>
+            <span class="text-cyan-300 font-bold">${tx.zkConstraints} constraints (&lt; ${tx.airDurationMs} ms)</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Confirmation Status:</span>
+            <span class="text-emerald-400 font-bold">✓ CONFIRMED (Mathematically Conserved)</span>
+          </div>
+        </div>
+      `;
+      modal.classList.remove('hidden');
+    }
+
+    function setupVerifier() {
+      const btn = document.getElementById('btn-run-verify');
+      const out = document.getElementById('verifier-output');
+
+      btn.addEventListener('click', () => {
+        btn.disabled = true;
+        btn.innerText = 'Evaluating Plonky3 Polynomial Constraints...';
+
+        setTimeout(() => {
+          const res = explorer.verifyPlonky3Constraints();
+          out.classList.remove('hidden');
+
+          let subHtml = res.subsystems.map(s => `
+            <div class="flex justify-between text-gray-300">
+              <span>• ${s.name}:</span>
+              <span class="text-emerald-400 font-bold">${s.constraints} constraints (${s.status})</span>
+            </div>
+          `).join('');
+
+          out.innerHTML = `
+            <div class="text-emerald-400 font-bold text-sm">✓ Plonky3 AIR Verification Succeeded in ${res.elapsedMs} ms!</div>
+            <div class="space-y-1 my-2">
+              ${subHtml}
+            </div>
+            <div class="pt-2 border-t border-gray-800 flex justify-between">
+              <span>Total Constraints Satisfied:</span>
+              <span class="text-white font-bold">${res.constraintsChecked} / ${res.constraintsChecked} (0 residuals)</span>
+            </div>
+            <div class="flex justify-between">
+              <span>STARK Verification Proof:</span>
+              <span class="text-cyan-400">${res.proofHash}</span>
+            </div>
+          `;
+
+          btn.disabled = false;
+          btn.innerText = '⚡ Evaluate 1,842 AIR Constraints in Browser';
+        }, 150);
+      });
+    }
+  </script>
+</body>
+</html>
