@@ -49,9 +49,13 @@ const server = http.createServer((req, res) => {
       try {
         const packet = JSON.parse(body);
         mempool.push(packet);
-        console.log(`[P2P Relay] Broadcast received: ${packet.amountPcash || packet.amount} PCASH -> ${packet.recipient} (txid: ${packet.txid})`);
+        if (packet.type === 'PROOF_OF_SAMPLING_BLOCK' || packet.miner) {
+          console.log(`[P2P Relay] Block Mined: #${packet.height || blockHeight} by ${packet.miner} (${packet.subsidy || '100.0'} PCASH)`);
+        } else {
+          console.log(`[P2P Relay] Broadcast received: ${packet.amountPcash || packet.amount} PCASH -> ${packet.recipient} (txid: ${packet.txid})`);
+        }
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, count: mempool.length, txid: packet.txid }));
+        res.end(JSON.stringify({ success: true, count: mempool.length, txid: packet.txid || packet.hash }));
       } catch (err) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: err.message }));
