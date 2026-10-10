@@ -84,6 +84,10 @@
           <span>🔍</span> <span>Public Explorer</span>
         </a>
 
+        <a href="./wallet/index.html#guide" class="px-3 py-2 rounded-xl bg-amber-950/60 hover:bg-amber-900/60 text-amber-300 hover:text-white border border-amber-800/60 font-medium text-xs transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0">
+          <span>📖</span> <span>User Guide &amp; Jargon</span>
+        </a>
+
         <a href="./wallet/index.html" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs transition-all shadow-md shadow-emerald-500/10 whitespace-nowrap shrink-0">
           <span>🔐</span>
           <span>Open Passkey Wallet</span>
@@ -334,7 +338,7 @@
           </div>
         </div>
 
-        <!-- 6. Audit & Compliance Simulator (Protocol-Blind) -->
+        <!-- 6. Protocol-Blind ZK Compliance -->
         <div class="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow-sm">
           <h2 class="text-base font-semibold text-white flex items-center gap-2 mb-1">
             <span>🛡️</span> Protocol-Blind ZK Compliance
@@ -382,7 +386,7 @@
 
   </div>
 
-  <!-- Interactive Simulator JavaScript -->
+  <!-- Interactive Protocol State Engine JavaScript -->
   <script>
     const GENESIS_STATE = {
       blockHeight: 0,
@@ -420,7 +424,7 @@
       const btn = document.getElementById('btn-toggle-genesis-view');
       if (state.isSimulatedRun) {
         state = { ...GENESIS_STATE };
-        btn.innerText = "Simulate 100k";
+        btn.innerText = "Project 100k Blocks";
         updateDisplay();
         logMempool("[Genesis Reset] Synchronized back to Block #0 (Origin State)");
       } else {
@@ -432,7 +436,7 @@
         state.isSimulatedRun = true;
         btn.innerText = "Genesis View";
         updateDisplay();
-        logMempool("[Simulator] Fast-forwarded to Block #104,281 (~2 years mainnet state)");
+        logMempool("[Projection] Fast-forwarded to Block #104,281 (~2 years mainnet state)");
       }
     });
 

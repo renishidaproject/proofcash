@@ -123,12 +123,12 @@
           <span>🔍</span> <span class="hidden xs:inline">Explorer</span>
         </a>
 
+        <button id="btn-open-guide" class="text-xs text-amber-400 hover:text-amber-300 font-medium px-2.5 py-1 rounded hover:bg-amber-950/40 border border-amber-500/30 transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer" title="Public Guide & Jargon Buster">
+          <span>📖</span> <span class="hidden sm:inline">User Guide &amp; Jargon</span><span class="sm:hidden">Guide</span>
+        </button>
+
         <a href="../release/RENUNCIATION.md" target="_blank" class="hidden md:inline-flex text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-800 transition-colors shrink-0">
           Exit 📜
-        </a>
-
-        <a href="../index.html" class="hidden md:inline-flex text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-800 transition-colors shrink-0">
-          Simulator ↗
         </a>
       </div>
     </div>
@@ -252,6 +252,9 @@
           </button>
           <button id="btn-open-backup" class="text-[11px] px-2.5 py-1.5 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-500/40 font-medium transition-all cursor-pointer flex items-center gap-1" title="Encrypted Backup & Recovery">
             <span>💾</span> <span>Backup &amp; Recovery</span>
+          </button>
+          <button id="btn-open-guide-bar" class="text-[11px] px-2.5 py-1.5 rounded-lg bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 border border-amber-500/40 font-medium transition-all cursor-pointer flex items-center gap-1" title="Interactive User Guide & Jargon Buster">
+            <span>📖</span> <span>Guide &amp; Jargon</span>
           </button>
           <span id="badge-mesh-live" class="text-[10px] font-mono px-2 py-1 rounded-lg bg-cyan-950/40 border border-cyan-500/30 text-cyan-300 flex items-center gap-1.5 shrink-0" title="Cross-Browser P2P Mesh Relay">
             <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 pulse-dot"></span>
@@ -1052,7 +1055,290 @@
     </div>
   </div>
 
-  <!-- Modal: Biometric Enclave HUD -->
+  <!-- Modal: Public User Guide & Jargon Buster -->
+  <div id="modal-guide" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card rounded-2xl max-w-2xl w-full p-6 border border-gray-800 relative space-y-4 max-h-[90vh] overflow-y-auto custom-scroll shadow-2xl">
+      <div class="flex justify-between items-start pb-3 border-b border-gray-800">
+        <div class="flex items-center gap-2.5">
+          <span class="text-2xl">📖</span>
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              ProofCash User Guide &amp; Jargon Buster
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">v1.4</span>
+            </h3>
+            <p class="text-[11px] text-gray-400">Everything you need to know about options, features, and technical terms in plain English</p>
+          </div>
+        </div>
+        <button id="btn-close-guide" class="text-gray-400 hover:text-white text-lg cursor-pointer">✕</button>
+      </div>
+
+      <!-- Quick Search Bar -->
+      <div class="relative">
+        <input type="text" id="guide-search-input" placeholder="🔍 Search features, buttons, or jargons (e.g. eUTXO, miner, voucher, passkey, air, pj)..." class="w-full bg-gray-950 border border-gray-800 rounded-xl px-3.5 py-2 text-xs font-sans text-white placeholder-gray-500 focus:outline-none focus:border-amber-400">
+      </div>
+
+      <!-- Guide Sub-Tabs -->
+      <div class="flex border-b border-gray-800 space-x-3 text-xs font-medium overflow-x-auto no-scrollbar py-1">
+        <button id="guide-tab-quickstart" class="guide-nav-btn pb-2 border-b-2 border-amber-400 text-white font-bold cursor-pointer whitespace-nowrap">
+          🚀 Quick Start (4 Steps)
+        </button>
+        <button id="guide-tab-features" class="guide-nav-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 cursor-pointer whitespace-nowrap">
+          ⚙️ Features &amp; Options
+        </button>
+        <button id="guide-tab-jargon" class="guide-nav-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 cursor-pointer whitespace-nowrap">
+          🧠 Jargon Buster (Glossary)
+        </button>
+        <button id="guide-tab-faq" class="guide-nav-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 cursor-pointer whitespace-nowrap">
+          ❓ FAQ &amp; Tips
+        </button>
+      </div>
+
+      <!-- Section 1: Quick Start -->
+      <div id="guide-panel-quickstart" class="guide-panel space-y-3 text-xs leading-relaxed">
+        <div class="p-3.5 rounded-xl bg-amber-950/20 border border-amber-500/30 text-amber-200 text-xs">
+          <strong>👋 Welcome to ProofCash!</strong> ProofCash is the world&apos;s first autonomous zero-knowledge currency designed for both humans and AI agents with <strong>zero seed phrases</strong> and <strong>zero pre-mine</strong>. Here is how to use it in 60 seconds:
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="p-3.5 rounded-xl bg-gray-950 border border-gray-850 space-y-1.5">
+            <div class="flex items-center gap-2 font-bold text-white text-xs">
+              <span class="h-5 w-5 rounded-full bg-purple-500/20 text-purple-300 flex items-center justify-center text-[11px]">1</span>
+              <span>Claim Testnet Coins</span>
+            </div>
+            <p class="text-gray-400 text-[11px]">
+              Tap the purple <strong class="text-purple-300">🚰 +50 Faucet</strong> button to credit 50.0 PCASH immediately into your active vault.
+            </p>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-gray-950 border border-gray-850 space-y-1.5">
+            <div class="flex items-center gap-2 font-bold text-white text-xs">
+              <span class="h-5 w-5 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-[11px]">2</span>
+              <span>Test Mobile Edge Mining</span>
+            </div>
+            <p class="text-gray-400 text-[11px]">
+              Open the <strong class="text-cyan-300">Miner</strong> tab, select <em>Eco Profile</em>, and click <em>Start Mining</em>. Your phone or computer solves real blocks and earns +100 PCASH per block!
+            </p>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-gray-950 border border-gray-850 space-y-1.5">
+            <div class="flex items-center gap-2 font-bold text-white text-xs">
+              <span class="h-5 w-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[11px]">3</span>
+              <span>Send to Friends or Devices</span>
+            </div>
+            <p class="text-gray-400 text-[11px]">
+              Click <strong class="text-emerald-400">Send</strong>, enter any address, and sign with your passkey. Copy the <strong class="text-amber-300">eUTXO Voucher</strong> for guaranteed instant redemption on any other device.
+            </p>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-gray-950 border border-gray-850 space-y-1.5">
+            <div class="flex items-center gap-2 font-bold text-white text-xs">
+              <span class="h-5 w-5 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-[11px]">4</span>
+              <span>Back Up to Cloud</span>
+            </div>
+            <p class="text-gray-400 text-[11px]">
+              Click <strong class="text-emerald-300">💾 Backup &amp; Recovery</strong> to export your encrypted keystore file or save it securely to Google Drive or Apple iCloud.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: All Features & Options Explained -->
+      <div id="guide-panel-features" class="guide-panel space-y-3 text-xs leading-relaxed hidden">
+        <div class="space-y-2.5">
+
+          <!-- Card 1: Multi-Account Vaults -->
+          <div class="p-3.5 rounded-xl bg-gray-950 border border-gray-850 space-y-1.5 guide-item">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 font-bold text-white text-xs">
+                <span>🏦</span> <span>Multi-Account Vaults &amp; &apos;+ New Vault&apos;</span>
+              </div>
+              <span class="text-[10px] font-mono text-emerald-400">Account Isolation</span>
+            </div>
+            <p class="text-gray-300 text-[11px]">
+              <strong>What it does:</strong> Allows you to create and switch between unlimited isolated wallets (e.g. <em>Daily Spending</em>, <em>Cold Savings</em>, or <em>Merchant Vault</em>) under a single passkey. Each vault has its own unique shielded address (<code class="text-cyan-300">pc1q...</code>) and ledger history so transactions can never be linked together.
+            </p>
+          </div>
+
+          <!-- Card 2: Send & Receive -->
+          <div class="p-3.5 rounded-xl bg-gray-950 border border-gray-850 space-y-1.5 guide-item">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 font-bold text-white text-xs">
+                <span>📤</span> <span>Send &amp; Receive (Shielded Spend)</span>
+              </div>
+              <span class="text-[10px] font-mono text-cyan-400">1,842 ZK Constraints</span>
+            </div>
+            <p class="text-gray-300 text-[11px]">
+              <strong>What it does:</strong> Sends payments directly between accounts or to autonomous AI agents (<code class="text-purple-300">agent://...</code>). Unlike old blockchains, ProofCash evaluates a mathematical Zero-Knowledge (ZK) STARK proof directly on your device in &lt; 45 milliseconds, hiding your identity while mathematically proving the funds are real.
+            </p>
+          </div>
+
+          <!-- Card 3: Instant eUTXO Voucher -->
+          <div class="p-3.5 rounded-xl bg-gray-950 border border-gray-850 space-y-1.5 guide-item">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 font-bold text-white text-xs">
+                <span>🎟️</span> <span>Instant eUTXO Transfer Voucher</span>
+              </div>
+              <span class="text-[10px] font-mono text-amber-400">Air-Gap Guaranteed</span>
+            </div>
+            <p class="text-gray-300 text-[11px]">
+              <strong>What it does:</strong> Solves network and firewall delays. When you send funds, a bearer voucher (<code class="text-emerald-300">PCASH-VOUCHER:...</code>) is generated. If the recipient is offline or has an ad-blocker blocking WebSockets, they simply paste the voucher into the <em>Receive</em> modal and click <strong>Redeem Voucher</strong> to reflect the balance instantly.
+            </p>
+          </div>
+
+          <!-- Card 4: Mobile Edge Miner -->
+          <div class="p-3.5 rounded-xl bg-gray-950 border border-gray-850 space-y-1.5 guide-item">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 font-bold text-white text-xs">
+                <span>📱</span> <span>Mobile &amp; Edge Thermodynamic Miner</span>
+              </div>
+              <span class="text-[10px] font-mono text-purple-400">Blake3 SIMD PoSW</span>
+            </div>
+            <p class="text-gray-300 text-[11px]">
+              <strong>What it does:</strong> Allows smartphones, laptops, and browser tabs to mine real block subsidies (+100.0 PCASH) without massive ASIC server warehouses.
+            </p>
+            <div class="grid grid-cols-3 gap-1.5 text-[10px] font-mono pt-1">
+              <div class="p-1.5 rounded bg-gray-900 text-gray-300">🟢 <strong>Eco:</strong> 1 thread, battery-safe duty cycle</div>
+              <div class="p-1.5 rounded bg-gray-900 text-gray-300">🟡 <strong>Standard:</strong> Balanced laptop mining</div>
+              <div class="p-1.5 rounded bg-gray-900 text-gray-300">🔴 <strong>Nightstand:</strong> Max hashrate when plugged in</div>
+            </div>
+          </div>
+
+          <!-- Card 5: Two-Tier Passkey Enclave -->
+          <div class="p-3.5 rounded-xl bg-gray-950 border border-gray-850 space-y-1.5 guide-item">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 font-bold text-white text-xs">
+                <span>🔐</span> <span>Two-Tier Biometric Passkey Enclave</span>
+              </div>
+              <span class="text-[10px] font-mono text-emerald-400">No Seed Phrases</span>
+            </div>
+            <p class="text-gray-300 text-[11px]">
+              <strong>What it does:</strong> Completely removes vulnerable 12-word seed phrases. Your device&apos;s physical security chip (Apple Secure Enclave, Android Titan M, Windows Hello) signs a 24-hour delegation certificate for an ephemeral BabyJubjub key, letting you make payments all day at lightning speed without repeated biometric prompts.
+            </p>
+          </div>
+
+          <!-- Card 6: AI Streaming Channels -->
+          <div class="p-3.5 rounded-xl bg-gray-950 border border-gray-850 space-y-1.5 guide-item">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 font-bold text-white text-xs">
+                <span>🤖</span> <span>AI Micro-Payment Streaming Channels</span>
+              </div>
+              <span class="text-[10px] font-mono text-cyan-400">0.000001 PCASH / Token</span>
+            </div>
+            <p class="text-gray-300 text-[11px]">
+              <strong>What it does:</strong> Continuous real-time payment channels for autonomous AI agents. Streams nano-payments every 120ms without individual blockchain transaction fees.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Section 3: Jargon Buster (Glossary) -->
+      <div id="guide-panel-jargon" class="guide-panel space-y-3 text-xs leading-relaxed hidden">
+        <div class="p-2.5 rounded-lg bg-gray-900 text-gray-300 text-[11px]">
+          Alphabetical dictionary of ProofCash and zero-knowledge crypto terminology explained simply:
+        </div>
+
+        <div class="space-y-2">
+          <div class="p-3 rounded-xl bg-gray-950 border border-gray-850 space-y-1 guide-item">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-white text-xs">AIR (Algebraic Intermediate Representation)</span>
+              <span class="text-[10px] font-mono text-cyan-400">1,842 Constraints</span>
+            </div>
+            <p class="text-gray-300 text-[11px]">
+              The set of mathematical polynomial equations verified by the zero-knowledge prover. While standard WebAuthn requires 350,000 equations (taking 8+ seconds and heating up your phone), ProofCash Two-Tier uses only 1,842 equations, completing in &lt; 45 milliseconds!
+            </p>
+          </div>
+
+          <div class="p-3 rounded-xl bg-gray-950 border border-gray-850 space-y-1 guide-item">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-white text-xs">eUTXO (Extended Unspent Transaction Output)</span>
+              <span class="text-[10px] font-mono text-emerald-400">Digital Paper Cash</span>
+            </div>
+            <p class="text-gray-300 text-[11px]">
+              Unlike Ethereum accounts that lock your whole account while a transfer is pending, eUTXOs work exactly like paper dollar bills with serial numbers. You can spend multiple bills simultaneously in parallel without any congestion.
+            </p>
+          </div>
+
+          <div class="p-3 rounded-xl bg-gray-950 border border-gray-850 space-y-1 guide-item">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-white text-xs">Nullifier &amp; Commitment</span>
+              <span class="text-[10px] font-mono text-purple-400">Privacy Shield</span>
+            </div>
+            <p class="text-gray-300 text-[11px]">
+              A <strong>Commitment</strong> is the cryptographic envelope that hides how much money you have. A <strong>Nullifier</strong> is the serial number published when you spend a coin to prevent double-spending without revealing your address.
+            </p>
+          </div>
+
+          <div class="p-3 rounded-xl bg-gray-950 border border-gray-850 space-y-1 guide-item">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-white text-xs">Pico-Joules (pJ)</span>
+              <span class="text-[10px] font-mono text-amber-400">10⁻¹² Energy Unit</span>
+            </div>
+            <p class="text-gray-300 text-[11px]">
+              The smallest unit of ProofCash (<code class="text-amber-300">1 PCASH = 1,000,000,000,000 pJ</code>). Named after the physical unit of energy (joules) to reflect the thermodynamic compute underpinning the network.
+            </p>
+          </div>
+
+          <div class="p-3 rounded-xl bg-gray-950 border border-gray-850 space-y-1 guide-item">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-white text-xs">PoSW (Proof-of-Succinct-Work)</span>
+              <span class="text-[10px] font-mono text-emerald-400">Fair Energy Mining</span>
+            </div>
+            <p class="text-gray-300 text-[11px]">
+              The consensus mechanism that mints new ProofCash. Unlike Bitcoin which requires massive industrial ASIC power plants, PoSW is optimized for consumer CPUs and phones using Blake3 SIMD instructions.
+            </p>
+          </div>
+
+          <div class="p-3 rounded-xl bg-gray-950 border border-gray-850 space-y-1 guide-item">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-white text-xs">Zero Pre-Mine</span>
+              <span class="text-[10px] font-mono text-rose-400">100% Fair Launch</span>
+            </div>
+            <p class="text-gray-300 text-[11px]">
+              Founders, venture capitalists, and creators received <strong>exactly 0.0000 PCASH</strong> at Genesis Block #0. All coins in circulation must be mined through real energy or earned from peers.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: FAQ & Tips -->
+      <div id="guide-panel-faq" class="guide-panel space-y-3 text-xs leading-relaxed hidden">
+        <div class="space-y-2">
+          <div class="p-3 rounded-xl bg-gray-950 border border-gray-850 space-y-1 guide-item">
+            <div class="font-bold text-white text-xs">Q: Why didn&apos;t my transfer reflect automatically in the other browser?</div>
+            <p class="text-gray-400 text-[11px]">
+              Browsers isolate local storage between private windows and different browsers (e.g. Chrome vs Firefox). Additionally, ad-blockers or firewalls often block outgoing WebSocket relays. Simply copy the <strong>eUTXO Transfer Voucher</strong> from the sender and paste it into the receiver&apos;s <em>Receive</em> modal to reflect instantly!
+            </p>
+          </div>
+
+          <div class="p-3 rounded-xl bg-gray-950 border border-gray-850 space-y-1 guide-item">
+            <div class="font-bold text-white text-xs">Q: What happens if I clear my browser cookies or switch to a new phone?</div>
+            <p class="text-gray-400 text-[11px]">
+              Because ProofCash is a decentralized PWA running in your browser, always use <strong>Backup &amp; Recovery</strong> to export your encrypted keystore file or save it to Google Drive / Apple iCloud. You can restore your vaults in seconds on any device.
+            </p>
+          </div>
+
+          <div class="p-3 rounded-xl bg-gray-950 border border-gray-850 space-y-1 guide-item">
+            <div class="font-bold text-white text-xs">Q: Are the mined PCASH coins real money?</div>
+            <p class="text-gray-400 text-[11px]">
+              In <strong>Testnet Mode</strong>, coins are fully functional simulated energy units for learning and testing with zero fiat value. On the upcoming <strong>Genesis Mainnet</strong>, coins are anchored by real thermodynamic energy with permanent value.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs">
+        <a href="../GUIDE.md" target="_blank" class="text-cyan-400 hover:text-cyan-300 font-mono text-[11px] flex items-center gap-1">
+          <span>📄</span> <span>Open Full Guide Markdown (GUIDE.md) ↗</span>
+        </a>
+        <button id="btn-done-guide" class="w-full sm:w-auto px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-medium text-xs transition-all cursor-pointer">
+          Close Guide
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <div id="modal-biometric" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
     <div class="glass-card rounded-3xl max-w-xs w-full p-6 border border-emerald-500/40 relative space-y-4 text-center shadow-2xl shadow-emerald-500/20">
       <!-- Animated Biometric Radar & Face Target -->
@@ -1727,8 +2013,89 @@
         });
       }
 
+      // User Guide & Jargon Buster Modal Wireup
+      const modalGuide = document.getElementById('modal-guide');
+      const btnOpenGuide = document.getElementById('btn-open-guide');
+      const btnOpenGuideBar = document.getElementById('btn-open-guide-bar');
+      const btnCloseGuide = document.getElementById('btn-close-guide');
+      const btnDoneGuide = document.getElementById('btn-done-guide');
+
+      const guideTabs = [
+        { btn: document.getElementById('guide-tab-quickstart'), panel: document.getElementById('guide-panel-quickstart') },
+        { btn: document.getElementById('guide-tab-features'), panel: document.getElementById('guide-panel-features') },
+        { btn: document.getElementById('guide-tab-jargon'), panel: document.getElementById('guide-panel-jargon') },
+        { btn: document.getElementById('guide-tab-faq'), panel: document.getElementById('guide-panel-faq') }
+      ];
+
+      function switchGuideTab(targetTabId) {
+        guideTabs.forEach(t => {
+          if (!t.btn || !t.panel) return;
+          if (t.btn.id === targetTabId) {
+            t.btn.className = 'guide-nav-btn pb-2 border-b-2 border-amber-400 text-white font-bold cursor-pointer whitespace-nowrap';
+            t.panel.classList.remove('hidden');
+          } else {
+            t.btn.className = 'guide-nav-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 cursor-pointer whitespace-nowrap';
+            t.panel.classList.add('hidden');
+          }
+        });
+      }
+
+      const openGuideModal = (tabId = 'guide-tab-quickstart') => {
+        if (!modalGuide) return;
+        modalGuide.classList.remove('hidden');
+        switchGuideTab(tabId);
+      };
+
+      if (btnOpenGuide) btnOpenGuide.addEventListener('click', () => openGuideModal('guide-tab-quickstart'));
+      if (btnOpenGuideBar) btnOpenGuideBar.addEventListener('click', () => openGuideModal('guide-tab-quickstart'));
+      if (btnCloseGuide) btnCloseGuide.addEventListener('click', () => modalGuide.classList.add('hidden'));
+      if (btnDoneGuide) btnDoneGuide.addEventListener('click', () => modalGuide.classList.add('hidden'));
+
+      guideTabs.forEach(t => {
+        if (t.btn) {
+          t.btn.addEventListener('click', () => switchGuideTab(t.btn.id));
+        }
+      });
+
+      // Guide Search Filter
+      const guideSearchInput = document.getElementById('guide-search-input');
+      if (guideSearchInput && modalGuide) {
+        guideSearchInput.addEventListener('input', (e) => {
+          const q = e.target.value.toLowerCase().trim();
+          const items = modalGuide.querySelectorAll('.guide-item');
+          if (!q) {
+            items.forEach(el => el.classList.remove('hidden'));
+            const activeTab = guideTabs.find(t => t.btn && t.btn.classList.contains('border-amber-400'));
+            if (activeTab) switchGuideTab(activeTab.btn.id);
+            return;
+          }
+          guideTabs.forEach(t => {
+            if (t.panel) t.panel.classList.remove('hidden');
+          });
+          items.forEach(el => {
+            const text = el.innerText.toLowerCase();
+            if (text.includes(q)) {
+              el.classList.remove('hidden');
+            } else {
+              el.classList.add('hidden');
+            }
+          });
+        });
+      }
+
+      // Check url hash for #guide or #jargon
+      if (window.location.hash === '#guide') {
+        openGuideModal('guide-tab-quickstart');
+      } else if (window.location.hash === '#jargon' || window.location.hash === '#glossary') {
+        openGuideModal('guide-tab-jargon');
+      } else if (window.location.hash === '#features') {
+        openGuideModal('guide-tab-features');
+      } else if (window.location.hash === '#faq') {
+        openGuideModal('guide-tab-faq');
+      }
+
       // Close on outside click
-      [modalSend, modalRecv, modalSettings, modalBackup].forEach(m => {
+      [modalSend, modalRecv, modalSettings, modalBackup, modalGuide].forEach(m => {
         if (!m) return;
         m.addEventListener('click', (e) => {
           if (e.target === m) m.classList.add('hidden');
