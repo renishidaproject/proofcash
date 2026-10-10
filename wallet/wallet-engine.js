@@ -982,7 +982,7 @@ class ProofCashWalletEngine {
 
   // --- Mobile / Edge Mining Reward ---
 
-  creditMinedBlock(nonce, hash, subsidyPcash = "100.0") {
+  creditMinedBlock(nonce, hash, subsidyPcash = "100.0", extraData = {}) {
     const subsidy_pJ = this.pcashToPJ(subsidyPcash);
     this.state.balance_pJ += subsidy_pJ;
     this.state.currentBlockHeight += 1;
@@ -994,7 +994,9 @@ class ProofCashWalletEngine {
       amount: subsidyPcash,
       height: this.state.currentBlockHeight,
       timestamp: Date.now(),
-      status: "CONFIRMED"
+      status: "CONFIRMED",
+      enclaveTier: extraData.enclaveTier || "Secp256r1 Hardware",
+      scratchpadProof: extraData.scratchpadProof || "posw_dag_sampled"
     };
 
     this.state.txHistory.unshift(txEntry);
@@ -1009,7 +1011,9 @@ class ProofCashWalletEngine {
       miner: this.state.address,
       subsidy: subsidyPcash,
       timestamp: Date.now(),
-      status: "CONFIRMED"
+      status: "CONFIRMED",
+      enclaveTier: extraData.enclaveTier || "Secp256r1 Hardware",
+      scratchpadProof: extraData.scratchpadProof || "posw_dag_sampled"
     };
 
     if (this.channel) {

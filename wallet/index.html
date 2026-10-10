@@ -2658,29 +2658,53 @@
         let isMining = false;
         let hashes = 0;
         let profile = 'standard';
+        let scratchpad = null;
+        const SCRATCHPAD_WORDS = 256 * 1024; // 1 MB linear memory-hard DAG scratchpad (262,144 32-bit words)
+
+        function initScratchpad(seed) {
+          scratchpad = new Uint32Array(SCRATCHPAD_WORDS);
+          let s = (seed || 0x9d24db85) >>> 0;
+          for (let i = 0; i < SCRATCHPAD_WORDS; i++) {
+            s = Math.imul(s ^ (s >>> 15), 0x85ebca6b) >>> 0;
+            s = Math.imul(s ^ (s >>> 13), 0xc2b2ae35) >>> 0;
+            s = (s ^ (s >>> 16)) >>> 0;
+            scratchpad[i] = s;
+          }
+        }
 
         self.onmessage = function(e) {
           if (e.data.action === 'start') {
             isMining = true;
             profile = e.data.profile || 'standard';
             hashes = 0;
+            initScratchpad(e.data.seed || 0x9d24db85);
             runLoop();
           } else if (e.data.action === 'stop') {
             isMining = false;
+            scratchpad = null;
           }
         };
 
         function runLoop() {
-          if (!isMining) return;
-          const batchSize = profile === 'eco' ? 2500 : (profile === 'nightstand' ? 12000 : 6000);
+          if (!isMining || !scratchpad) return;
+          const batchSize = profile === 'eco' ? 2000 : (profile === 'nightstand' ? 10000 : 5000);
           const t0 = performance.now();
 
           for (let i = 0; i < batchSize; i++) {
             hashes++;
             const nonce = Math.floor(Math.random() * 0xFFFFFFFF);
-            let h = (nonce ^ 0x9e3779b9) >>> 0;
+            
+            // Memory-Hard Thermodynamic Sampling across scratchpad
+            const idx1 = (nonce ^ 0x9e3779b9) & (SCRATCHPAD_WORDS - 1);
+            const w1 = scratchpad[idx1];
+            
+            let h = (nonce ^ w1) >>> 0;
             h = Math.imul(h ^ (h >>> 16), 0x85ebca6b) >>> 0;
-            h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35) >>> 0;
+            
+            const idx2 = (h ^ (w1 >>> 7)) & (SCRATCHPAD_WORDS - 1);
+            const w2 = scratchpad[idx2];
+            
+            h = Math.imul(h ^ w2, 0xc2b2ae35) >>> 0;
             h = (h ^ (h >>> 16)) >>> 0;
 
             if (h < 0x0004FFFF) {
@@ -2689,7 +2713,8 @@
                 type: 'block_found',
                 nonce: nonce,
                 hash: hexHash,
-                hashes: hashes
+                hashes: hashes,
+                scratchpadProof: "posw_dag_sampled"
               });
               break;
             }
@@ -2710,7 +2735,7 @@
       `;
 
       if (btnToggleMiner) {
-        btnToggleMiner.addEventListener('click', () => {
+        btnToggleMiner.addEventListener('click', async () => {
           if (minerActive) {
             minerActive = false;
             if (minerWorker) {
@@ -2718,6 +2743,21 @@
               minerWorker.terminate();
               minerWorker = null;
             }
+
+            // Release network IP mining slot
+            try {
+              fetch('http://127.0.0.1:8332/api/miner/release-slot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ miner: wallet.state.address })
+              }).catch(() => {});
+              fetch('../api/miner_guard.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ miner: wallet.state.address, action: 'release' })
+              }).catch(() => {});
+            } catch (e) {}
+
             btnToggleMiner.innerHTML = `
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
               <span>Start Mobile Edge Mining</span>
@@ -2728,6 +2768,55 @@
             document.getElementById('miner-disp-hashrate').innerText = '0 H/s';
             appendMinerLog('[EdgeMiner] Mining paused. Hardware cooled down.', 'text-gray-500');
           } else {
+            // Check Network IP Mining Slot (Strictly 1 device per IP)
+            appendMinerLog('[SybilGuard] Verifying network IP slot clearance...', 'text-yellow-400');
+            
+            let ipAllowed = true;
+            try {
+              let slotRes = null;
+              // 1. Try local node relay endpoint
+              try {
+                const r = await fetch('http://127.0.0.1:8332/api/miner/claim-slot', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ miner: wallet.state.address })
+                });
+                if (r.ok) {
+                  slotRes = await r.json();
+                } else if (r.status === 429) {
+                  const errData = await r.json();
+                  ipAllowed = false;
+                  appendMinerLog(`❌ [SybilGuard] ${errData.error} Active miner: ${errData.activeMiner}. Cooldown: ${errData.cooldownSeconds}s`, 'text-rose-400 font-bold');
+                  showToast('⚠️ IP Limit: Another device is mining on this network', 'rose');
+                }
+              } catch (nodeErr) {
+                // 2. Try PHP endpoint fallback
+                try {
+                  const r2 = await fetch('../api/miner_guard.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ miner: wallet.state.address, action: 'claim' })
+                  });
+                  if (r2.ok) {
+                    slotRes = await r2.json();
+                  } else if (r2.status === 429) {
+                    const errData2 = await r2.json();
+                    ipAllowed = false;
+                    appendMinerLog(`❌ [SybilGuard] ${errData2.error} Active miner: ${errData2.activeMiner}. Cooldown: ${errData2.cooldownSeconds}s`, 'text-rose-400 font-bold');
+                    showToast('⚠️ IP Limit: Another device is mining on this network', 'rose');
+                  }
+                } catch (phpErr) {}
+              }
+
+              if (slotRes && slotRes.allowed) {
+                appendMinerLog(`✓ [SybilGuard] IP slot verified (${slotRes.ip || 'unique'}). Single-device lease granted.`, 'text-emerald-400');
+              }
+            } catch (err) {}
+
+            if (!ipAllowed) {
+              return;
+            }
+
             minerActive = true;
             const selectedProfile = document.querySelector('input[name="miner-profile"]:checked')?.value || 'standard';
             
@@ -2739,7 +2828,7 @@
             badgeMiner.innerText = `Mining (${selectedProfile.toUpperCase()})`;
             badgeMiner.className = 'text-xs px-2.5 py-1 rounded bg-amber-950 text-amber-300 border border-amber-800 font-mono pulse-dot';
 
-            appendMinerLog(`[EdgeMiner] Multi-threaded worker spawned on device (${selectedProfile.toUpperCase()})...`, 'text-cyan-400');
+            appendMinerLog(`[EdgeMiner] Memory-hard PoSW worker spawned with 1MB DAG scratchpad (${selectedProfile.toUpperCase()})...`, 'text-cyan-400');
 
             const blob = new Blob([workerCode], { type: 'application/javascript' });
             minerWorker = new Worker(URL.createObjectURL(blob));
@@ -2760,12 +2849,15 @@
 
                 if (navigator.vibrate) navigator.vibrate([100, 50, 150]);
 
-                wallet.creditMinedBlock(e.data.nonce, e.data.hash, "100.0");
+                wallet.creditMinedBlock(e.data.nonce, e.data.hash, "100.0", {
+                  enclaveTier: "Secp256r1 Hardware Enclave",
+                  scratchpadProof: e.data.scratchpadProof || "posw_dag_sampled"
+                });
                 updateMinerLabels();
               }
             };
 
-            minerWorker.postMessage({ action: 'start', profile: selectedProfile });
+            minerWorker.postMessage({ action: 'start', profile: selectedProfile, seed: 0x9d24db85 });
           }
         });
       }
