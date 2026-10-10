@@ -27,45 +27,37 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.3; }
     }
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
   </style>
 </head>
 <body class="antialiased p-4 md:p-8 min-h-screen flex flex-col justify-between">
   <div class="max-w-7xl mx-auto space-y-6 w-full">
 
     <!-- Top Navigation / Header -->
-    <header class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-800 pb-5 gap-4">
-      <div>
-        <div class="flex items-center gap-3">
-          <div class="h-9 w-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-lg">
-            ⚡
+    <header class="border-b border-gray-800 pb-5 space-y-4">
+      <!-- Row 1: Project Name, Details & Status Pill -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-3">
+            <div class="h-9 w-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-lg shrink-0">
+              ⚡
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              ProofCash <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">v1.1</span>
+            </h1>
           </div>
-          <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            ProofCash <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">v1.1 Hardened</span>
-          </h1>
+          <p class="text-xs text-gray-400 mt-1">Autonomous Thermodynamic Settlement Engine for Humans & Machines (Ren Ishida, 2026)</p>
         </div>
-        <p class="text-xs text-gray-400 mt-1">Autonomous Thermodynamic Settlement Engine for Humans & Machines (Ren Ishida, 2026)</p>
-      </div>
 
-      <!-- Header Action Links -->
-      <div class="flex flex-wrap items-center gap-2.5">
-        <a href="./ProofCash_Whitepaper.pdf" target="_blank" class="px-3 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white border border-gray-800 font-medium text-xs transition-all flex items-center gap-1.5">
-          <span>📄</span> Whitepaper PDF
-        </a>
-
-        <a href="./release/RENUNCIATION.md" target="_blank" class="px-3 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white border border-gray-800 font-medium text-xs transition-all flex items-center gap-1.5">
-          <span>📜</span> Exit Statement
-        </a>
-
-        <a href="./explorer/index.html" class="px-3 py-2 rounded-xl bg-cyan-950/60 hover:bg-cyan-900/60 text-cyan-300 hover:text-white border border-cyan-800/60 font-medium text-xs transition-all flex items-center gap-1.5">
-          <span>🔍</span> Public Explorer
-        </a>
-
-        <a href="./wallet/index.html" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs transition-all shadow-md shadow-emerald-500/10">
-          <span>🔐</span>
-          <span>Open Passkey Wallet</span>
-        </a>
-
-        <div class="hidden lg:flex items-center gap-4 bg-gray-900 border border-gray-800 px-3.5 py-2 rounded-xl text-xs">
+        <div class="hidden sm:flex items-center gap-4 bg-gray-900 border border-gray-800 px-3.5 py-2 rounded-xl text-xs shrink-0 self-start sm:self-auto">
           <div class="flex items-center gap-2">
             <span class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span>
             <span class="text-gray-400">Node: <strong class="text-white">O(1) Succinct</strong></span>
@@ -76,6 +68,26 @@
             <span class="text-white font-mono font-semibold ml-1">1,000,000,000 PCASH</span>
           </div>
         </div>
+      </div>
+
+      <!-- Row 2: Action Navigation Links (Under project name & details, horizontally scrollable with hidden scrollbar) -->
+      <div class="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1 w-full shrink-0 -mx-1 px-1">
+        <a href="./ProofCash_Whitepaper.pdf" target="_blank" class="px-3 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white border border-gray-800 font-medium text-xs transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0">
+          <span>📄</span> <span>Whitepaper PDF</span>
+        </a>
+
+        <a href="./release/RENUNCIATION.md" target="_blank" class="px-3 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white border border-gray-800 font-medium text-xs transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0">
+          <span>📜</span> <span>Exit Statement</span>
+        </a>
+
+        <a href="./explorer/index.html" class="px-3 py-2 rounded-xl bg-cyan-950/60 hover:bg-cyan-900/60 text-cyan-300 hover:text-white border border-cyan-800/60 font-medium text-xs transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0">
+          <span>🔍</span> <span>Public Explorer</span>
+        </a>
+
+        <a href="./wallet/index.html" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs transition-all shadow-md shadow-emerald-500/10 whitespace-nowrap shrink-0">
+          <span>🔐</span>
+          <span>Open Passkey Wallet</span>
+        </a>
       </div>
     </header>
 
