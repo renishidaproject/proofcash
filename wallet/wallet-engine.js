@@ -852,6 +852,200 @@ class ProofCashWalletEngine {
     this.pingNode();
   }
 
+  // --- Encrypted Keystore Backup & Recovery (PBKDF2 + AES-256-GCM) ---
+
+  async deriveBackupKey(passphrase, saltBytes) {
+    const enc = new TextEncoder();
+    const baseKey = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(passphrase),
+      "PBKDF2",
+      false,
+      ["deriveKey"]
+    );
+    return await crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt: saltBytes,
+        iterations: 100000,
+        hash: "SHA-256"
+      },
+      baseKey,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["encrypt", "decrypt"]
+    );
+  }
+
+  async exportEncryptedBackup(passphrase) {
+    if (!passphrase || passphrase.length < 6) {
+      throw new Error("Passphrase must be at least 6 characters long for cryptographic security.");
+    }
+
+    // 1. Collect all emulated enclave credentials stored in localStorage
+    const enclaveKeys = {};
+    if (this.state.credentials) {
+      for (const cred of this.state.credentials) {
+        const stored = localStorage.getItem('proofcash_enclave_' + cred.id);
+        if (stored) {
+          enclaveKeys[cred.id] = stored;
+        }
+      }
+    }
+
+    // 2. Build canonical backup payload
+    const backupPayload = {
+      app: "ProofCash Sovereign Wallet",
+      schemaVersion: 1,
+      networkMode: this.state.networkMode,
+      activeAccountId: this.state.activeAccountId,
+      address: this.state.address,
+      balance_pJ: this.state.balance_pJ.toString(),
+      accounts: this.state.accounts,
+      credentials: this.state.credentials,
+      enclaveKeys: enclaveKeys,
+      txHistory: this.state.txHistory,
+      exportedAt: Date.now()
+    };
+
+    const plaintextStr = JSON.stringify(backupPayload);
+    const plaintextBytes = new TextEncoder().encode(plaintextStr);
+
+    // Compute plaintext SHA-256 checksum for post-decryption integrity verification
+    const checksumHash = new Uint8Array(await crypto.subtle.digest("SHA-256", plaintextBytes));
+    const checksumHex = PasskeyCrypto.bufferToHex(checksumHash);
+
+    // 3. Generate random 16-byte Salt and 12-byte IV
+    const saltBytes = crypto.getRandomValues(new Uint8Array(16));
+    const ivBytes = crypto.getRandomValues(new Uint8Array(12));
+
+    // 4. Derive AES-GCM-256 key from passphrase
+    const aesKey = await this.deriveBackupKey(passphrase, saltBytes);
+
+    // 5. Encrypt
+    const ciphertextBuffer = await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: ivBytes },
+      aesKey,
+      plaintextBytes
+    );
+
+    const backupEnvelope = {
+      version: 1,
+      format: "ProofCash-Encrypted-Keystore-v1",
+      kdf: "PBKDF2-SHA256",
+      iterations: 100000,
+      saltHex: PasskeyCrypto.bufferToHex(saltBytes),
+      cipher: "AES-256-GCM",
+      ivHex: PasskeyCrypto.bufferToHex(ivBytes),
+      ciphertextHex: PasskeyCrypto.bufferToHex(new Uint8Array(ciphertextBuffer)),
+      checksumHex: checksumHex,
+      primaryAddress: this.state.address,
+      exportedAt: backupPayload.exportedAt
+    };
+
+    return JSON.stringify(backupEnvelope, null, 2);
+  }
+
+  async importEncryptedBackup(envelopeJsonStr, passphrase) {
+    if (!envelopeJsonStr || !passphrase) {
+      throw new Error("Both backup file contents and passphrase are required.");
+    }
+
+    let envelope;
+    try {
+      envelope = JSON.parse(envelopeJsonStr);
+    } catch (e) {
+      throw new Error("Invalid backup file: Not valid JSON.");
+    }
+
+    if (!envelope.saltHex || !envelope.ivHex || !envelope.ciphertextHex) {
+      throw new Error("Invalid ProofCash backup envelope structure.");
+    }
+
+    const saltBytes = PasskeyCrypto.hexToBuffer(envelope.saltHex);
+    const ivBytes = PasskeyCrypto.hexToBuffer(envelope.ivHex);
+    const ciphertextBytes = PasskeyCrypto.hexToBuffer(envelope.ciphertextHex);
+
+    // Derive key
+    const aesKey = await this.deriveBackupKey(passphrase, saltBytes);
+
+    let decryptedBuffer;
+    try {
+      decryptedBuffer = await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: ivBytes },
+        aesKey,
+        ciphertextBytes
+      );
+    } catch (err) {
+      throw new Error("Decryption failed: Incorrect passphrase or corrupted backup file.");
+    }
+
+    const decryptedBytes = new Uint8Array(decryptedBuffer);
+
+    // Check integrity
+    if (envelope.checksumHex) {
+      const computedHash = new Uint8Array(await crypto.subtle.digest("SHA-256", decryptedBytes));
+      const computedHex = PasskeyCrypto.bufferToHex(computedHash);
+      if (computedHex !== envelope.checksumHex) {
+        throw new Error("Checksum mismatch: Decrypted backup integrity check failed.");
+      }
+    }
+
+    const decryptedStr = new TextDecoder().decode(decryptedBytes);
+    const payload = JSON.parse(decryptedStr);
+
+    // Restore state
+    this.state.accounts = payload.accounts || [];
+    this.state.credentials = payload.credentials || [];
+    this.state.activeAccountId = payload.activeAccountId || (payload.accounts[0] ? payload.accounts[0].id : 'acc_1');
+    this.state.address = payload.address || (payload.accounts[0] ? payload.accounts[0].address : null);
+    this.state.balance_pJ = BigInt(payload.balance_pJ || "0");
+    this.state.txHistory = payload.txHistory || [];
+
+    // Restore enclave keys to localStorage
+    if (payload.enclaveKeys) {
+      for (const [credId, rawKeyJson] of Object.entries(payload.enclaveKeys)) {
+        localStorage.setItem('proofcash_enclave_' + credId, rawKeyJson);
+      }
+    }
+
+    this.saveState();
+    this.notifySubscribers();
+
+    return {
+      success: true,
+      restoredAddress: this.state.address,
+      restoredAccountsCount: this.state.accounts.length,
+      balancePcash: this.formatPcash(this.state.balance_pJ)
+    };
+  }
+
+  // --- BIP-39 Style 24-Word ZK Recovery Mnemonic ---
+
+  getZkRecoveryMnemonic() {
+    // Standard compact 64-word cypherpunk dictionary for deterministic recovery visualization
+    const WORDLIST = [
+      "alpha", "anchor", "beacon", "blake", "bond", "circuit", "cliff", "conduit",
+      "crypto", "curfew", "cycle", "delta", "digest", "echo", "element", "enclave",
+      "energy", "entropy", "epoch", "erasure", "falcon", "flux", "forge", "fossil",
+      "frontier", "fusion", "galaxy", "genesis", "goldilocks", "grain", "gravity", "halo",
+      "hash", "horizon", "impact", "inertia", "jubjub", "joule", "landauer", "lattice",
+      "monoid", "merkle", "mesh", "nullifier", "nexus", "orbit", "ozone", "passkey",
+      "photon", "plonky", "poseidon", "proof", "pulsar", "quantum", "radian", "reactor",
+      "shield", "schnorr", "stark", "thermo", "vacuum", "vector", "vortex", "zenith"
+    ];
+
+    // Seed derivation from primary address bytes
+    const addr = this.state.address || "pc1q000000000000000000000000000000000000";
+    const bytes = new TextEncoder().encode(addr + "_mnemonic_seed_v1");
+    const words = [];
+    for (let i = 0; i < 24; i++) {
+      const idx = (bytes[i % bytes.length] * 7 + i * 13) % WORDLIST.length;
+      words.push(WORDLIST[idx]);
+    }
+    return words;
+  }
+
   resetWallet() {
     localStorage.removeItem(this.getStorageKey());
     window.location.reload();

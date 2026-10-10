@@ -127,7 +127,7 @@ class ProofCashExplorerEngine {
     }
   }
 
-  // --- Real-time P2P Mesh Synchronization ---
+  // --- Real-time P2P Mesh & WebSocket Relay Synchronization ---
 
   initP2pListener() {
     if (typeof BroadcastChannel !== 'undefined') {
@@ -149,6 +149,59 @@ class ProofCashExplorerEngine {
           } catch (err) {}
         }
       });
+    }
+
+    // Connect to Option 2 Public WebSocket Relay for cross-device live sync
+    this.connectPublicRelay();
+  }
+
+  connectPublicRelay() {
+    const relays = ['wss://relay.damus.io', 'wss://nos.lol'];
+    const chosenRelay = relays[0];
+
+    try {
+      this.wsRelay = new WebSocket(chosenRelay);
+      this.wsRelay.onopen = () => {
+        console.info("[Explorer Relay] Connected to public P2P mesh relay:", chosenRelay);
+        // Subscribe to ProofCash settlement channel
+        const subReq = JSON.stringify([
+          "REQ",
+          "proofcash_explorer_live",
+          {
+            "kinds": [29200],
+            "#t": ["proofcash_tx"]
+          }
+        ]);
+        this.wsRelay.send(subReq);
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('proofcash:relay_status', {
+            detail: { connected: true, relay: chosenRelay }
+          }));
+        }
+      };
+
+      this.wsRelay.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg[0] === 'EVENT' && msg[2] && msg[2].content) {
+            const txPacket = JSON.parse(msg[2].content);
+            this.handleP2pPacket(txPacket);
+          }
+        } catch (e) {}
+      };
+
+      this.wsRelay.onerror = () => {};
+      this.wsRelay.onclose = () => {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('proofcash:relay_status', {
+            detail: { connected: false, relay: chosenRelay }
+          }));
+        }
+        setTimeout(() => this.connectPublicRelay(), 8000);
+      };
+    } catch (e) {
+      console.warn("[Explorer Relay] WebSocket connection error:", e);
     }
   }
 

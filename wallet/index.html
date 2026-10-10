@@ -250,6 +250,9 @@
           <button id="btn-create-account" class="text-[11px] px-2 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 border border-gray-750 font-medium transition-all cursor-pointer flex items-center gap-1" title="Create an additional wallet account to test real send/receive">
             <span>+</span> <span>New Vault</span>
           </button>
+          <button id="btn-open-backup" class="text-[11px] px-2.5 py-1.5 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-500/40 font-medium transition-all cursor-pointer flex items-center gap-1" title="Encrypted Backup & Recovery">
+            <span>💾</span> <span>Backup &amp; Recovery</span>
+          </button>
         </div>
 
         <div class="flex items-center gap-2 text-gray-400 min-w-0 max-w-full">
@@ -853,6 +856,97 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Modal: Encrypted Keystore Backup & Vault Recovery -->
+  <div id="modal-backup" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card rounded-2xl max-w-lg w-full p-6 border border-gray-800 relative space-y-4 max-h-[90vh] overflow-y-auto custom-scroll shadow-2xl">
+      <div class="flex justify-between items-center pb-2 border-b border-gray-800">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <span>💾</span> Encrypted Backup &amp; Recovery
+        </h3>
+        <button id="btn-close-backup" class="text-gray-400 hover:text-white text-lg cursor-pointer">✕</button>
+      </div>
+
+      <!-- Hardware Enclave Context & Biometric Realism Banner -->
+      <div id="enclave-context-banner" class="p-3.5 rounded-xl bg-gray-950 border border-gray-800 space-y-2 text-xs font-mono">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-400">Authenticator Engine:</span>
+          <span id="disp-enclave-mode" class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            Checking...
+          </span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-400">Origin Context:</span>
+          <span id="disp-origin-context" class="text-gray-300 text-[11px]">localhost (Secure)</span>
+        </div>
+        <div class="p-2 rounded bg-gray-900/60 border border-gray-850 text-[10px] text-gray-400 font-sans leading-relaxed">
+          <strong class="text-gray-300">Biometric Notice:</strong> Native system FaceID/TouchID prompts require <strong>HTTPS</strong> or <strong>localhost</strong>. If accessed via a local network IP (<code class="text-amber-400">http://192.168.x.x</code>), the browser blocks the native hardware biometric dialog and safely uses software enclave emulation.
+        </div>
+      </div>
+
+      <!-- Sub-Tabs: Export / Import / ZK Mnemonic -->
+      <div class="flex border-b border-gray-800 space-x-4 text-xs font-medium">
+        <button id="backup-subtab-export" class="subtab-btn pb-2 border-b-2 border-emerald-400 text-white font-bold cursor-pointer">
+          Export Backup (.json)
+        </button>
+        <button id="backup-subtab-import" class="subtab-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 cursor-pointer">
+          Restore from File
+        </button>
+        <button id="backup-subtab-mnemonic" class="subtab-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 cursor-pointer">
+          24-Word ZK Phrase
+        </button>
+      </div>
+
+      <!-- Section 1: Export Encrypted Backup -->
+      <div id="section-backup-export" class="space-y-3 text-xs">
+        <p class="text-gray-400">
+          Exports a cryptographically sealed keystore file (<strong class="text-emerald-400">PBKDF2-SHA256 100k + AES-256-GCM</strong>) containing your vaults, addresses, and passkey delegation keys.
+        </p>
+        <div class="space-y-1">
+          <label class="font-semibold text-gray-300">Set Backup Passphrase (min 6 chars):</label>
+          <input type="password" id="input-export-passphrase" placeholder="Choose a secure passphrase..." class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500">
+        </div>
+        <button id="btn-export-download" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+          <span>💾</span> Download Encrypted Keystore (.json)
+        </button>
+        <div id="export-status-msg" class="hidden text-[11px] font-mono text-emerald-400 p-2 bg-gray-950 rounded border border-gray-900"></div>
+      </div>
+
+      <!-- Section 2: Restore from Backup File -->
+      <div id="section-backup-import" class="space-y-3 text-xs hidden">
+        <p class="text-gray-400">
+          Select an exported ProofCash keystore <code class="text-emerald-400">.json</code> file and provide your passphrase to recover all accounts and funds.
+        </p>
+        <div class="space-y-1">
+          <label class="font-semibold text-gray-300">Select Backup File:</label>
+          <input type="file" id="input-import-file" accept=".json" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-gray-300 cursor-pointer">
+        </div>
+        <div class="space-y-1">
+          <label class="font-semibold text-gray-300">Decryption Passphrase:</label>
+          <input type="password" id="input-import-passphrase" placeholder="Enter your passphrase..." class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500">
+        </div>
+        <button id="btn-import-restore" class="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-black font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+          <span>📥</span> Decrypt &amp; Restore Vault
+        </button>
+        <div id="import-status-msg" class="hidden text-[11px] font-mono p-2.5 bg-gray-950 rounded border"></div>
+      </div>
+
+      <!-- Section 3: 24-Word ZK Mnemonic -->
+      <div id="section-backup-mnemonic" class="space-y-3 text-xs hidden">
+        <div class="p-2.5 rounded-lg bg-amber-950/30 border border-amber-500/30 text-amber-300 text-[11px]">
+          ⚠️ <strong>Cold Storage Backup:</strong> Write down these 24 words on paper. Never paste them into unverified apps.
+        </div>
+        <div id="mnemonic-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 p-3 rounded-xl bg-gray-950 border border-gray-900 font-mono text-[11px]">
+          <!-- Dynamically populated with 24 words -->
+        </div>
+        <button id="btn-copy-mnemonic" class="w-full py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-medium text-xs transition-all cursor-pointer">
+          📋 Copy 24-Word Seed to Clipboard
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Biometric FaceID / Secure Enclave HUD -->
   <div id="modal-biometric" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
     <div class="glass-card rounded-3xl max-w-xs w-full p-6 border border-emerald-500/40 relative space-y-4 text-center shadow-2xl shadow-emerald-500/20">
@@ -1234,8 +1328,153 @@
       }
       document.getElementById('btn-close-settings').addEventListener('click', () => modalSettings.classList.add('hidden'));
 
+      // Backup & Recovery Modal Wireup
+      const modalBackup = document.getElementById('modal-backup');
+      const btnOpenBackup = document.getElementById('btn-open-backup');
+      const btnCloseBackup = document.getElementById('btn-close-backup');
+      if (btnOpenBackup) {
+        btnOpenBackup.addEventListener('click', async () => {
+          // Update enclave context badge
+          const isPlatform = await wallet.crypto.isPlatformAuthenticatorAvailable();
+          const isSecure = window.isSecureContext || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const dispMode = document.getElementById('disp-enclave-mode');
+          const dispOrigin = document.getElementById('disp-origin-context');
+
+          if (dispOrigin) dispOrigin.innerText = `${window.location.hostname || 'localhost'} (${isSecure ? 'Secure Context' : 'Insecure Context'})`;
+          if (dispMode) {
+            if (isSecure && isPlatform) {
+              dispMode.innerText = "🟢 Platform Secure Enclave (Apple FaceID/TouchID/Windows Hello)";
+              dispMode.className = "px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+            } else {
+              dispMode.innerText = "🟡 Software Enclave Emulation (Development Mode)";
+              dispMode.className = "px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30";
+            }
+          }
+
+          // Populate 24-word ZK recovery mnemonic
+          const mnemonicGrid = document.getElementById('mnemonic-grid');
+          if (mnemonicGrid) {
+            mnemonicGrid.innerHTML = '';
+            const words = wallet.getZkRecoveryMnemonic();
+            words.forEach((w, idx) => {
+              const cell = document.createElement('div');
+              cell.className = 'p-1.5 rounded bg-gray-900/80 border border-gray-800 text-gray-300 text-[10px] flex items-center justify-between';
+              cell.innerHTML = `<span class="text-gray-500 text-[9px]">${idx + 1}.</span> <span class="text-emerald-400 font-semibold">${w}</span>`;
+              mnemonicGrid.appendChild(cell);
+            });
+          }
+
+          modalBackup.classList.remove('hidden');
+        });
+      }
+      if (btnCloseBackup) {
+        btnCloseBackup.addEventListener('click', () => modalBackup.classList.add('hidden'));
+      }
+
+      // Backup subtabs
+      const subtabExport = document.getElementById('backup-subtab-export');
+      const subtabImport = document.getElementById('backup-subtab-import');
+      const subtabMnemonic = document.getElementById('backup-subtab-mnemonic');
+      const secExport = document.getElementById('section-backup-export');
+      const secImport = document.getElementById('section-backup-import');
+      const secMnemonic = document.getElementById('section-backup-mnemonic');
+
+      const setBackupTab = (activeBtn, activeSec) => {
+        [subtabExport, subtabImport, subtabMnemonic].forEach(b => {
+          if (b) b.className = 'subtab-btn pb-2 border-b-2 border-transparent text-gray-400 hover:text-gray-200 cursor-pointer';
+        });
+        [secExport, secImport, secMnemonic].forEach(s => {
+          if (s) s.classList.add('hidden');
+        });
+        if (activeBtn) activeBtn.className = 'subtab-btn pb-2 border-b-2 border-emerald-400 text-white font-bold cursor-pointer';
+        if (activeSec) activeSec.classList.remove('hidden');
+      };
+
+      if (subtabExport) subtabExport.addEventListener('click', () => setBackupTab(subtabExport, secExport));
+      if (subtabImport) subtabImport.addEventListener('click', () => setBackupTab(subtabImport, secImport));
+      if (subtabMnemonic) subtabMnemonic.addEventListener('click', () => setBackupTab(subtabMnemonic, secMnemonic));
+
+      // Download backup
+      const btnExportDownload = document.getElementById('btn-export-download');
+      if (btnExportDownload) {
+        btnExportDownload.addEventListener('click', async () => {
+          const pass = document.getElementById('input-export-passphrase').value;
+          const statusEl = document.getElementById('export-status-msg');
+          try {
+            const envelopeJson = await wallet.exportEncryptedBackup(pass);
+            const blob = new Blob([envelopeJson], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `proofcash-backup-${(wallet.state.address || 'vault').substring(0, 10)}-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            if (statusEl) {
+              statusEl.innerText = "✓ Encrypted keystore downloaded successfully! Store it in a safe location.";
+              statusEl.classList.remove('hidden');
+            }
+            showToast("✓ Keystore Encrypted & Downloaded", 'emerald');
+          } catch (err) {
+            alert(err.message);
+          }
+        });
+      }
+
+      // Restore backup
+      const btnImportRestore = document.getElementById('btn-import-restore');
+      if (btnImportRestore) {
+        btnImportRestore.addEventListener('click', async () => {
+          const fileInput = document.getElementById('input-import-file');
+          const pass = document.getElementById('input-import-passphrase').value;
+          const statusEl = document.getElementById('import-status-msg');
+
+          if (!fileInput.files || fileInput.files.length === 0) {
+            alert("Please select a .json backup file to restore.");
+            return;
+          }
+
+          const file = fileInput.files[0];
+          const reader = new FileReader();
+          reader.onload = async (e) => {
+            try {
+              const res = await wallet.importEncryptedBackup(e.target.result, pass);
+              if (statusEl) {
+                statusEl.className = 'text-[11px] font-mono p-2.5 bg-emerald-950/40 text-emerald-300 rounded border border-emerald-500/40';
+                statusEl.innerText = `✓ Restored successfully! ${res.restoredAccountsCount} accounts recovered. Active address: ${res.restoredAddress}`;
+                statusEl.classList.remove('hidden');
+              }
+              showToast("✓ Vault Restored from Backup File!", 'emerald');
+              setTimeout(() => {
+                modalBackup.classList.add('hidden');
+              }, 1800);
+            } catch (err) {
+              if (statusEl) {
+                statusEl.className = 'text-[11px] font-mono p-2.5 bg-rose-950/40 text-rose-300 rounded border border-rose-500/40';
+                statusEl.innerText = `✕ Error: ${err.message}`;
+                statusEl.classList.remove('hidden');
+              }
+            }
+          };
+          reader.readAsText(file);
+        });
+      }
+
+      // Copy Mnemonic
+      const btnCopyMnemonic = document.getElementById('btn-copy-mnemonic');
+      if (btnCopyMnemonic) {
+        btnCopyMnemonic.addEventListener('click', () => {
+          const words = wallet.getZkRecoveryMnemonic().join(' ');
+          navigator.clipboard.writeText(words);
+          btnCopyMnemonic.innerText = '✓ 24-Word Seed Copied!';
+          setTimeout(() => {
+            btnCopyMnemonic.innerText = '📋 Copy 24-Word Seed to Clipboard';
+          }, 1500);
+          showToast("24-Word Seed Copied to Clipboard", 'amber');
+        });
+      }
+
       // Close on outside click
-      [modalSend, modalRecv, modalSettings].forEach(m => {
+      [modalSend, modalRecv, modalSettings, modalBackup].forEach(m => {
         if (!m) return;
         m.addEventListener('click', (e) => {
           if (e.target === m) m.classList.add('hidden');

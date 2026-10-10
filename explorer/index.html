@@ -87,6 +87,10 @@
 
       <!-- Nav Links -->
       <div class="hidden md:flex items-center gap-2 text-xs">
+        <div id="disp-relay-badge" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-cyan-950/40 border border-cyan-500/30 text-cyan-300 font-mono text-[11px]">
+          <span class="h-2 w-2 rounded-full bg-cyan-400 pulse-dot"></span>
+          <span id="disp-relay-text">P2P Mesh: Live</span>
+        </div>
         <a href="../wallet/index.html" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-semibold transition-all flex items-center gap-1">
           <span>🔐</span> Wallet PWA ↗
         </a>
@@ -616,6 +620,14 @@
           btn.disabled = false;
           btn.innerText = '⚡ Evaluate 1,842 AIR Constraints in Browser';
         }, 150);
+      });
+
+      // Public P2P Mesh Relay Status Listener (Option 2)
+      window.addEventListener('proofcash:relay_status', (e) => {
+        const text = document.getElementById('disp-relay-text');
+        if (text && e.detail) {
+          text.innerText = e.detail.connected ? `Relay: Live (${e.detail.relay.replace('wss://', '')})` : 'Relay: Reconnecting...';
+        }
       });
     }
   </script>
