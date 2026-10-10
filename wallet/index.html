@@ -253,6 +253,10 @@
           <button id="btn-open-backup" class="text-[11px] px-2.5 py-1.5 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 border border-emerald-500/40 font-medium transition-all cursor-pointer flex items-center gap-1" title="Encrypted Backup & Recovery">
             <span>💾</span> <span>Backup &amp; Recovery</span>
           </button>
+          <span id="badge-mesh-live" class="text-[10px] font-mono px-2 py-1 rounded-lg bg-cyan-950/40 border border-cyan-500/30 text-cyan-300 flex items-center gap-1.5 shrink-0" title="Cross-Browser P2P Mesh Relay">
+            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 pulse-dot"></span>
+            <span>Mesh: Live</span>
+          </span>
         </div>
 
         <div class="flex items-center gap-2 text-gray-400 min-w-0 max-w-full">
@@ -840,8 +844,12 @@
           </button>
         </div>
         <div class="flex justify-between items-center text-[11px] text-gray-400 px-1 font-mono">
-          <span>Connection Status:</span>
+          <span>Node Status:</span>
           <span id="settings-rpc-status" class="text-amber-400">● In-Browser Sandbox (Autonomous Prover)</span>
+        </div>
+        <div class="flex justify-between items-center text-[11px] text-gray-400 px-1 font-mono">
+          <span>Cross-Browser P2P Mesh:</span>
+          <span id="disp-mesh-status" class="text-emerald-400">● Global P2P Mesh (Live &amp; Synced)</span>
         </div>
       </div>
 
@@ -1639,6 +1647,19 @@
       // Real-time P2P Transfer In-App Toast
       window.addEventListener('proofcash:received', (e) => {
         showToast(`🎉 Real-Time Settlement: Received +${e.detail.amount} PCASH in ${e.detail.recipient.substring(0, 10)}...`, 'emerald');
+      });
+
+      // P2P Mesh Relay Status Listener
+      window.addEventListener('proofcash:mesh_status', (e) => {
+        const badge = document.getElementById('badge-mesh-live');
+        const rpcMesh = document.getElementById('disp-mesh-status');
+        if (e.detail && e.detail.connected) {
+          if (badge) badge.innerHTML = `<span class="h-1.5 w-1.5 rounded-full bg-emerald-400 pulse-dot"></span><span>Mesh: Live</span>`;
+          if (rpcMesh) rpcMesh.innerHTML = `<span class="text-emerald-400">● Global P2P Mesh (Live &amp; Synced)</span>`;
+        } else {
+          if (badge) badge.innerHTML = `<span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span><span>Mesh: Connecting...</span>`;
+          if (rpcMesh) rpcMesh.innerHTML = `<span class="text-amber-400">● Mesh Relay: Reconnecting...</span>`;
+        }
       });
 
       async function triggerBiometricAuth(validityBlocks = 144) {

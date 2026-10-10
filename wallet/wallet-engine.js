@@ -118,6 +118,20 @@ class ProofCashWalletEngine {
           balance_pJ: BigInt(parsed.balance_pJ || "0"),
           accounts: parsed.accounts || []
         };
+        if (this.state.txHistory) {
+          this.state.txHistory.forEach(tx => {
+            if (tx && tx.txid) this.processedTxids.add(tx.txid);
+          });
+        }
+        if (this.state.accounts) {
+          this.state.accounts.forEach(acc => {
+            if (acc && acc.txHistory) {
+              acc.txHistory.forEach(tx => {
+                if (tx && tx.txid) this.processedTxids.add(tx.txid);
+              });
+            }
+          });
+        }
       } else {
         // Reset state for new network to guarantee strict isolation
         this.state = {
@@ -241,7 +255,9 @@ class ProofCashWalletEngine {
   // --- Real-time P2P Mesh & WebSocket Synchronization ---
 
   initP2pMesh() {
-    // 1. BroadcastChannel across tabs and browser windows
+    this.meshTopic = 'proofcash_settlement_mesh_v1';
+
+    // 1. BroadcastChannel across tabs and browser windows (same browser)
     if (typeof BroadcastChannel !== 'undefined') {
       try {
         this.p2pChannel = new BroadcastChannel('proofcash_p2p_mesh');
@@ -255,7 +271,7 @@ class ProofCashWalletEngine {
       }
     }
 
-    // 2. Storage event fallback for cross-window isolation
+    // 2. Storage event fallback for cross-window isolation (same browser)
     if (typeof window !== 'undefined' && window.addEventListener) {
       window.addEventListener('storage', (e) => {
         if (e.key === 'proofcash_p2p_transfer' && e.newValue) {
@@ -267,46 +283,77 @@ class ProofCashWalletEngine {
       });
     }
 
-    // 3. Connect to Public Global WebSocket Relay (Syncing across phone & PC)
+    // 3. Connect to Public Global WebSocket Relay (Syncing across different browsers, phones & PCs)
     this.connectPublicRelay();
   }
 
   connectPublicRelay() {
-    const relays = ['wss://relay.damus.io', 'wss://nos.lol'];
-    const chosenRelay = relays[0];
+    const wsUrl = `wss://ntfy.sh/${this.meshTopic}/ws`;
 
     try {
-      this.wsRelay = new WebSocket(chosenRelay);
+      this.wsRelay = new WebSocket(wsUrl);
       this.wsRelay.onopen = () => {
-        // Subscribe to ProofCash settlement channel
-        const subReq = JSON.stringify([
-          "REQ",
-          "proofcash_live_settlement",
-          {
-            "kinds": [29200],
-            "#t": ["proofcash_tx"]
-          }
-        ]);
-        this.wsRelay.send(subReq);
+        console.info("[P2P Mesh] Connected to global WebSocket relay:", wsUrl);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('proofcash:mesh_status', {
+            detail: { connected: true, relay: 'Global P2P Mesh (ntfy.sh)' }
+          }));
+        }
+        // Catch up on any transfers sent while this browser was closed or offline
+        this.fetchMeshBacklog();
       };
 
       this.wsRelay.onmessage = (event) => {
         try {
-          const msg = JSON.parse(event.data);
-          if (msg[0] === 'EVENT' && msg[2] && msg[2].content) {
-            const txPacket = JSON.parse(msg[2].content);
+          const data = JSON.parse(event.data);
+          if (data && data.event === 'message' && data.message) {
+            const txPacket = JSON.parse(data.message);
             this.handleIncomingP2pTransfer(txPacket);
           }
         } catch (e) {}
       };
 
-      this.wsRelay.onerror = () => {};
+      this.wsRelay.onerror = () => {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('proofcash:mesh_status', {
+            detail: { connected: false, relay: 'Reconnecting...' }
+          }));
+        }
+      };
+
       this.wsRelay.onclose = () => {
-        // Auto-reconnect after 8 seconds
-        setTimeout(() => this.connectPublicRelay(), 8000);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('proofcash:mesh_status', {
+            detail: { connected: false, relay: 'Reconnecting...' }
+          }));
+        }
+        // Auto-reconnect after 4 seconds
+        setTimeout(() => this.connectPublicRelay(), 4000);
       };
     } catch (e) {
       console.warn("[P2P Relay] WebSocket connection error:", e);
+    }
+  }
+
+  async fetchMeshBacklog() {
+    try {
+      const resp = await fetch(`https://ntfy.sh/${this.meshTopic}/json?poll=1&since=24h`);
+      if (resp.ok) {
+        const text = await resp.text();
+        const lines = text.trim().split('\n');
+        for (const line of lines) {
+          if (!line) continue;
+          try {
+            const data = JSON.parse(line);
+            if (data.event === 'message' && data.message) {
+              const txPacket = JSON.parse(data.message);
+              this.handleIncomingP2pTransfer(txPacket);
+            }
+          } catch (err) {}
+        }
+      }
+    } catch (err) {
+      console.warn("[P2P Mesh] Backlog sync skipped:", err);
     }
   }
 
@@ -316,19 +363,20 @@ class ProofCashWalletEngine {
     if (this.processedTxids.has(packet.txid)) return;
     this.processedTxids.add(packet.txid);
 
-    const targetAddr = packet.recipient.trim();
+    const targetAddr = (packet.recipient || "").trim().toLowerCase();
+    const currentAddr = (this.state.address || "").trim().toLowerCase();
     const amount_pJ = BigInt(packet.amount_pJ || "0");
     const amountPcash = packet.amountPcash || this.formatPcash(amount_pJ);
 
     let matched = false;
 
     // Check if target matches active account
-    if (this.state.address === targetAddr) {
+    if (currentAddr && currentAddr === targetAddr) {
       this.state.balance_pJ += amount_pJ;
       const receiveRecord = {
         type: "SHIELDED_RECEIVE",
         txid: packet.txid,
-        recipient: targetAddr,
+        recipient: packet.recipient.trim(),
         sender: packet.sender || "Shielded Origin",
         amount: amountPcash,
         fee: "0.0000",
@@ -341,7 +389,7 @@ class ProofCashWalletEngine {
       matched = true;
     } else {
       // Check if target matches any other account in our multi-account list
-      const accIdx = this.state.accounts.findIndex(a => a.address === targetAddr);
+      const accIdx = this.state.accounts.findIndex(a => (a.address || "").trim().toLowerCase() === targetAddr);
       if (accIdx !== -1) {
         const cur = BigInt(this.state.accounts[accIdx].balance_pJ || "0");
         this.state.accounts[accIdx].balance_pJ = (cur + amount_pJ).toString();
@@ -349,10 +397,11 @@ class ProofCashWalletEngine {
         this.state.accounts[accIdx].txHistory.unshift({
           type: "SHIELDED_RECEIVE",
           txid: packet.txid,
-          recipient: targetAddr,
+          recipient: packet.recipient.trim(),
           sender: packet.sender || "Shielded Origin",
           amount: amountPcash,
           fee: "0.0000",
+          memo: packet.memo || "Shielded eUTXO Transfer",
           height: this.state.currentBlockHeight,
           timestamp: packet.timestamp || Date.now(),
           status: "CONFIRMED"
@@ -366,13 +415,16 @@ class ProofCashWalletEngine {
       this.notifySubscribers();
 
       // Dispatch event to show in-app banner/toast
-      window.dispatchEvent(new CustomEvent('proofcash:received', {
-        detail: {
-          amount: amountPcash,
-          recipient: targetAddr,
-          txid: packet.txid
-        }
-      }));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('proofcash:received', {
+          detail: {
+            amount: amountPcash,
+            recipient: packet.recipient.trim(),
+            sender: packet.sender,
+            txid: packet.txid
+          }
+        }));
+      }
     }
   }
 
@@ -565,21 +617,14 @@ class ProofCashWalletEngine {
       localStorage.setItem('proofcash_p2p_transfer', JSON.stringify(p2pPacket));
     } catch (e) {}
 
-    // 7. Publish to Global WebSocket Relay (across different phones/devices)
-    if (this.wsRelay && this.wsRelay.readyState === WebSocket.OPEN) {
-      try {
-        const nostrEvent = [
-          "EVENT",
-          {
-            kind: 29200,
-            created_at: Math.floor(Date.now() / 1000),
-            tags: [["t", "proofcash_tx"], ["p", recipient]],
-            content: JSON.stringify(p2pPacket)
-          }
-        ];
-        this.wsRelay.send(JSON.stringify(nostrEvent));
-      } catch (err) {}
-    }
+    // 7. Publish to Global WebSocket Relay (instant push across all browsers & devices)
+    try {
+      fetch(`https://ntfy.sh/${this.meshTopic || 'proofcash_settlement_mesh_v1'}`, {
+        method: 'POST',
+        headers: { 'Title': 'ProofCash Transfer', 'Priority': 'high' },
+        body: JSON.stringify(p2pPacket)
+      }).catch(e => console.warn("[P2P Mesh] Publish error:", e));
+    } catch (err) {}
 
     // 8. Broadcast to proofcashd RPC node
     this.broadcastTransaction(txEntry);

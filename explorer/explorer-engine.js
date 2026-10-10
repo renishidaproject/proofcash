@@ -156,36 +156,29 @@ class ProofCashExplorerEngine {
   }
 
   connectPublicRelay() {
-    const relays = ['wss://relay.damus.io', 'wss://nos.lol'];
-    const chosenRelay = relays[0];
+    const topic = 'proofcash_settlement_mesh_v1';
+    const wsUrl = `wss://ntfy.sh/${topic}/ws`;
 
     try {
-      this.wsRelay = new WebSocket(chosenRelay);
+      this.wsRelay = new WebSocket(wsUrl);
       this.wsRelay.onopen = () => {
-        console.info("[Explorer Relay] Connected to public P2P mesh relay:", chosenRelay);
-        // Subscribe to ProofCash settlement channel
-        const subReq = JSON.stringify([
-          "REQ",
-          "proofcash_explorer_live",
-          {
-            "kinds": [29200],
-            "#t": ["proofcash_tx"]
-          }
-        ]);
-        this.wsRelay.send(subReq);
+        console.info("[Explorer Relay] Connected to public P2P mesh relay:", wsUrl);
 
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('proofcash:relay_status', {
-            detail: { connected: true, relay: chosenRelay }
+            detail: { connected: true, relay: 'Global P2P Mesh (ntfy.sh)' }
           }));
         }
+
+        // Fetch recent transactions to catch up on cross-browser transfers
+        this.fetchRelayBacklog(topic);
       };
 
       this.wsRelay.onmessage = (event) => {
         try {
-          const msg = JSON.parse(event.data);
-          if (msg[0] === 'EVENT' && msg[2] && msg[2].content) {
-            const txPacket = JSON.parse(msg[2].content);
+          const data = JSON.parse(event.data);
+          if (data && data.event === 'message' && data.message) {
+            const txPacket = JSON.parse(data.message);
             this.handleP2pPacket(txPacket);
           }
         } catch (e) {}
@@ -195,14 +188,34 @@ class ProofCashExplorerEngine {
       this.wsRelay.onclose = () => {
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('proofcash:relay_status', {
-            detail: { connected: false, relay: chosenRelay }
+            detail: { connected: false, relay: 'Reconnecting...' }
           }));
         }
-        setTimeout(() => this.connectPublicRelay(), 8000);
+        setTimeout(() => this.connectPublicRelay(), 4000);
       };
     } catch (e) {
       console.warn("[Explorer Relay] WebSocket connection error:", e);
     }
+  }
+
+  async fetchRelayBacklog(topic) {
+    try {
+      const resp = await fetch(`https://ntfy.sh/${topic}/json?poll=1&since=24h`);
+      if (resp.ok) {
+        const text = await resp.text();
+        const lines = text.trim().split('\n');
+        for (const line of lines) {
+          if (!line) continue;
+          try {
+            const data = JSON.parse(line);
+            if (data.event === 'message' && data.message) {
+              const txPacket = JSON.parse(data.message);
+              this.handleP2pPacket(txPacket);
+            }
+          } catch (err) {}
+        }
+      }
+    } catch (err) {}
   }
 
   handleP2pPacket(packet) {
