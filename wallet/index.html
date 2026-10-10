@@ -881,7 +881,7 @@
           <span id="disp-origin-context" class="text-gray-300 text-[11px]">localhost (Secure)</span>
         </div>
         <div class="p-2 rounded bg-gray-900/60 border border-gray-850 text-[10px] text-gray-400 font-sans leading-relaxed">
-          <strong class="text-gray-300">Biometric Notice:</strong> Native system FaceID/TouchID prompts require <strong>HTTPS</strong> or <strong>localhost</strong>. If accessed via a local network IP (<code class="text-amber-400">http://192.168.x.x</code>), the browser blocks the native hardware biometric dialog and safely uses software enclave emulation.
+          <strong class="text-gray-300">Biometric Notice:</strong> Native system biometric prompts (Touch / Face / Windows Hello) require <strong>HTTPS</strong> or <strong>localhost</strong>. If accessed via a local network IP (<code class="text-amber-400">http://192.168.x.x</code>), the browser blocks the native hardware biometric dialog and safely uses software enclave emulation.
         </div>
       </div>
 
@@ -1363,7 +1363,7 @@
           if (dispOrigin) dispOrigin.innerText = `${window.location.hostname || 'localhost'} (${isSecure ? 'Secure Context' : 'Insecure Context'})`;
           if (dispMode) {
             if (isSecure && isPlatform) {
-              dispMode.innerText = "🟢 Platform Secure Enclave (Apple FaceID/TouchID/Windows Hello)";
+              dispMode.innerText = "🟢 Platform Secure Enclave (Biometrics / Windows Hello / Enclave)";
               dispMode.className = "px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
             } else {
               dispMode.innerText = "🟡 Software Enclave Emulation (Development Mode)";

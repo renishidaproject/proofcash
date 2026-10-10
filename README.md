@@ -31,7 +31,7 @@
 2. **Elimination of Halving Shocks:** Abrupt 4-year halving cliffs destabilize hashrate capital expenditure and leave networks vulnerable to terminal security failure. ProofCash implements a **continuous thermodynamic exponential decay** subsidy ($R(b) = 100 \cdot e^{-10^{-7}b}$), automatically stabilized by an on-chain Proportional-Integral-Derivative (PID) Fee Reservoir and a permanent 50% deflationary fee burn.
 3. **MEV-Free Parallel Execution:** Account-based architectures serialize state transitions, inviting predatory Maximal Extractable Value (MEV) frontrunning. ProofCash introduces **Commutative Delta-UTXOs** reducing over an associative monoid tree $(\Delta, \oplus)$ in $\mathcal{O}(\log N)$ parallel time without lock contention.
 4. **$O(1)$ State Succinctness (~43.2 KB):** Replaces linear history bloat with recursive STARK validity proofs over binary tower fields ($\mathbb{F}_{2^8}, \mathbb{F}_{2^{64}}$). A fresh node or mobile phone syncs the entire historical chain from Genesis in under $10\text{ ms}$.
-5. **Seed-Phrase-Free Biometric Security:** Traditional 24-word seed phrases written on paper create catastrophic user loss. ProofCash uses **Two-Tier Enclave Delegation**: native hardware FaceID/TouchID (WebAuthn NIST P-256) signs an ephemeral BabyJubjub in-circuit session key at an evaluation cost of only $1{,}842$ constraints ($<45\text{ ms}$ on mobile, bypassing the $350{,}000$ non-native P-256 ZK penalty).
+5. **Seed-Phrase-Free Biometric Security:** Traditional 24-word seed phrases written on paper create catastrophic user loss. ProofCash uses **Two-Tier Enclave Delegation**: native hardware platform biometrics (WebAuthn NIST P-256) sign an ephemeral BabyJubjub in-circuit session key at an evaluation cost of only $1{,}842$ constraints ($<45\text{ ms}$ on mobile, bypassing the $350{,}000$ non-native P-256 ZK penalty).
 
 ---
 
@@ -140,7 +140,7 @@ channel.settle()
 ### C. WebAuthn Passkey Wallet & Mobile Edge Miner
 
 Open `wallet/index.html` in Safari (iOS) or Chrome (Android/Desktop) or install as a standalone PWA:
-1. **Biometric FaceID / TouchID Authentication:** Authorize an in-circuit BabyJubjub session key in $<45\text{ ms}$.
+1. **Biometric Enclave Authentication:** Authorize an in-circuit BabyJubjub session key in $<45\text{ ms}$.
 2. **Mobile Edge Miner:** One-tap PoSW mining directly in the browser via multi-threaded Web Workers. Includes thermal duty-cycle throttling (*Eco*, *Standard*, and *Nightstand Charger* modes).
 3. **Consensus Switcher:** Seamlessly toggle between Testnet simulation (Height `#104,281`) and Mainnet Genesis anchor (Block `#0`).
 

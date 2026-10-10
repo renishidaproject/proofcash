@@ -93,7 +93,7 @@ Because the full repository, documentation, simulator, and mobile wallet are alr
 
 ## 4. Step 3: WebAuthn Passkey Relying Party Domain Binding
 
-WebAuthn hardware passkeys (FaceID, TouchID, Windows Hello) are cryptographically tied to the Relying Party ID (`rp.id`).
+WebAuthn hardware passkeys (Platform Biometrics, Touch, Windows Hello) are cryptographically tied to the Relying Party ID (`rp.id`).
 
 * When running on `localhost`, the passkey is labeled `localhost`.
 * When served from `https://proofcash.org`, the browser passes:

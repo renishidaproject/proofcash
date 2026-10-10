@@ -108,7 +108,7 @@ class PasskeyCrypto {
               { alg: -257, type: "public-key" } // RS256 backup
             ],
             authenticatorSelection: {
-              authenticatorAttachment: "platform", // FaceID, TouchID, Windows Hello
+              authenticatorAttachment: "platform", // Platform Biometrics, Windows Hello, Enclave
               residentKey: "preferred",
               userVerification: "required"
             },

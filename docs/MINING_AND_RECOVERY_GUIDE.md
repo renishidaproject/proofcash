@@ -178,7 +178,7 @@ Under the FIDO Alliance WebAuthn standard, hardware passkeys are **end-to-end en
    * If your iPhone is lost, destroyed, or stolen, purchase a new Apple device.
    * Sign in with your **Apple ID**.
    * Apple restores your encrypted **iCloud Keychain**.
-   * Open the ProofCash wallet: your FaceID/TouchID recognizes the existing passkey credential immediately. Your balance and eUTXOs are restored instantly.
+   * Open the ProofCash wallet: your biometric sensor (Touch/Face) recognizes the existing passkey credential immediately. Your balance and eUTXOs are restored instantly.
 2. **Android Users (Pixel / Samsung / Xiaomi):**
    * Log into your new Android phone with your **Google Account**.
    * Your passkey is restored via **Google Password Manager**.
@@ -192,7 +192,7 @@ Under the FIDO Alliance WebAuthn standard, hardware passkeys are **end-to-end en
 
 ProofCash allows registering multiple independent hardware roots for a single wallet identity:
 * You can register:
-  * Primary Phone (iPhone FaceID)
+  * Primary Phone (Platform Biometrics)
   * Work Laptop (MacBook TouchID / Windows Hello)
   * Physical Hardware Key (YubiKey 5C NFC)
 

@@ -167,7 +167,7 @@
                 <span>📱</span> Open Full PWA App
               </a>
               <button id="btn-passkey-auth" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center gap-1.5 transition-all">
-                <span>👤</span> FaceID Re-Auth
+                <span>⚡</span> Enclave Re-Auth
               </button>
             </div>
           </div>
@@ -449,7 +449,7 @@
 
     document.getElementById('btn-passkey-auth').addEventListener('click', () => {
       const btn = document.getElementById('btn-passkey-auth');
-      btn.innerText = 'Scanning FaceID...';
+      btn.innerText = 'Authenticating Enclave...';
       btn.classList.add('opacity-50');
 
       setTimeout(() => {
@@ -462,7 +462,7 @@
         
         logMempool(`[Passkey] Enclave authenticated session key 0x${randomHex} in 41.8 ms.`);
         setTimeout(() => {
-          btn.innerText = 'FaceID Re-Auth';
+          btn.innerText = 'Enclave Re-Auth';
           btn.classList.replace('bg-emerald-700', 'bg-emerald-500');
         }, 2000);
       }, 400);
