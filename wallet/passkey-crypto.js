@@ -161,7 +161,7 @@ class PasskeyCrypto {
         name: "ECDSA",
         namedCurve: "P-256"
       },
-      false, // non-extractable private key
+      true, // extractable so we can persist in client enclave store
       ["sign", "verify"]
     );
 
@@ -172,6 +172,15 @@ class PasskeyCrypto {
     // Store private key in memory indexed by mockCredId
     if (!window._pcash_enclave_store) window._pcash_enclave_store = {};
     window._pcash_enclave_store[mockCredId] = keyPair;
+
+    // Also persist JWK to localStorage so emulated key survives browser reloads
+    try {
+      const privJwk = await crypto.subtle.exportKey("jwk", keyPair.privateKey);
+      const pubJwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+      localStorage.setItem('proofcash_enclave_' + mockCredId, JSON.stringify({ privJwk, pubJwk, sec1PubkeyHex }));
+    } catch (e) {
+      console.warn("[Passkey] Could not persist emulated enclave key:", e);
+    }
 
     return {
       success: true,
@@ -242,6 +251,23 @@ class PasskeyCrypto {
 
   async signEmulatedDelegation(credentialId, sec1PubkeyHex, sessionPubkeyBytes, expirationHeight, payload) {
     let keyPair = window._pcash_enclave_store?.[credentialId];
+    if (!keyPair && credentialId) {
+      try {
+        const stored = localStorage.getItem('proofcash_enclave_' + credentialId);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const privKey = await crypto.subtle.importKey("jwk", parsed.privJwk, { name: "ECDSA", namedCurve: "P-256" }, true, ["sign"]);
+          const pubKey = await crypto.subtle.importKey("jwk", parsed.pubJwk, { name: "ECDSA", namedCurve: "P-256" }, true, ["verify"]);
+          keyPair = { privateKey: privKey, publicKey: pubKey };
+          if (!window._pcash_enclave_store) window._pcash_enclave_store = {};
+          window._pcash_enclave_store[credentialId] = keyPair;
+          if (parsed.sec1PubkeyHex) sec1PubkeyHex = parsed.sec1PubkeyHex;
+        }
+      } catch (e) {
+        console.warn("[Passkey] Failed to restore emulated key from storage:", e);
+      }
+    }
+
     if (!keyPair) {
       // Re-create on the fly if needed
       const res = await this.createEmulatedPasskey("Ren Ishida");

@@ -52,7 +52,7 @@
     }
   </style>
 </head>
-<body class="antialiased min-h-screen flex flex-col pb-12 selection:bg-emerald-500 selection:text-black">
+<body class="antialiased min-h-screen flex flex-col pb-12 selection:bg-emerald-500 selection:text-black overflow-x-hidden">
 
   <!-- Service Worker Registration -->
   <script>
@@ -70,34 +70,36 @@
     <div class="max-w-5xl mx-auto flex items-center justify-between">
       
       <!-- Logo & Brand -->
-      <div class="flex items-center gap-3">
-        <a href="../index.html" class="flex items-center gap-2 group">
-          <div class="h-9 w-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform">
+      <div class="flex items-center gap-3 min-w-0">
+        <a href="../index.html" class="flex items-center gap-2 group min-w-0">
+          <div class="h-9 w-9 shrink-0 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform">
             <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
             </svg>
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-white text-base tracking-tight">ProofCash</span>
-              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">PASSKEY PWA</span>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <span class="font-bold text-white text-base tracking-tight truncate">ProofCash</span>
+              <span class="text-[9px] sm:text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">PASSKEY</span>
             </div>
-            <p class="text-[11px] text-gray-400">Two-Tier Enclave Biometric Wallet</p>
+            <p class="text-[11px] text-gray-400 hidden sm:block truncate">Two-Tier Enclave Biometric Wallet</p>
           </div>
         </a>
       </div>
 
       <!-- Right Controls: Network Selector, Node Sync & Actions -->
-      <div class="flex items-center gap-2 sm:gap-3">
+      <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
         <!-- Network Selector Pills (Hick's Law: Clear Network Separation) -->
-        <div class="flex items-center bg-gray-950/90 p-1 rounded-xl border border-gray-800 text-xs font-mono">
-          <button id="btn-header-testnet" class="px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40 cursor-pointer flex items-center gap-1.5" title="Switch to Testnet Sandbox">
-            <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
-            <span>Testnet (Chaosnet)</span>
+        <div class="flex items-center bg-gray-950/90 p-0.5 sm:p-1 rounded-xl border border-gray-800 text-xs font-mono">
+          <button id="btn-header-testnet" class="px-2 sm:px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all bg-amber-500/20 text-amber-300 border border-amber-500/40 cursor-pointer flex items-center gap-1" title="Switch to Testnet Sandbox">
+            <span class="h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0"></span>
+            <span class="sm:hidden">Testnet</span>
+            <span class="hidden sm:inline">Testnet (Chaosnet)</span>
           </button>
-          <button id="btn-header-mainnet" class="px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all text-gray-400 hover:text-white cursor-pointer flex items-center gap-1.5" title="View Mainnet Pre-Launch">
-            <span class="h-1.5 w-1.5 rounded-full bg-gray-600"></span>
-            <span>Mainnet (Genesis)</span>
+          <button id="btn-header-mainnet" class="px-2 sm:px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-medium transition-all text-gray-400 hover:text-white cursor-pointer flex items-center gap-1" title="View Mainnet Pre-Launch">
+            <span class="h-1.5 w-1.5 rounded-full bg-gray-600 shrink-0"></span>
+            <span class="sm:hidden">Mainnet</span>
+            <span class="hidden sm:inline">Mainnet (Genesis)</span>
           </button>
         </div>
 
@@ -105,27 +107,27 @@
           <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
           </svg>
-          <span>Install PWA</span>
+          <span class="hidden xs:inline">Install PWA</span>
         </button>
 
-        <button id="btn-open-settings" class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-gray-900 hover:bg-gray-850 border border-gray-800 text-xs transition-colors cursor-pointer group" title="Network & RPC Node Settings">
-          <span id="node-status-dot" class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span>
-          <span id="node-status-text" class="text-gray-300 font-mono text-[11px] group-hover:text-white">Sync: #104,281</span>
-          <svg class="w-3.5 h-3.5 text-gray-500 group-hover:text-emerald-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <button id="btn-open-settings" class="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-full bg-gray-900 hover:bg-gray-850 border border-gray-800 text-xs transition-colors cursor-pointer group" title="Network & RPC Node Settings">
+          <span id="node-status-dot" class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot shrink-0"></span>
+          <span id="node-status-text" class="text-gray-300 font-mono text-[10px] sm:text-[11px] group-hover:text-white hidden sm:inline">Sync: #104,281</span>
+          <svg class="w-3.5 h-3.5 text-gray-500 group-hover:text-emerald-400 transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
         </button>
 
-        <a href="../explorer/index.html" class="text-xs text-cyan-400 hover:text-cyan-300 font-medium px-2 py-1 rounded hover:bg-cyan-950/40 border border-cyan-800/40 transition-colors flex items-center gap-1" title="Public Ledger Explorer">
-          <span>🔍</span> Explorer
+        <a href="../explorer/index.html" class="text-xs text-cyan-400 hover:text-cyan-300 font-medium px-2 py-1 rounded hover:bg-cyan-950/40 border border-cyan-800/40 transition-colors flex items-center gap-1 shrink-0" title="Public Ledger Explorer">
+          <span>🔍</span> <span class="hidden xs:inline">Explorer</span>
         </a>
 
-        <a href="../release/RENUNCIATION.md" target="_blank" class="text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-800 transition-colors">
+        <a href="../release/RENUNCIATION.md" target="_blank" class="hidden md:inline-flex text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-800 transition-colors shrink-0">
           Exit 📜
         </a>
 
-        <a href="../index.html" class="text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-800 transition-colors">
+        <a href="../index.html" class="hidden md:inline-flex text-xs text-gray-400 hover:text-white px-2 py-1 rounded hover:bg-gray-800 transition-colors shrink-0">
           Simulator ↗
         </a>
       </div>
@@ -150,27 +152,29 @@
           <p class="text-xs text-gray-400 mt-1">Strict 0 Pre-mine Genesis Invariant. Stress-test eUTXO circuits and edge mining on Testnet (Chaosnet) before production activation.</p>
         </div>
 
-        <div class="flex items-center gap-2 font-mono">
-          <div class="text-center px-2.5 py-1.5 rounded-xl bg-gray-950/90 border border-gray-800">
-            <div class="text-sm font-extrabold text-cyan-400" id="timer-days">--d</div>
-            <div class="text-[9px] text-gray-500 uppercase">Days</div>
+        <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 font-mono w-full md:w-auto justify-between sm:justify-start">
+          <div class="flex items-center gap-1.5 sm:gap-2">
+            <div class="text-center px-2 sm:px-2.5 py-1.5 rounded-xl bg-gray-950/90 border border-gray-800">
+              <div class="text-xs sm:text-sm font-extrabold text-cyan-400" id="timer-days">--d</div>
+              <div class="text-[8px] sm:text-[9px] text-gray-500 uppercase">Days</div>
+            </div>
+            <span class="text-gray-600 font-bold">:</span>
+            <div class="text-center px-2 sm:px-2.5 py-1.5 rounded-xl bg-gray-950/90 border border-gray-800">
+              <div class="text-xs sm:text-sm font-extrabold text-cyan-400" id="timer-hours">--h</div>
+              <div class="text-[8px] sm:text-[9px] text-gray-500 uppercase">Hours</div>
+            </div>
+            <span class="text-gray-600 font-bold">:</span>
+            <div class="text-center px-2 sm:px-2.5 py-1.5 rounded-xl bg-gray-950/90 border border-gray-800">
+              <div class="text-xs sm:text-sm font-extrabold text-cyan-400" id="timer-minutes">--m</div>
+              <div class="text-[8px] sm:text-[9px] text-gray-500 uppercase">Mins</div>
+            </div>
+            <span class="text-gray-600 font-bold">:</span>
+            <div class="text-center px-2 sm:px-2.5 py-1.5 rounded-xl bg-gray-950/90 border border-gray-800">
+              <div class="text-xs sm:text-sm font-extrabold text-cyan-400" id="timer-seconds">--s</div>
+              <div class="text-[8px] sm:text-[9px] text-gray-500 uppercase">Secs</div>
+            </div>
           </div>
-          <span class="text-gray-600 font-bold">:</span>
-          <div class="text-center px-2.5 py-1.5 rounded-xl bg-gray-950/90 border border-gray-800">
-            <div class="text-sm font-extrabold text-cyan-400" id="timer-hours">--h</div>
-            <div class="text-[9px] text-gray-500 uppercase">Hours</div>
-          </div>
-          <span class="text-gray-600 font-bold">:</span>
-          <div class="text-center px-2.5 py-1.5 rounded-xl bg-gray-950/90 border border-gray-800">
-            <div class="text-sm font-extrabold text-cyan-400" id="timer-minutes">--m</div>
-            <div class="text-[9px] text-gray-500 uppercase">Mins</div>
-          </div>
-          <span class="text-gray-600 font-bold">:</span>
-          <div class="text-center px-2.5 py-1.5 rounded-xl bg-gray-950/90 border border-gray-800">
-            <div class="text-sm font-extrabold text-cyan-400" id="timer-seconds">--s</div>
-            <div class="text-[9px] text-gray-500 uppercase">Secs</div>
-          </div>
-          <button id="btn-banner-switch-testnet" class="ml-2 px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-semibold font-sans transition-all cursor-pointer whitespace-nowrap">
+          <button id="btn-banner-switch-testnet" class="w-full sm:w-auto mt-2 sm:mt-0 px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-semibold font-sans transition-all cursor-pointer whitespace-nowrap text-center">
             Switch to Testnet
           </button>
         </div>
@@ -180,57 +184,57 @@
     <!-- Testnet Active Sandbox Banner (Visible on Testnet) -->
     <div id="banner-testnet-active" class="rounded-2xl border border-amber-500/30 bg-amber-950/15 p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
       <div class="flex items-center gap-2.5">
-        <span class="h-2.5 w-2.5 rounded-full bg-amber-400 pulse-dot"></span>
+        <span class="h-2.5 w-2.5 rounded-full bg-amber-400 pulse-dot shrink-0"></span>
         <div>
           <span class="font-bold text-amber-300 uppercase tracking-wider">Testnet (Chaosnet) Active</span>
           <span class="text-gray-400 ml-1.5">• Risk-free simulated energy ledger. Test accounts start at 0.0000 PCASH; use faucet or edge miner.</span>
         </div>
       </div>
-      <div class="flex items-center gap-2">
-        <button id="btn-banner-faucet" class="px-2.5 py-1.5 rounded-lg bg-purple-900/60 text-purple-200 border border-purple-700/60 hover:bg-purple-800/60 transition-all font-mono text-[11px] font-bold cursor-pointer">
+      <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <button id="btn-banner-faucet" class="flex-1 sm:flex-initial px-2.5 py-1.5 rounded-lg bg-purple-900/60 text-purple-200 border border-purple-700/60 hover:bg-purple-800/60 transition-all font-mono text-[11px] font-bold cursor-pointer text-center">
           🚰 Claim 50 Faucet
         </button>
-        <button id="btn-banner-switch-mainnet" class="px-2.5 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs transition-all cursor-pointer">
+        <button id="btn-banner-switch-mainnet" class="flex-1 sm:flex-initial px-2.5 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs transition-all cursor-pointer text-center whitespace-nowrap">
           View Mainnet Pre-Launch →
         </button>
       </div>
     </div>
 
     <!-- 1. Master Balance & Identity Card (Hick's Law: 3 Core Elements Only) -->
-    <div class="glass-card rounded-2xl p-6 relative overflow-hidden border border-gray-800">
+    <div class="glass-card rounded-2xl p-5 sm:p-6 relative overflow-hidden border border-gray-800">
       <div class="absolute -right-16 -top-16 w-56 h-56 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
       <div class="absolute -left-16 -bottom-16 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
-        <div>
+        <div class="min-w-0 max-w-full">
           <div class="text-xs uppercase tracking-wider text-gray-400 font-medium flex items-center gap-2">
             <span>Shielded Thermodynamic Balance</span>
-            <span class="text-[10px] px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">10¹² pJ / PCASH</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 shrink-0">10¹² pJ / PCASH</span>
           </div>
-          <div class="flex items-baseline gap-2.5 mt-2">
-            <h1 class="text-4xl md:text-5xl font-extrabold font-mono text-white tracking-tight" id="disp-balance-pcash">0.0000</h1>
-            <span class="text-lg md:text-xl font-bold text-emerald-400">PCASH</span>
+          <div class="flex items-baseline gap-2 mt-2 flex-wrap">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold font-mono text-white tracking-tight break-all" id="disp-balance-pcash">0.0000</h1>
+            <span class="text-base sm:text-lg md:text-xl font-bold text-emerald-400 shrink-0">PCASH</span>
           </div>
-          <div class="text-xs font-mono text-gray-400 mt-1 flex items-center gap-2">
-            <span>≈ <span id="disp-balance-pj" class="text-gray-300">0</span> pico-Joules</span>
+          <div class="text-xs font-mono text-gray-400 mt-1 flex items-center gap-2 flex-wrap">
+            <span class="truncate">≈ <span id="disp-balance-pj" class="text-gray-300">0</span> pico-Joules</span>
             <span class="text-gray-600">•</span>
-            <span class="text-emerald-400/80">Decay Resistant</span>
+            <span class="text-emerald-400/80 shrink-0">Decay Resistant</span>
           </div>
         </div>
 
-        <!-- Quick Primary Action Buttons (Hick's Law: Send & Receive First) -->
-        <div class="flex flex-wrap gap-2.5 w-full md:w-auto">
-          <button id="btn-open-send" class="flex-1 md:flex-initial px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-emerald-500/10 cursor-pointer">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+        <!-- Quick Primary Action Buttons (Hick's Law: Responsive Grid on Mobile) -->
+        <div class="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 w-full md:w-auto">
+          <button id="btn-open-send" class="col-span-1 px-4 sm:px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-lg shadow-emerald-500/10 cursor-pointer">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
             <span>Send</span>
           </button>
           
-          <button id="btn-open-receive" class="flex-1 md:flex-initial px-5 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 border border-gray-700 transition-all cursor-pointer">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+          <button id="btn-open-receive" class="col-span-1 px-4 sm:px-5 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-medium text-xs flex items-center justify-center gap-1.5 border border-gray-700 transition-all cursor-pointer">
+            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
             <span>Receive</span>
           </button>
 
-          <button id="btn-claim-faucet" class="px-3.5 py-2.5 rounded-xl bg-purple-950/80 hover:bg-purple-900 text-purple-300 font-medium text-xs flex items-center justify-center gap-1 border border-purple-800 transition-all cursor-pointer" title="Claim 50 Testnet PCASH Faucet">
+          <button id="btn-claim-faucet" class="col-span-2 sm:col-span-1 px-3.5 py-2.5 rounded-xl bg-purple-950/80 hover:bg-purple-900 text-purple-300 font-medium text-xs flex items-center justify-center gap-1 border border-purple-800 transition-all cursor-pointer" title="Claim 50 Testnet PCASH Faucet">
             <span>🚰 +50 Faucet</span>
           </button>
         </div>
@@ -248,10 +252,10 @@
           </button>
         </div>
 
-        <div class="flex items-center gap-2 text-gray-400">
-          <span>Address:</span>
-          <span class="font-mono text-gray-200 select-all" id="disp-address">pc1q...</span>
-          <button id="btn-copy-address" class="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer">
+        <div class="flex items-center gap-2 text-gray-400 min-w-0 max-w-full">
+          <span class="shrink-0">Address:</span>
+          <span class="font-mono text-gray-200 select-all truncate max-w-[120px] xs:max-w-[170px] sm:max-w-xs md:max-w-md" id="disp-address">pc1q...</span>
+          <button id="btn-copy-address" class="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer shrink-0">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
             <span id="copy-text">Copy</span>
           </button>
@@ -282,6 +286,19 @@
 
     <!-- Panel 1: Activity & Ledger -->
     <div id="panel-activity" class="tab-panel space-y-3">
+      <!-- Quick Biometric Session Status & FaceID Re-Auth Bar -->
+      <div id="bar-biometric-status" class="p-2.5 sm:p-3 rounded-xl bg-gray-950/80 border border-gray-900 flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2 min-w-0">
+          <span id="quick-bio-dot" class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot shrink-0"></span>
+          <span class="text-gray-400 text-[11px] truncate">
+            Biometric Enclave: <strong id="quick-bio-label" class="text-emerald-400 font-semibold">Ready (WebAuthn NIST P-256)</strong>
+          </span>
+        </div>
+        <button id="btn-quick-reauth" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-semibold transition-all cursor-pointer flex items-center gap-1 shrink-0 self-end xs:self-auto" title="Trigger Hardware Biometric FaceID/TouchID Re-Authentication">
+          <span>⚡</span> <span>FaceID Re-Auth</span>
+        </button>
+      </div>
+
       <div class="flex justify-between items-center text-xs text-gray-400">
         <span>Recent Transactions &amp; Enclave Events</span>
         <span class="font-mono text-[11px] text-emerald-400">eUTXO State: Synchronized</span>
@@ -307,20 +324,21 @@
           </span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-center my-4">
-          <div class="bg-gray-950 p-3 rounded-lg border border-gray-900">
+        <!-- 2-Row Grid: Two data cards at top, one full width under on mobile -->
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3 text-center my-4">
+          <div class="col-span-1 bg-gray-950 p-3 rounded-xl border border-gray-900 flex flex-col justify-center">
             <div class="text-[11px] text-gray-400">Tokens Streamed</div>
-            <div class="text-xl font-bold font-mono text-white mt-1" id="stream-disp-tokens">0</div>
+            <div class="text-lg sm:text-xl font-bold font-mono text-white mt-1" id="stream-disp-tokens">0</div>
           </div>
-          <div class="bg-gray-950 p-3 rounded-lg border border-gray-900">
+          <div class="col-span-1 bg-gray-950 p-3 rounded-xl border border-gray-900 flex flex-col justify-center min-w-0">
             <div class="text-[11px] text-gray-400">Total Stream Cost</div>
-            <div class="text-xl font-bold font-mono text-cyan-400 mt-1">
+            <div class="text-lg sm:text-xl font-bold font-mono text-cyan-400 mt-1 truncate">
               <span id="stream-disp-cost">0.000000</span> <span class="text-xs">PCASH</span>
             </div>
           </div>
-          <div class="bg-gray-950 p-3 rounded-lg border border-gray-900">
+          <div class="col-span-2 md:col-span-1 bg-gray-950 p-3 rounded-xl border border-gray-900 flex flex-col justify-center">
             <div class="text-[11px] text-gray-400">Energy Bond Bonded</div>
-            <div class="text-xl font-bold font-mono text-amber-400 mt-1">10,000 <span class="text-xs">pJ</span></div>
+            <div class="text-lg sm:text-xl font-bold font-mono text-amber-400 mt-1">10,000 <span class="text-xs">pJ</span></div>
           </div>
         </div>
 
@@ -386,27 +404,27 @@
           </div>
 
           <div class="space-y-2 text-xs bg-gray-950/70 p-3 rounded-lg border border-gray-900 font-mono">
-            <div class="flex justify-between">
-              <span class="text-gray-500">Root Public Key:</span>
-              <span class="text-gray-300 truncate max-w-[200px]" id="disp-enclave-pk">secp256r1:04...</span>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-500 shrink-0">Root Public Key:</span>
+              <span class="text-gray-300 truncate max-w-[130px] sm:max-w-[200px]" id="disp-enclave-pk">secp256r1:04...</span>
             </div>
-            <div class="flex justify-between">
-              <span class="text-gray-500">Credential ID:</span>
-              <span class="text-cyan-400 truncate max-w-[200px]" id="disp-cred-id">cred_...</span>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-500 shrink-0">Credential ID:</span>
+              <span class="text-cyan-400 truncate max-w-[130px] sm:max-w-[200px]" id="disp-cred-id">cred_...</span>
             </div>
-            <div class="flex justify-between">
-              <span class="text-gray-500">Hardware Root:</span>
-              <span class="text-emerald-400 font-semibold" id="disp-enclave-status">FaceID / TouchID Active</span>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-500 shrink-0">Hardware Root:</span>
+              <span class="text-emerald-400 font-semibold truncate max-w-[140px] sm:max-w-none" id="disp-enclave-status">FaceID / TouchID Active</span>
             </div>
           </div>
 
-          <div class="mt-4 flex gap-2">
-            <button id="btn-trigger-passkey" class="flex-1 py-2 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.099.99-4.328.99-6.632 0-6.075-4.925-11-11-11S-2 5.425-2 11.5"/></svg>
+          <div class="mt-4 flex flex-col xs:flex-row gap-2">
+            <button id="btn-trigger-passkey" class="flex-1 py-2.5 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.099.99-4.328.99-6.632 0-6.075-4.925-11-11-11S-2 5.425-2 11.5"/></svg>
               <span id="btn-passkey-text">Authorize Delegation (FaceID)</span>
             </button>
-            <button id="btn-new-passkey" class="py-2 px-3 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs border border-gray-700 transition-all cursor-pointer" title="Register New Device Key">
-              + New
+            <button id="btn-new-passkey" class="py-2.5 px-3 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs border border-gray-700 transition-all cursor-pointer whitespace-nowrap text-center" title="Register New Device Key">
+              + New Key
             </button>
           </div>
         </div>
@@ -416,27 +434,27 @@
           <div class="flex justify-between items-start mb-3">
             <div>
               <div class="flex items-center gap-2">
-                <span class="h-2 w-2 rounded-full bg-cyan-400 pulse-dot"></span>
+                <span class="h-2 w-2 rounded-full bg-cyan-400 pulse-dot shrink-0"></span>
                 <h3 class="text-sm font-bold text-white uppercase tracking-wider">Tier 2: In-Circuit Session Key</h3>
               </div>
               <p class="text-xs text-gray-400 mt-0.5">BabyJubjub Twisted Edwards Curve</p>
             </div>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0">
               1,842 Constraints
             </span>
           </div>
 
           <div class="space-y-2 text-xs bg-gray-950/70 p-3 rounded-lg border border-gray-900 font-mono">
-            <div class="flex justify-between">
-              <span class="text-gray-500">Session Pubkey (x, y):</span>
-              <span class="text-emerald-400 truncate max-w-[200px]" id="disp-session-pk">bjub:0x...</span>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-500 shrink-0">Session Pubkey (x, y):</span>
+              <span class="text-emerald-400 truncate max-w-[130px] sm:max-w-[200px]" id="disp-session-pk">bjub:0x...</span>
             </div>
-            <div class="flex justify-between">
-              <span class="text-gray-500">Validity Block Range:</span>
-              <span class="text-gray-300" id="disp-session-validity">Valid: Block #104,281 → #104,425</span>
+            <div class="flex flex-col xs:flex-row xs:justify-between text-xs">
+              <span class="text-gray-500 shrink-0">Validity Block Range:</span>
+              <span class="text-gray-300 font-bold truncate max-w-[180px] sm:max-w-none" id="disp-session-validity">Valid: Block #104,281 → #104,425</span>
             </div>
-            <div class="flex justify-between">
-              <span class="text-gray-500">AIR Constraint Penalty:</span>
+            <div class="flex flex-col xs:flex-row xs:justify-between text-xs">
+              <span class="text-gray-500 shrink-0">AIR Constraint Penalty:</span>
               <span class="text-cyan-400 font-bold">&lt; 45 ms on phone (190x vs P-256)</span>
             </div>
           </div>
@@ -554,9 +572,9 @@
             <div class="text-[11px] text-gray-400">Blocks Found</div>
             <div class="text-lg font-bold font-mono text-cyan-400 mt-1" id="miner-disp-blocks">0</div>
           </div>
-          <div class="bg-gray-950 p-3 rounded-lg border border-gray-900">
+          <div class="bg-gray-950 p-3 rounded-lg border border-gray-900 min-w-0">
             <div class="text-[11px] text-gray-400">Total Mined Subsidy</div>
-            <div class="text-lg font-bold font-mono text-purple-400 mt-1" id="miner-disp-earned">0.00 <span class="text-[10px]">PCASH</span></div>
+            <div class="text-base sm:text-lg font-bold font-mono text-purple-400 mt-1 truncate" id="miner-disp-earned">0.00 <span class="text-[10px]">PCASH</span></div>
           </div>
         </div>
 
@@ -590,17 +608,17 @@
 
         <!-- Mining Target & Tip Display -->
         <div class="bg-gray-950/80 p-3 rounded-lg border border-gray-900 font-mono text-[11px] space-y-1 text-gray-400">
-          <div class="flex justify-between">
-            <span>Mining Target Height:</span>
+          <div class="flex justify-between items-center">
+            <span class="shrink-0">Mining Target Height:</span>
             <span class="text-white" id="miner-target-height">Block #104,282</span>
           </div>
-          <div class="flex justify-between">
-            <span>Parent State Anchor:</span>
-            <span class="text-cyan-400 truncate max-w-[240px]" id="miner-state-anchor">0x9d24db8529db13d5...</span>
+          <div class="flex justify-between items-center">
+            <span class="shrink-0">Parent State Anchor:</span>
+            <span class="text-cyan-400 truncate max-w-[130px] sm:max-w-[240px]" id="miner-state-anchor">0x9d24db8529db13d5...</span>
           </div>
-          <div class="flex justify-between">
-            <span>Reward Destination:</span>
-            <span class="text-emerald-400 truncate max-w-[240px]" id="miner-target-addr">pc1q...</span>
+          <div class="flex justify-between items-center">
+            <span class="shrink-0">Reward Destination:</span>
+            <span class="text-emerald-400 truncate max-w-[130px] sm:max-w-[240px]" id="miner-target-addr">pc1q...</span>
           </div>
         </div>
 
@@ -647,10 +665,10 @@
         <div>
           <div class="flex justify-between text-xs text-gray-400">
             <label>Amount (PCASH):</label>
-            <span>Available: <strong class="text-white font-mono" id="send-max-avail">250.0000</strong></span>
+            <span>Available: <strong class="text-white font-mono" id="send-max-avail">0.0000</strong></span>
           </div>
           <div class="relative mt-1">
-            <input type="number" id="send-input-amount" placeholder="10.0" step="0.1" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-sm font-mono text-white focus:outline-none focus:border-emerald-500">
+            <input type="number" id="send-input-amount" placeholder="10.0" step="0.1" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 pr-14 text-sm font-mono text-white focus:outline-none focus:border-emerald-500">
             <button id="btn-send-max" class="absolute right-2 top-2 px-2 py-0.5 rounded bg-gray-800 text-[10px] text-gray-300 hover:text-white">MAX</button>
           </div>
         </div>
@@ -832,6 +850,42 @@
           <button id="btn-reset-wallet" class="px-3 py-1.5 rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 border border-rose-800 text-xs font-medium transition-all cursor-pointer">
             Reset Wallet
           </button>
+        </div>
+      </div>
+    </div>
+  <!-- Modal: Biometric FaceID / Secure Enclave HUD -->
+  <div id="modal-biometric" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="glass-card rounded-3xl max-w-xs w-full p-6 border border-emerald-500/40 relative space-y-4 text-center shadow-2xl shadow-emerald-500/20">
+      <!-- Animated Biometric Radar & Face Target -->
+      <div class="relative w-24 h-24 mx-auto flex items-center justify-center">
+        <div id="bio-scan-radar" class="absolute inset-0 rounded-full border-2 border-emerald-400/40 animate-ping"></div>
+        <div class="absolute inset-0 rounded-full border border-emerald-500/30"></div>
+        
+        <!-- Center FaceID Vector -->
+        <div id="bio-icon-container" class="relative z-10 w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/40 flex items-center justify-center text-emerald-400 transition-transform">
+          <svg id="bio-svg-face" class="w-9 h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 9h.01M15 9h.01M10 13a2 2 0 004 0M9 17c1 1 2 1.5 3 1.5s2-.5 3-1.5" />
+          </svg>
+          <svg id="bio-svg-check" class="w-9 h-9 hidden text-emerald-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+      </div>
+
+      <div>
+        <h4 id="bio-title" class="text-sm font-bold text-white tracking-wide">FaceID Biometric Scan</h4>
+        <p id="bio-subtitle" class="text-xs text-gray-400 mt-1">Requesting Hardware Secure Enclave assertion...</p>
+      </div>
+
+      <div class="p-2.5 rounded-xl bg-gray-950/80 border border-gray-900 font-mono text-[11px] text-gray-300 space-y-1">
+        <div class="flex justify-between">
+          <span class="text-gray-500">Enclave Tier:</span>
+          <span class="text-emerald-400 font-semibold" id="bio-disp-tier">Secp256r1 Hardware</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Session Epoch:</span>
+          <span class="text-cyan-400" id="bio-disp-blocks">144 Blocks (~24 hrs)</span>
         </div>
       </div>
     </div>
@@ -1028,6 +1082,32 @@
         }
       }
 
+      // Biometric Quick Status Pill
+      const quickBioDot = document.getElementById('quick-bio-dot');
+      const quickBioLabel = document.getElementById('quick-bio-label');
+      const btnQuickReauth = document.getElementById('btn-quick-reauth');
+      if (quickBioDot && quickBioLabel) {
+        if (state.activeDelegation && state.activeSessionKey) {
+          const blocksLeft = Math.max(0, state.activeDelegation.expirationHeight - state.currentBlockHeight);
+          if (blocksLeft > 0) {
+            quickBioDot.className = 'h-2 w-2 rounded-full bg-emerald-400 pulse-dot shrink-0';
+            quickBioLabel.innerText = `Active (Valid for ${blocksLeft} blks)`;
+            quickBioLabel.className = 'text-emerald-400 font-semibold';
+            if (btnQuickReauth) btnQuickReauth.innerHTML = '<span>⚡</span> <span>Renew FaceID</span>';
+          } else {
+            quickBioDot.className = 'h-2 w-2 rounded-full bg-amber-400 shrink-0';
+            quickBioLabel.innerText = 'Session Expired';
+            quickBioLabel.className = 'text-amber-400 font-semibold';
+            if (btnQuickReauth) btnQuickReauth.innerHTML = '<span>⚡</span> <span>FaceID Re-Auth</span>';
+          }
+        } else {
+          quickBioDot.className = 'h-2 w-2 rounded-full bg-cyan-400 shrink-0';
+          quickBioLabel.innerText = 'Awaiting Biometric Authorization';
+          quickBioLabel.className = 'text-cyan-300 font-semibold';
+          if (btnQuickReauth) btnQuickReauth.innerHTML = '<span>⚡</span> <span>Authorize FaceID</span>';
+        }
+      }
+
       // Activity Feed
       const feed = document.getElementById('activity-feed');
       feed.innerHTML = '';
@@ -1088,15 +1168,15 @@
           const sign = tx.type === 'SHIELDED_SPEND' ? '-' : '+';
 
           item.innerHTML = `
-            <div class="flex items-center gap-3">
-              <span class="text-base">${icon}</span>
-              <div>
-                <div class="font-semibold text-white">${title}</div>
-                <div class="text-[11px] text-gray-500 font-mono">${sub}</div>
+            <div class="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
+              <span class="text-base shrink-0">${icon}</span>
+              <div class="min-w-0">
+                <div class="font-semibold text-white truncate text-xs">${title}</div>
+                <div class="text-[10px] text-gray-500 font-mono truncate">${sub}</div>
               </div>
             </div>
-            <div class="text-right">
-              <div class="font-mono font-bold ${badgeColor}">${tx.amount ? `${sign}${cleanAmount} PCASH` : 'AUTH'}</div>
+            <div class="text-right shrink-0">
+              <div class="font-mono font-bold text-xs ${badgeColor}">${tx.amount ? `${sign}${cleanAmount} PCASH` : 'AUTH'}</div>
               <div class="text-[10px] text-gray-500">${new Date(tx.timestamp).toLocaleTimeString()}</div>
             </div>
           `;
@@ -1261,26 +1341,67 @@
         showToast(`🎉 Real-Time Settlement: Received +${e.detail.amount} PCASH in ${e.detail.recipient.substring(0, 10)}...`, 'emerald');
       });
 
-      // Biometric Passkey Re-Authorize button
-      document.getElementById('btn-trigger-passkey').addEventListener('click', async () => {
-        const btn = document.getElementById('btn-trigger-passkey');
+      async function triggerBiometricAuth(validityBlocks = 144) {
+        const modal = document.getElementById('modal-biometric');
+        const bioTitle = document.getElementById('bio-title');
+        const bioSub = document.getElementById('bio-subtitle');
+        const bioCheck = document.getElementById('bio-svg-check');
+        const bioFace = document.getElementById('bio-svg-face');
+        const bioRadar = document.getElementById('bio-scan-radar');
+        const bioTier = document.getElementById('bio-disp-tier');
+        const bioBlocks = document.getElementById('bio-disp-blocks');
         const txt = document.getElementById('btn-passkey-text');
-        txt.innerText = 'Scanning Biometrics...';
-        btn.disabled = true;
+
+        if (txt) txt.innerText = 'Scanning Biometrics...';
+        if (modal) {
+          bioFace.classList.remove('hidden');
+          bioCheck.classList.add('hidden');
+          bioRadar.classList.remove('hidden');
+          bioTitle.innerText = 'FaceID Biometric Scan';
+          bioSub.innerText = 'Requesting Hardware Enclave assertion...';
+          const cred = wallet.state.credentials.find(c => c.id === wallet.state.activeCredentialId);
+          if (bioTier) bioTier.innerText = cred?.isHardwareEnclave ? 'Secp256r1 Platform Enclave' : 'WebCrypto NIST P-256';
+          if (bioBlocks) bioBlocks.innerText = `${validityBlocks} Blocks (~24 hrs)`;
+          modal.classList.remove('hidden');
+        }
 
         try {
-          await wallet.authorizeSessionKey(144);
-          txt.innerText = '✓ Enclave Authorized (144 blks)';
+          await wallet.authorizeSessionKey(validityBlocks);
+          if (txt) txt.innerText = '✓ Enclave Authorized';
+          if (modal) {
+            bioFace.classList.add('hidden');
+            bioCheck.classList.remove('hidden');
+            bioRadar.classList.add('hidden');
+            bioTitle.innerText = '✓ Biometric Assertion Confirmed';
+            bioSub.innerText = 'BabyJubjub session key authorized (< 45 ms)';
+          }
+          showToast('✓ FaceID Enclave Verified: Ephemeral Session Active!', 'emerald');
           setTimeout(() => {
-            txt.innerText = 'Authorize Delegation (FaceID)';
-            btn.disabled = false;
-          }, 2000);
+            if (modal) modal.classList.add('hidden');
+            if (txt) txt.innerText = 'Authorize Delegation (FaceID)';
+          }, 900);
+          return true;
         } catch (e) {
-          alert("Authorization Error: " + e.message);
-          txt.innerText = 'Authorize Delegation (FaceID)';
-          btn.disabled = false;
+          console.error("Biometric Authorization Error:", e);
+          if (txt) txt.innerText = 'Authorize Delegation (FaceID)';
+          if (modal) {
+            bioTitle.innerText = '✕ Biometric Authorization Failed';
+            bioSub.innerText = e.message || 'Verification could not be completed';
+            setTimeout(() => {
+              if (modal) modal.classList.add('hidden');
+            }, 1500);
+          }
+          showToast("Biometric Error: " + e.message, 'rose');
+          return false;
         }
-      });
+      }
+
+      // Biometric Passkey Re-Authorize buttons (Pro tab and Quick bar)
+      const btnTriggerPasskey = document.getElementById('btn-trigger-passkey');
+      if (btnTriggerPasskey) btnTriggerPasskey.addEventListener('click', () => triggerBiometricAuth(144));
+
+      const btnQuickReauth = document.getElementById('btn-quick-reauth');
+      if (btnQuickReauth) btnQuickReauth.addEventListener('click', () => triggerBiometricAuth(144));
 
       // Register New Passkey
       document.getElementById('btn-new-passkey').addEventListener('click', async () => {

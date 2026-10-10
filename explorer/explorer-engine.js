@@ -190,54 +190,73 @@ class ProofCashExplorerEngine {
   // --- Real-time Simulation & Block Ticker ---
 
   startLiveBlockTicker() {
-    // Generate new thermodynamic block every 38 seconds
+    this.countdown = 12; // 12-second thermodynamic block cadence
     setInterval(() => {
-      this.currentHeight += 1;
-      const h = this.currentHeight;
-      const subsidy = this.getDecaySubsidy(h);
-      const blkHash = "0x0000" + Math.random().toString(16).substring(2, 12) + "8c4f" + h.toString(16);
-      const poswHash = "0x0000" + Math.random().toString(16).substring(2, 12) + "9b12";
-      const nonce = Math.floor(Math.random() * 8000) + 1000;
+      this.countdown -= 1;
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('proofcash:block_countdown', {
+          detail: {
+            countdown: this.countdown,
+            targetHeight: this.currentHeight + 1,
+            height: this.currentHeight
+          }
+        }));
+      }
 
-      const newBlk = {
-        height: h,
-        hash: blkHash,
-        parentHash: this.blocks.length > 0 ? this.blocks[0].hash : this.GENESIS.hash,
-        stateRoot: "0x9d24" + Math.random().toString(16).substring(2, 12) + "mmr",
-        poswHash: poswHash,
-        nonce: nonce,
-        miner: "pc1q" + Math.random().toString(16).substring(2, 18),
-        subsidy: subsidy,
-        txCount: 1,
-        timestamp: Date.now(),
-        sizeBytes: 43200 + 1280,
-        status: "CONFIRMED",
-        zkProofStatus: "AIR_STARK_VERIFIED (1,842 constraints)"
-      };
+      if (this.countdown <= 0) {
+        this.countdown = 12;
+        this.mineNextBlock();
+      }
+    }, 1000);
+  }
 
-      this.blocks.unshift(newBlk);
-      if (this.blocks.length > 50) this.blocks.pop();
+  mineNextBlock() {
+    this.currentHeight += 1;
+    const h = this.currentHeight;
+    const subsidy = this.getDecaySubsidy(h);
+    const blkHash = "0x0000" + Math.random().toString(16).substring(2, 12) + "8c4f" + h.toString(16);
+    const poswHash = "0x0000" + Math.random().toString(16).substring(2, 12) + "9b12";
+    const nonce = Math.floor(Math.random() * 8000) + 1000;
 
-      // Mined reward transaction
-      const subsidyTx = {
-        txid: "0xcoinbase_" + blkHash.substring(6, 16),
-        blockHeight: h,
-        type: "MINED_BLOCK_REWARD",
-        nullifier: "0xnull_coinbase_" + h,
-        commitment: "0xcomm_" + newBlk.miner.substring(4, 14),
-        amountPcash: subsidy,
-        feePcash: "0.0000",
-        zkConstraints: 1842,
-        airDurationMs: "28.4",
-        timestamp: Date.now(),
-        status: "CONFIRMED"
-      };
+    const newBlk = {
+      height: h,
+      hash: blkHash,
+      parentHash: this.blocks.length > 0 ? this.blocks[0].hash : this.GENESIS.hash,
+      stateRoot: "0x9d24" + Math.random().toString(16).substring(2, 12) + "mmr",
+      poswHash: poswHash,
+      nonce: nonce,
+      miner: "pc1q" + Math.random().toString(16).substring(2, 18),
+      subsidy: subsidy,
+      txCount: Math.floor(Math.random() * 3) + 1,
+      timestamp: Date.now(),
+      sizeBytes: 43200 + 1280,
+      status: "CONFIRMED",
+      zkProofStatus: "AIR_STARK_VERIFIED (1,842 constraints)"
+    };
 
-      this.transactions.unshift(subsidyTx);
-      if (this.transactions.length > 100) this.transactions.pop();
+    this.blocks.unshift(newBlk);
+    if (this.blocks.length > 50) this.blocks.pop();
 
-      this.notifySubscribers();
-    }, 38000);
+    // Mined reward transaction
+    const subsidyTx = {
+      txid: "0xcoinbase_" + blkHash.substring(6, 16),
+      blockHeight: h,
+      type: "MINED_BLOCK_REWARD",
+      nullifier: "0xnull_coinbase_" + h,
+      commitment: "0xcomm_" + newBlk.miner.substring(4, 14),
+      amountPcash: subsidy,
+      feePcash: "0.0000",
+      zkConstraints: 1842,
+      airDurationMs: "28.4",
+      timestamp: Date.now(),
+      status: "CONFIRMED"
+    };
+
+    this.transactions.unshift(subsidyTx);
+    if (this.transactions.length > 100) this.transactions.pop();
+
+    this.notifySubscribers();
+  }
   }
 
   // --- Search Engine ---

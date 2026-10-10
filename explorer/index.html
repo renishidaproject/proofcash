@@ -70,7 +70,7 @@
         <!-- Mobile Network Pill -->
         <div class="md:hidden flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 font-mono text-[11px]">
           <span class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span>
-          <span>Tip: #<span id="mobile-disp-height">104,281</span></span>
+          <span>Tip: #<span id="mobile-disp-height">104,281</span> (<span id="mobile-disp-countdown" class="text-cyan-300">12s</span>)</span>
         </div>
       </div>
 
@@ -109,9 +109,12 @@
       
       <!-- Card 1: Block Height & State Anchor -->
       <div class="glass-card rounded-2xl p-4 border border-gray-800 relative overflow-hidden">
-        <div class="text-[11px] uppercase tracking-wider text-gray-400 font-medium flex items-center gap-1.5">
-          <span class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span>
-          <span>Tip Block Height</span>
+        <div class="text-[11px] uppercase tracking-wider text-gray-400 font-medium flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span>
+            <span>Tip Height</span>
+          </div>
+          <span id="metric-next-block-ticker" class="text-[10px] font-mono text-cyan-300 font-bold">Next: 12s</span>
         </div>
         <div class="text-2xl font-extrabold font-mono text-white mt-1.5 flex items-baseline gap-1">
           <span>#</span><span id="metric-height">104,281</span>
@@ -365,6 +368,13 @@
     window.addEventListener('DOMContentLoaded', () => {
       explorer = new ProofCashExplorerEngine();
       explorer.subscribe(renderExplorer);
+
+      window.addEventListener('proofcash:block_countdown', (e) => {
+        const el = document.getElementById('metric-next-block-ticker');
+        const mobileEl = document.getElementById('mobile-disp-countdown');
+        if (el) el.innerText = `Next: ${e.detail.countdown}s`;
+        if (mobileEl) mobileEl.innerText = `${e.detail.countdown}s`;
+      });
 
       setupTabs();
       setupSearch();

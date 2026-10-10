@@ -420,7 +420,8 @@ class ProofCashWalletEngine {
   async authorizeSessionKey(validityBlocks = 144) {
     let cred = this.state.credentials.find(c => c.id === this.state.activeCredentialId);
     if (!cred) {
-      cred = await this.registerPasskey("Biometric Hardware Key");
+      await this.registerPasskey("Biometric Hardware Key");
+      return this.state.activeDelegation;
     }
 
     // Step A: Generate ephemeral BabyJubjub in-circuit keypair
