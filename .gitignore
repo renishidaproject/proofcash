@@ -47,5 +47,6 @@ $RECYCLE.BIN/
 scratch/
 tmp/
 *.tmp
+build-out/
 rad.bat
 rad.ps1

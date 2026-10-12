@@ -1,0 +1,68 @@
+name: ProofCash Protocol CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  cryptographic-verification:
+    name: Cryptographic Invariants & ZK Circuits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run Circuit Fuzzing Gauntlet (175,000 Vectors)
+        run: python proofcash_sim/fuzz_circuits.py
+
+      - name: Run ZK AIR Constraint Verifier
+        run: python proofcash_sim/verify_circuits.py
+
+      - name: Run Lean 4 Formal Verification Checker
+        run: python proofcash_sim/verify_formal.py
+
+      - name: Run Commutative Delta Engine & PID Reservoir
+        run: python proofcash_sim/verify_engine.py
+
+      - name: Run Full Node & Bloom Filter Invariant Test
+        run: python proofcash_sim/verify_node.py
+
+      - name: Run Binius GPU Prover Memory Ceiling Audit
+        run: python proofcash_sim/verify_prover.py
+
+      - name: Run WebAuthn Passkey Wallet Verifier
+        run: python proofcash_sim/verify_wallet.py
+
+      - name: Run Static Codebase Purity & Zero-Backdoor Audit
+        run: python proofcash_sim/audit_purity.py
+
+      - name: Run Release Manifest & Cypherpunk Integrity Suite
+        run: python proofcash_sim/verify_release.py
+
+  rust-consensus-node:
+    name: Rust Consensus Crate Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Check All Consensus Crates
+        run: |
+          cd proofcash
+          cargo check --workspace --release
+
+      - name: Run Consensus Tests
+        run: |
+          cd proofcash
+          cargo test --workspace
