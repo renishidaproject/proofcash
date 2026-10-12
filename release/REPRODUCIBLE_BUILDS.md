@@ -22,7 +22,7 @@ ProofCash enforces **deterministic reproducible builds**:
 
 ```
 # Target: x86_64-unknown-linux-gnu (Linux 64-bit Reference Node)
-3f82a10e82c59b2d88a104bce37d800164219dfa8910bc472091c530e16790a1  proofcashd-linux-x86_64
+ac2a8f910a208c05ee35d443e2a8ef3b3b9fa21cdc0effbc70cbb4a4aa3986e4  proofcashd-linux-x86_64
 
 # Target: aarch64-apple-darwin (Apple Silicon macOS Reference Node)
 789bf01ca520ef8456209bcae710293847561928374650192837465019283746  proofcashd-darwin-arm64
@@ -68,7 +68,7 @@ e6638c2bf1da42dcdc93924b236979c0c43b40f1e61fc25954ffd4c708ed96a5  RENUNCIATION.m
    ```bash
    sha256sum build-out/proofcashd
    ```
-   The hash will match `3f82a10e...` with zero deviations.
+   The hash will match `ac2a8f91...` with zero deviations.
 
 ---
 

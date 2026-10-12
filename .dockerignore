@@ -1,0 +1,8 @@
+.git
+proofcash_public_release
+proofcash_public_release.zip
+scratch
+node_modules
+*.zip
+*.tar.gz
+*.pdf

@@ -8,7 +8,7 @@ description = "Cryptographic primitives for ProofCash: Poseidon2, Blake3, BabyJu
 
 [dependencies]
 blake3 = "1.5"
-zeroize = { version = "1.7", features = ["derive"] }
+zeroize = "1.7"
 subtle = "2.5"
 p256 = { version = "0.13", features = ["ecdsa", "pkcs8"] }
 sha2 = "0.10"

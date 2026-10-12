@@ -2,7 +2,7 @@
 # Reproducible build recipe ensuring bit-for-bit identical SHA-256 binary outputs
 # Author: Ren Ishida (October 2026)
 
-FROM rust:1.80-slim-bookworm AS builder
+FROM rust:latest AS builder
 
 # Set hermetic deterministic environment variables
 ENV SOURCE_DATE_EPOCH=1767225600 \
@@ -11,15 +11,6 @@ ENV SOURCE_DATE_EPOCH=1767225600 \
     LC_ALL=C \
     CARGO_INCREMENTAL=0 \
     RUSTFLAGS="-C target-cpu=generic -C strip=symbols --remap-path-prefix=/workspace=/build"
-
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    pkg-config \
-    libssl-dev \
-    git \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
 
