@@ -6,7 +6,7 @@
  * Continuous Exponential Decay supply analytics, and Plonky3 AIR proof verification.
  * 
  * Synchronizes with:
- * 1. JSON-RPC proofcashd node (http://127.0.0.1:8332 or https://rpc.proofcash.org)
+ * 1. JSON-RPC proofcashd node (http://127.0.0.1:8332 or https://rpc.proofcash.xyz)
  * 2. Real-time in-browser P2P BroadcastChannel ('proofcash_p2p_mesh')
  * 
  * Author: Ren Ishida (October 2026)
@@ -16,7 +16,7 @@ class ProofCashExplorerEngine {
   constructor() {
     this.DEFAULT_RPC = (typeof window !== 'undefined' && window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
       ? 'http://127.0.0.1:8332'
-      : 'https://rpc.proofcash.org';
+      : 'https://rpc.proofcash.xyz';
 
     this.networkMode = 'testnet'; // 'testnet' | 'mainnet'
     this.rpcUrl = this.DEFAULT_RPC;

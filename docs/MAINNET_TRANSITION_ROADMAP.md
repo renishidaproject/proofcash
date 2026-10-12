@@ -111,7 +111,7 @@ Advancement between stages requires satisfying strict quantitative gates:
     * **Medium (RPC denial of service, memory leak, sync stall):** $5,000 USD.
   * Publish full formal specifications of the State Transition Function, MMR accumulators, and enclave delegation protocols in `docs/spec/`.
 * **Weekly Checklist:**
-  * [ ] Set up dedicated vulnerability disclosure email and PGP encryption key (`security@proofcash.org`).
+  * [ ] Set up dedicated vulnerability disclosure email and PGP encryption key (`security@proofcash.xyz`).
   * [ ] Invite top zero-knowledge audit firms and whitehat teams to audit Plonky3 AIR constraints.
   * [ ] Review, triage, and patch incoming vulnerability reports within 48-hour SLA.
 

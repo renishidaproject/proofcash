@@ -1,7 +1,7 @@
-# ProofCash: Official Domain Setup & Integration Guide (proofcash.org)
+# ProofCash: Official Domain Setup & Integration Guide (proofcash.xyz)
 
 **Author:** Ren Ishida (`renishida@proton.me`)  
-**Target Domain:** `proofcash.org`  
+**Target Domain:** `proofcash.xyz`  
 **Protocol:** ProofCash (`PCASH`) — Layer-1 Autonomous Settlement  
 **Canonical Radicle URN:** `rad:zHqa2hHCU4ARpLvjQCDNxJdc487F`  
 **License:** MIT-0 / Unlicense (Public Domain Dedication)
@@ -11,10 +11,10 @@
 ## Table of Contents
 1. [Overview & Architecture](#1-overview--architecture)
 2. [Step 1: Domain Registration & DNS Records Configuration](#2-step-1-domain-registration--dns-records-configuration)
-3. [Step 2: Connecting GitHub Pages to proofcash.org (Zero-Cost Hosting & SSL)](#3-step-2-connecting-github-pages-to-proofcashorg-zero-cost-hosting--ssl)
+3. [Step 2: Connecting GitHub Pages to proofcash.xyz (Zero-Cost Hosting & SSL)](#3-step-2-connecting-github-pages-to-proofcashorg-zero-cost-hosting--ssl)
 4. [Step 3: WebAuthn Passkey Relying Party Domain Binding](#4-step-3-webauthn-passkey-relying-party-domain-binding)
-5. [Step 4: Launching the Public P2P Seed Node (seed.proofcash.org:8776)](#5-step-4-launching-the-public-p2p-seed-node-seedproofcashorg8776)
-6. [Step 5: Launching the High-Speed JSON-RPC Gateway (rpc.proofcash.org:443)](#6-step-5-launching-the-high-speed-json-rpc-gateway-rpcproofcashorg443)
+5. [Step 4: Launching the Public P2P Seed Node (seed.proofcash.xyz:8776)](#5-step-4-launching-the-public-p2p-seed-node-seedproofcashorg8776)
+6. [Step 5: Launching the High-Speed JSON-RPC Gateway (rpc.proofcash.xyz:443)](#6-step-5-launching-the-high-speed-json-rpc-gateway-rpcproofcashorg443)
 7. [Step 6: Updating Client Wallets & Node Defaults](#7-step-6-updating-client-wallets--node-defaults)
 8. [Step 7: Censorship-Immunity & Localhost Fallback Guarantees](#8-step-7-censorship-immunity--localhost-fallback-guarantees)
 
@@ -22,13 +22,13 @@
 
 ## 1. Overview & Architecture
 
-When the creator or a community crypto enthusiast acquires `proofcash.org`, the domain serves as the high-availability "front door" for the general public, light mobile clients, and developer tooling.
+When the creator or a community crypto enthusiast acquires `proofcash.xyz`, the domain serves as the high-availability "front door" for the general public, light mobile clients, and developer tooling.
 
 The complete infrastructure distributes across four dedicated endpoints:
 
 ```
                             ┌─────────────────────────────┐
-                            │       proofcash.org         │
+                            │       proofcash.xyz         │
                             │      (Registered DNS)       │
                             └──────────────┬──────────────┘
                                            │
@@ -36,7 +36,7 @@ The complete infrastructure distributes across four dedicated endpoints:
          ▼                                 ▼                                 ▼
 ┌──────────────────┐             ┌──────────────────┐             ┌──────────────────┐
 │  TIER 1: PORTAL  │             │  TIER 2: RPC API │             │  TIER 3: SEEDS   │
-│  proofcash.org   │             │ rpc.proofcash.org│             │seed.proofcash.org│
+│  proofcash.xyz   │             │ rpc.proofcash.xyz│             │seed.proofcash.xyz│
 │ GitHub Pages CDN │             │ Reverse Proxy    │             │ P2P Gossip Node  │
 │ (Wallet & Docs)  │             │ port 443 -> 8332 │             │   port 8776      │
 │ Free SSL/TLS     │             │ Shielded eUTXOs  │             │ Block Discovery  │
@@ -69,25 +69,25 @@ Configure the following records in your DNS manager (Cloudflare / Namecheap):
 
 ---
 
-## 3. Step 2: Connecting GitHub Pages to proofcash.org (Zero-Cost Hosting & SSL)
+## 3. Step 2: Connecting GitHub Pages to proofcash.xyz (Zero-Cost Hosting & SSL)
 
-Because the full repository, documentation, simulator, and mobile wallet are already deployed on GitHub Pages, connecting `proofcash.org` requires **zero ongoing hosting costs**.
+Because the full repository, documentation, simulator, and mobile wallet are already deployed on GitHub Pages, connecting `proofcash.xyz` requires **zero ongoing hosting costs**.
 
 ### Automated Link Procedure
 1. Create a `CNAME` file in the root of the repository containing the domain name:
    ```text
-   proofcash.org
+   proofcash.xyz
    ```
 2. Commit and push the file to branch `main`.
 3. Open the GitHub repository settings:
    * Navigate to: `https://github.com/Renishidaproject/proofcash/settings/pages`
-   * Under **Custom domain**, enter: `proofcash.org`
+   * Under **Custom domain**, enter: `proofcash.xyz`
    * Click **Save**.
 4. GitHub checks DNS propagation automatically. Once verified, check the box:
    * **[x] Enforce HTTPS**
 5. GitHub will automatically request and renew a free **Let's Encrypt TLS certificate**.
 
-*Both `https://proofcash.org` and `https://proofcash.org/wallet/` are now live with A+ SSL ratings.*
+*Both `https://proofcash.xyz` and `https://proofcash.xyz/wallet/` are now live with A+ SSL ratings.*
 
 ---
 
@@ -96,12 +96,12 @@ Because the full repository, documentation, simulator, and mobile wallet are alr
 WebAuthn hardware passkeys (Platform Biometrics, Touch, Windows Hello) are cryptographically tied to the Relying Party ID (`rp.id`).
 
 * When running on `localhost`, the passkey is labeled `localhost`.
-* When served from `https://proofcash.org`, the browser passes:
+* When served from `https://proofcash.xyz`, the browser passes:
   ```javascript
   const publicKeyCredentialCreationOptions = {
     rp: {
       name: "ProofCash Protocol",
-      id: "proofcash.org" // Automatically inferred from window.location.hostname
+      id: "proofcash.xyz" // Automatically inferred from window.location.hostname
     },
     user: {
       id: crypto.getRandomValues(new Uint8Array(16)),
@@ -116,11 +116,11 @@ WebAuthn hardware passkeys (Platform Biometrics, Touch, Windows Hello) are crypt
     }
   };
   ```
-* **User Experience:** When users add ProofCash to their phone home screen, iOS and Android automatically recognize `proofcash.org` and back up the credential in **iCloud Keychain** and **Google Password Manager**.
+* **User Experience:** When users add ProofCash to their phone home screen, iOS and Android automatically recognize `proofcash.xyz` and back up the credential in **iCloud Keychain** and **Google Password Manager**.
 
 ---
 
-## 5. Step 4: Launching the Public P2P Seed Node (seed.proofcash.org:8776)
+## 5. Step 4: Launching the Public P2P Seed Node (seed.proofcash.xyz:8776)
 
 Seed nodes maintain high uptime to accept inbound connections from new miners and wallets, announcing the latest canonical block hashes and Radicle commits.
 
@@ -162,7 +162,7 @@ docker exec proofcash-seed-node rad node status
 
 ---
 
-## 6. Step 5: Launching the High-Speed JSON-RPC Gateway (rpc.proofcash.org:443)
+## 6. Step 5: Launching the High-Speed JSON-RPC Gateway (rpc.proofcash.xyz:443)
 
 Mobile wallets and lightweight edge miners need to submit transactions, evaluate Plonky3 AIR constraints, and query Delta-UTXO state without running a heavy full node locally.
 
@@ -171,7 +171,7 @@ Mobile wallets and lightweight edge miners need to submit transactions, evaluate
 # Run proofcashd listening on local port 8332
 ./proofcashd \
   --rpc-bind 127.0.0.1:8332 \
-  --rpc-cors "https://proofcash.org" \
+  --rpc-cors "https://proofcash.xyz" \
   --datadir /var/lib/proofcash/chaindata
 ```
 
@@ -180,7 +180,7 @@ Using **Caddy** (simplest 4-line configuration with automatic Let's Encrypt cert
 
 ```caddyfile
 # /etc/caddy/Caddyfile
-rpc.proofcash.org {
+rpc.proofcash.xyz {
     reverse_proxy 127.0.0.1:8332 {
         header_up Host {host}
         header_up X-Real-IP {remote_host}
@@ -188,7 +188,7 @@ rpc.proofcash.org {
 
     # Enable CORS for the web wallet
     header {
-        Access-Control-Allow-Origin "https://proofcash.org"
+        Access-Control-Allow-Origin "https://proofcash.xyz"
         Access-Control-Allow-Methods "POST, GET, OPTIONS"
         Access-Control-Allow-Headers "Content-Type, Authorization"
     }
@@ -204,7 +204,7 @@ sudo systemctl restart caddy
 
 ## 7. Step 6: Updating Client Wallets & Node Defaults
 
-Once `rpc.proofcash.org` is live, update the default configuration in `wallet/wallet-engine.js`:
+Once `rpc.proofcash.xyz` is live, update the default configuration in `wallet/wallet-engine.js`:
 
 ```javascript
 // wallet/wallet-engine.js
@@ -216,7 +216,7 @@ class ProofCashWalletEngine {
     // Production Public RPC Endpoint with Localhost Failover
     this.DEFAULT_RPC = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://127.0.0.1:8332'
-      : 'https://rpc.proofcash.org';
+      : 'https://rpc.proofcash.xyz';
     ...
 ```
 
@@ -228,7 +228,7 @@ Users can open the in-wallet **⚙️ Network & Node Settings** modal at any tim
 
 ProofCash was engineered with a strict principle of **Sovereign Independence**:
 
-1. **No Single Point of Failure:** If the domain `proofcash.org` is expired, hijacked, or blocked by regional firewalls:
+1. **No Single Point of Failure:** If the domain `proofcash.xyz` is expired, hijacked, or blocked by regional firewalls:
    * The network does not stop.
    * Full nodes continue syncing over P2P gossip on port `8776` via raw IP addresses.
 2. **P2P Code Distribution via Radicle:**
