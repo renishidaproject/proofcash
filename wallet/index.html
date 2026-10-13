@@ -682,21 +682,33 @@
         </div>
 
         <!-- Transfer Voucher Box -->
-        <div class="p-3 rounded-lg bg-gray-900 border border-gray-800 space-y-1.5">
+        <div class="p-3 rounded-lg bg-gray-900 border border-gray-800 space-y-2">
           <div class="flex items-center justify-between text-[11px]">
             <span class="text-gray-300 font-semibold flex items-center gap-1">
               <span>🎟️</span> eUTXO Transfer Voucher
             </span>
-            <span class="text-[10px] text-emerald-400">Guaranteed 1-Click Credit</span>
+            <span class="text-[10px] text-emerald-400 font-mono">Air-Gap Guaranteed</span>
           </div>
           <p class="text-[10px] text-gray-400 font-sans leading-tight">
-            If Browser B doesn&apos;t reflect automatically (due to ad-blockers, private tabs, or isolated networks), copy this voucher and redeem it directly in Browser B&apos;s Receive modal:
+            If receiver is offline, air-gapped, or on another device, copy or show this voucher QR code to credit immediately:
           </p>
           <div class="flex gap-2">
             <input type="text" id="send-receipt-voucher-input" readonly class="flex-1 bg-black border border-gray-700 rounded px-2 py-1 text-[10px] font-mono text-emerald-300 select-all truncate cursor-text">
             <button id="btn-copy-voucher" class="px-3 py-1 rounded bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-[11px] shrink-0 transition-all cursor-pointer">
               📋 Copy
             </button>
+          </div>
+          <div class="pt-1 flex items-center justify-between text-[11px]">
+            <button id="btn-toggle-voucher-qr" class="text-cyan-400 hover:text-cyan-300 font-medium flex items-center gap-1 cursor-pointer">
+              <span>📷</span> <span id="lbl-toggle-voucher-qr">Show Voucher QR Code</span>
+            </button>
+            <span class="text-[10px] text-gray-500">Scan from receiver camera</span>
+          </div>
+          <div id="box-voucher-qr" class="hidden pt-2 text-center">
+            <div class="p-3 bg-white rounded-xl inline-block mx-auto shadow-xl">
+              <div id="send-receipt-qrcode" class="w-48 h-48 flex items-center justify-center overflow-hidden"></div>
+            </div>
+            <p class="text-[10px] text-gray-400 pt-1 font-sans">Receiver points camera at this QR code to claim balance</p>
           </div>
         </div>
 
@@ -753,11 +765,29 @@
             <button id="btn-redeem-voucher" class="py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer">
               <span>⚡</span> <span>Redeem Voucher</span>
             </button>
-            <button id="btn-sync-mesh-now" class="py-2 px-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-200 font-medium text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer" title="Force sync with cloud &amp; local relay mesh">
-              <span>🔄</span> <span>Sync Mesh Now</span>
+            <button id="btn-scan-voucher-qr" class="py-2 px-3 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer" title="Scan voucher QR code with camera">
+              <span>📷</span> <span>Scan Voucher QR</span>
             </button>
           </div>
+          <button id="btn-sync-mesh-now" class="w-full py-1.5 px-3 rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-400 hover:text-gray-200 font-medium text-[11px] flex items-center justify-center gap-1.5 transition-all cursor-pointer" title="Force sync with cloud &amp; local relay mesh">
+            <span>🔄</span> <span>Force Sync P2P Mesh</span>
+          </button>
           <div id="disp-voucher-status" class="hidden text-[11px] font-mono p-2 rounded"></div>
+
+          <!-- Camera Viewfinder Box for Voucher Scanning -->
+          <div id="voucher-qr-scanner-box" class="hidden space-y-2 p-3 bg-black/90 rounded-xl border border-cyan-500/40 text-center">
+            <div class="relative w-full aspect-square max-w-[260px] mx-auto rounded-lg overflow-hidden bg-black flex items-center justify-center border border-gray-800">
+              <video id="voucher-qr-video" class="w-full h-full object-cover" playsinline muted></video>
+              <canvas id="voucher-qr-canvas" class="hidden"></canvas>
+              <div class="absolute inset-4 border-2 border-dashed border-cyan-400 pointer-events-none rounded-lg animate-pulse flex items-center justify-center">
+                <span class="text-[10px] text-cyan-300 font-mono bg-black/70 px-2 py-0.5 rounded">Align QR Code</span>
+              </div>
+            </div>
+            <div class="flex justify-between items-center px-1 text-[11px]">
+              <span id="voucher-scanner-hint" class="text-gray-400">Point camera at Voucher QR</span>
+              <button id="btn-stop-qr-scan" class="text-rose-400 hover:text-rose-300 font-medium cursor-pointer">✕ Stop Camera</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -842,6 +872,16 @@
         <div class="flex justify-between items-center text-[11px] text-gray-400 px-1 font-mono">
           <span>Cross-Browser P2P Mesh:</span>
           <span id="disp-mesh-status" class="text-emerald-400">● Global P2P Mesh (Live &amp; Synced)</span>
+        </div>
+        <div class="space-y-1.5 pt-2 border-t border-gray-900">
+          <label class="text-xs font-semibold text-gray-300">Cloudflare Edge Relay (WebSocket):</label>
+          <div class="flex gap-2">
+            <input type="text" id="settings-input-relay" class="flex-1 bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500" placeholder="wss://proofcash-relay.workers.dev/ws">
+            <button id="btn-save-relay" class="px-4 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs font-medium text-white border border-gray-700 transition-all cursor-pointer">
+              Save Relay
+            </button>
+          </div>
+          <p class="text-[10px] text-gray-500 leading-tight">Default or custom Cloudflare Worker for instant real-time sync across any phone and PC.</p>
         </div>
       </div>
 
@@ -1323,10 +1363,11 @@
   <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-2 pointer-events-none"></div>
 
   <!-- Core Scripts with Cache Buster -->
-  <script src="qrcode.min.js?v=1.4.7"></script>
-  <script src="bip39-words.js?v=1.4.7"></script>
-  <script src="passkey-crypto.js?v=1.4.7"></script>
-  <script src="wallet-engine.js?v=1.4.7"></script>
+  <script src="qrcode.min.js?v=1.4.8"></script>
+  <script src="jsqr.min.js?v=1.4.8"></script>
+  <script src="bip39-words.js?v=1.4.8"></script>
+  <script src="passkey-crypto.js?v=1.4.8"></script>
+  <script src="wallet-engine.js?v=1.4.8"></script>
 
   <script>
     // --- UI Controller & Event Wireup ---
@@ -1806,10 +1847,146 @@
         });
       }
 
+      // Show/Hide Voucher QR Code in Send Receipt
+      const btnToggleVoucherQr = document.getElementById('btn-toggle-voucher-qr');
+      const boxVoucherQr = document.getElementById('box-voucher-qr');
+      const lblToggleVoucherQr = document.getElementById('lbl-toggle-voucher-qr');
+      const sendReceiptQrContainer = document.getElementById('send-receipt-qrcode');
+
+      if (btnToggleVoucherQr && boxVoucherQr && sendReceiptQrContainer) {
+        btnToggleVoucherQr.addEventListener('click', () => {
+          const isHidden = boxVoucherQr.classList.contains('hidden');
+          if (isHidden) {
+            boxVoucherQr.classList.remove('hidden');
+            if (lblToggleVoucherQr) lblToggleVoucherQr.innerText = "Hide Voucher QR Code";
+            const voucherText = document.getElementById('send-receipt-voucher-input')?.value;
+            if (voucherText && window.QRCode) {
+              sendReceiptQrContainer.innerHTML = '';
+              new QRCode(sendReceiptQrContainer, {
+                text: voucherText,
+                width: 192,
+                height: 192,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.L
+              });
+            }
+          } else {
+            boxVoucherQr.classList.add('hidden');
+            if (lblToggleVoucherQr) lblToggleVoucherQr.innerText = "Show Voucher QR Code";
+          }
+        });
+      }
+
+      // Camera Voucher QR Scanner State & Logic
+      let qrScannerStream = null;
+      let qrScannerAnimationId = null;
+
+      const stopVoucherQrScanner = () => {
+        if (qrScannerAnimationId) {
+          cancelAnimationFrame(qrScannerAnimationId);
+          qrScannerAnimationId = null;
+        }
+        if (qrScannerStream) {
+          qrScannerStream.getTracks().forEach(t => t.stop());
+          qrScannerStream = null;
+        }
+        const video = document.getElementById('voucher-qr-video');
+        if (video) video.srcObject = null;
+        const box = document.getElementById('voucher-qr-scanner-box');
+        if (box) box.classList.add('hidden');
+      };
+
+      const startVoucherQrScanner = async () => {
+        const box = document.getElementById('voucher-qr-scanner-box');
+        const video = document.getElementById('voucher-qr-video');
+        const canvas = document.getElementById('voucher-qr-canvas');
+        const hint = document.getElementById('voucher-scanner-hint');
+        const ctx = canvas ? canvas.getContext('2d') : null;
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          alert("Camera access is not supported on this browser or requires an HTTPS connection.");
+          return;
+        }
+
+        try {
+          box.classList.remove('hidden');
+          hint.innerText = "Starting camera...";
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' }
+          });
+          qrScannerStream = stream;
+          video.srcObject = stream;
+          await video.play();
+          hint.innerText = "Point camera at Voucher QR";
+
+          const hasBarcodeDetector = ('BarcodeDetector' in window);
+          let barcodeDetector = null;
+          if (hasBarcodeDetector) {
+            try { barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] }); } catch (e) {}
+          }
+
+          const scanFrame = async () => {
+            if (!qrScannerStream) return;
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+              let detectedText = null;
+
+              if (barcodeDetector) {
+                try {
+                  const codes = await barcodeDetector.detect(video);
+                  if (codes && codes.length > 0) {
+                    detectedText = codes[0].rawValue;
+                  }
+                } catch (e) {}
+              }
+
+              if (!detectedText && window.jsQR && canvas && ctx) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const qrCode = jsQR(imageData.data, imageData.width, imageData.height, {
+                  inversionAttempts: "dontInvert"
+                });
+                if (qrCode && qrCode.data) {
+                  detectedText = qrCode.data;
+                }
+              }
+
+              if (detectedText) {
+                if (detectedText.includes("PCASH-VOUCHER:") || detectedText.startsWith("{")) {
+                  try { if (navigator.vibrate) navigator.vibrate([40, 40, 40]); } catch(e) {}
+                  stopVoucherQrScanner();
+                  const input = document.getElementById('input-redeem-voucher');
+                  if (input) input.value = detectedText;
+                  document.getElementById('btn-redeem-voucher')?.click();
+                  return;
+                }
+              }
+            }
+            qrScannerAnimationId = requestAnimationFrame(scanFrame);
+          };
+
+          qrScannerAnimationId = requestAnimationFrame(scanFrame);
+        } catch (err) {
+          console.error("[QR Scanner] Camera error:", err);
+          alert("Camera permission denied or camera unavailable: " + err.message);
+          stopVoucherQrScanner();
+        }
+      };
+
+      const btnScanVoucherQr = document.getElementById('btn-scan-voucher-qr');
+      if (btnScanVoucherQr) btnScanVoucherQr.addEventListener('click', startVoucherQrScanner);
+      const btnStopQrScan = document.getElementById('btn-stop-qr-scan');
+      if (btnStopQrScan) btnStopQrScan.addEventListener('click', stopVoucherQrScanner);
+
       // Receive Modal
       const modalRecv = document.getElementById('modal-receive');
       document.getElementById('btn-open-receive').addEventListener('click', () => modalRecv.classList.remove('hidden'));
-      document.getElementById('btn-close-receive').addEventListener('click', () => modalRecv.classList.add('hidden'));
+      document.getElementById('btn-close-receive').addEventListener('click', () => {
+        stopVoucherQrScanner();
+        modalRecv.classList.add('hidden');
+      });
 
       // Redeem Voucher Wireup
       const btnRedeemVoucher = document.getElementById('btn-redeem-voucher');
@@ -1889,10 +2066,22 @@
       if (btnOpenSettings) {
         btnOpenSettings.addEventListener('click', () => {
           document.getElementById('settings-input-rpc').value = wallet.state.rpcUrl;
+          const relayInput = document.getElementById('settings-input-relay');
+          if (relayInput) relayInput.value = wallet.getRelayWsUrl();
           modalSettings.classList.remove('hidden');
         });
       }
       document.getElementById('btn-close-settings').addEventListener('click', () => modalSettings.classList.add('hidden'));
+
+      // Save Cloudflare Edge Relay URL
+      const btnSaveRelay = document.getElementById('btn-save-relay');
+      if (btnSaveRelay) {
+        btnSaveRelay.addEventListener('click', () => {
+          const val = document.getElementById('settings-input-relay')?.value;
+          wallet.setCustomRelay(val);
+          showToast("Cloudflare Edge Relay URL updated and reconnected!", "emerald");
+        });
+      }
 
       // Backup & Recovery Modal Wireup
       const modalBackup = document.getElementById('modal-backup');

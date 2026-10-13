@@ -334,18 +334,43 @@ class ProofCashWalletEngine {
     }
   }
 
+  getRelayWsUrl() {
+    return this.state.customRelayUrl || 'wss://proofcash-relay.workers.dev/ws';
+  }
+
+  getRelayHttpUrl() {
+    const ws = this.getRelayWsUrl();
+    return ws.replace(/^wss:\/\//i, 'https://').replace(/^ws:\/\//i, 'http://').replace(/\/ws\/?$/i, '');
+  }
+
+  setCustomRelay(url) {
+    this.state.customRelayUrl = (url || "").trim();
+    this.saveState();
+    if (this.wsRelay) {
+      try { this.wsRelay.close(); } catch(e) {}
+      this.wsRelay = null;
+    }
+    this.connectPublicRelay();
+  }
+
   connectPublicRelay() {
-    const wsUrl = `wss://ntfy.sh/${this.meshTopic}/ws`;
+    const wsUrl = this.getRelayWsUrl();
 
     try {
       this.wsRelay = new WebSocket(wsUrl);
       this.wsRelay.onopen = () => {
-        console.info("[P2P Mesh] Connected to global WebSocket relay:", wsUrl);
+        let hostName = 'Edge Relay';
+        try { hostName = new URL(wsUrl).host; } catch(e) {}
+        console.info("[P2P Mesh] Connected to Cloudflare Edge Relay:", wsUrl);
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('proofcash:mesh_status', {
-            detail: { connected: true, relay: 'Global P2P Mesh (ntfy.sh)' }
+            detail: { connected: true, relay: `Edge Relay (${hostName})` }
           }));
         }
+        // Subscribe to mesh topic
+        try {
+          this.wsRelay.send(JSON.stringify({ type: 'subscribe', topic: this.meshTopic }));
+        } catch(e) {}
         // Catch up on any transfers sent while this browser was closed or offline
         this.fetchMeshBacklog();
       };
@@ -353,8 +378,13 @@ class ProofCashWalletEngine {
       this.wsRelay.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          let txPacket = null;
           if (data && data.event === 'message' && data.message) {
-            const txPacket = JSON.parse(data.message);
+            txPacket = typeof data.message === 'string' ? JSON.parse(data.message) : data.message;
+          } else if (data && data.type === 'PCASH_TRANSFER') {
+            txPacket = data;
+          }
+          if (txPacket) {
             this.handleIncomingP2pTransfer(txPacket);
           }
         } catch (e) {}
@@ -374,8 +404,8 @@ class ProofCashWalletEngine {
             detail: { connected: false, relay: 'Reconnecting...' }
           }));
         }
-        // Auto-reconnect after 4 seconds
-        setTimeout(() => this.connectPublicRelay(), 4000);
+        // Auto-reconnect after 5 seconds
+        setTimeout(() => this.connectPublicRelay(), 5000);
       };
     } catch (e) {
       console.warn("[P2P Relay] WebSocket connection error:", e);
@@ -385,32 +415,29 @@ class ProofCashWalletEngine {
   async fetchMeshBacklog() {
     let newlyCredited = 0;
 
-    // 1. Poll Global Cloud Relay (ntfy.sh)
+    // 1. Poll Cloudflare Edge Relay Backlog
     try {
-      const resp = await fetch(`https://ntfy.sh/${this.meshTopic}/json?poll=1&since=24h`);
+      const httpBase = this.getRelayHttpUrl();
+      const resp = await fetch(`${httpBase}/poll?topic=${this.meshTopic}&since=0`, {
+        signal: AbortSignal.timeout(3500)
+      });
       if (resp.ok) {
-        const text = await resp.text();
-        const lines = text.trim().split('\n');
-        for (const line of lines) {
-          if (!line) continue;
-          try {
-            const data = JSON.parse(line);
-            if (data.event === 'message' && data.message) {
-              const txPacket = typeof data.message === 'string' ? JSON.parse(data.message) : data.message;
-              if (this.handleIncomingP2pTransfer(txPacket)) {
-                newlyCredited++;
-              }
+        const data = await resp.json();
+        if (data && Array.isArray(data.transactions)) {
+          for (const tx of data.transactions) {
+            if (this.handleIncomingP2pTransfer(tx)) {
+              newlyCredited++;
             }
-          } catch (err) {}
+          }
         }
       }
     } catch (err) {
-      // Background catch-up fail is silent
+      // Edge catch-up silent
     }
 
     // 2. Poll Local Development Relay (127.0.0.1:8332)
     try {
-      const localResp = await fetch('http://127.0.0.1:8332/p2p/recent');
+      const localResp = await fetch('http://127.0.0.1:8332/p2p/recent', { signal: AbortSignal.timeout(1500) });
       if (localResp.ok) {
         const localData = await localResp.json();
         if (localData && Array.isArray(localData.transactions)) {
@@ -727,18 +754,36 @@ class ProofCashWalletEngine {
       // Local relay unavailable or mixed content, ignore
     }
 
-    // Rail D: Global Cloud Relay (https://ntfy.sh/proofcash_settlement_mesh_v1)
+    // Rail D: Cloudflare Edge Relay (Live WebSocket Fast-Path + HTTP Fallback)
     let cloudRelaySuccess = false;
+
+    // Fast-Path: Send over active Edge WebSocket connection
+    if (this.wsRelay && this.wsRelay.readyState === WebSocket.OPEN) {
+      try {
+        this.wsRelay.send(JSON.stringify({
+          type: "publish",
+          topic: this.meshTopic,
+          payload: p2pPacket
+        }));
+        cloudRelaySuccess = true;
+        console.info("[P2P Mesh] Pushed transfer instantly through active Edge WebSocket!");
+      } catch (wsErr) {
+        console.warn("[P2P Mesh] WebSocket send error:", wsErr);
+      }
+    }
+
+    // HTTP Edge Fallback
     try {
-      console.info("[P2P Mesh] Broadcasting transfer to:", recipient.trim(), "Amount:", amountPcash, "TxID:", txEntry.txid);
-      const pubRes = await fetch(`https://ntfy.sh/${this.meshTopic || 'proofcash_settlement_mesh_v1'}`, {
+      const httpBase = this.getRelayHttpUrl();
+      const pubRes = await fetch(`${httpBase}/broadcast`, {
         method: 'POST',
-        body: JSON.stringify(p2pPacket)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: this.meshTopic, packet: p2pPacket }),
+        signal: AbortSignal.timeout(3500)
       });
       if (pubRes.ok) cloudRelaySuccess = true;
-      console.info("[P2P Mesh] Cloud Broadcast result:", pubRes.status);
     } catch (err) {
-      console.warn("[P2P Mesh] Cloud broadcast warning (ad-blocker or offline):", err);
+      // Cloud broadcast notice
     }
 
     // Rail E: JSON-RPC proofcashd node broadcast
