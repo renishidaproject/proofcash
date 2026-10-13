@@ -335,7 +335,7 @@ class ProofCashWalletEngine {
   }
 
   getRelayWsUrl() {
-    return this.state.customRelayUrl || 'wss://proofcash-relay.workers.dev/ws';
+    return this.state.customRelayUrl || 'wss://proofcash-relay.renishida.workers.dev/ws';
   }
 
   getRelayHttpUrl() {
