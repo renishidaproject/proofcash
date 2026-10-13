@@ -50,6 +50,16 @@
       background: #374151;
       border-radius: 4px;
     }
+    @keyframes eq-bounce {
+      0%, 100% { height: 18%; opacity: 0.35; }
+      50% { height: 95%; opacity: 1; }
+    }
+    .eq-bar-active {
+      animation: eq-bounce 0.65s ease-in-out infinite alternate;
+    }
+    .divide-gray-850 > :not([hidden]) ~ :not([hidden]) {
+      border-color: rgba(31, 41, 55, 0.7);
+    }
   </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col pb-12 selection:bg-emerald-500 selection:text-black overflow-x-hidden">
@@ -333,8 +343,8 @@
 
     <!-- Panel 2: AI Machine Micro-Payment Streaming -->
     <div id="panel-stream" class="tab-panel hidden space-y-4">
-      <div class="glass-card rounded-xl p-5 border border-gray-800">
-        <div class="flex justify-between items-start mb-4">
+      <div class="glass-card rounded-xl p-5 border border-gray-800 space-y-4">
+        <div class="flex justify-between items-start">
           <div>
             <h3 class="text-sm font-bold text-white flex items-center gap-2">
               <span>🤖</span> AI Agent Sub-Cent Streaming Channel
@@ -346,21 +356,59 @@
           </span>
         </div>
 
-        <!-- 2-Row Grid: Two data cards at top, one full width under on mobile -->
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-3 text-center my-4">
-          <div class="col-span-1 bg-gray-950 p-3 rounded-xl border border-gray-900 flex flex-col justify-center">
-            <div class="text-[11px] text-gray-400">Tokens Streamed</div>
-            <div class="text-lg sm:text-xl font-bold font-mono text-white mt-1" id="stream-disp-tokens">0</div>
-          </div>
-          <div class="col-span-1 bg-gray-950 p-3 rounded-xl border border-gray-900 flex flex-col justify-center min-w-0">
-            <div class="text-[11px] text-gray-400">Total Stream Cost</div>
-            <div class="text-lg sm:text-xl font-bold font-mono text-cyan-400 mt-1 truncate">
-              <span id="stream-disp-cost">0.000000</span> <span class="text-xs">PCASH</span>
+        <!-- Innovative Visual Streaming Architecture -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-center my-2">
+          <!-- Card 1: Stream Velocity -->
+          <div class="bg-gradient-to-br from-gray-950 via-cyan-950/20 to-gray-950 p-4 rounded-xl border border-cyan-500/30 flex flex-col justify-between text-left relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] text-cyan-400 font-medium uppercase tracking-wider">Stream Velocity</span>
+              <span class="h-2 w-2 rounded-full bg-gray-600" id="stream-pulse-dot"></span>
+            </div>
+            <div class="my-2">
+              <div class="text-2xl sm:text-3xl font-extrabold font-mono text-white" id="stream-disp-tokens">0</div>
+              <div class="text-[10px] text-gray-400 font-mono mt-0.5">Tokens Consumed</div>
+            </div>
+            <div class="text-[10px] text-cyan-300/80 font-mono flex items-center gap-1.5 pt-1.5 border-t border-gray-900">
+              <span>Rate: 120 tok/sec</span>
+              <span>•</span>
+              <span>Zero L1 Wait</span>
             </div>
           </div>
-          <div class="col-span-2 md:col-span-1 bg-gray-950 p-3 rounded-xl border border-gray-900 flex flex-col justify-center">
-            <div class="text-[11px] text-gray-400">Energy Bond Bonded</div>
-            <div class="text-lg sm:text-xl font-bold font-mono text-amber-400 mt-1">10,000 <span class="text-xs">pJ</span></div>
+
+          <!-- Card 2: Cumulative Micro-Cost -->
+          <div class="bg-gradient-to-br from-gray-950 via-emerald-950/20 to-gray-950 p-4 rounded-xl border border-emerald-500/30 flex flex-col justify-between text-left">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] text-emerald-400 font-medium uppercase tracking-wider">Cumulative Cost</span>
+              <span class="text-[10px] font-mono text-emerald-400">10⁻⁶ / tok</span>
+            </div>
+            <div class="my-2">
+              <div class="text-xl sm:text-2xl font-extrabold font-mono text-emerald-400 truncate">
+                <span id="stream-disp-cost">0.000000</span> <span class="text-xs">PCASH</span>
+              </div>
+              <div class="text-[10px] text-gray-400 font-mono mt-0.5">Sub-Cent Nano-Yield</div>
+            </div>
+            <div class="text-[10px] text-emerald-300/80 font-mono flex items-center gap-1.5 pt-1.5 border-t border-gray-900">
+              <span>≈ 10⁶ pJ / kToken</span>
+              <span>•</span>
+              <span>Continuous Settle</span>
+            </div>
+          </div>
+
+          <!-- Card 3: Energy Bond Collateral -->
+          <div class="bg-gradient-to-br from-gray-950 via-amber-950/20 to-gray-950 p-4 rounded-xl border border-amber-500/30 flex flex-col justify-between text-left">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] text-amber-400 font-medium uppercase tracking-wider">Energy Bond</span>
+              <span class="text-[10px] font-mono text-emerald-400">100% Solvent</span>
+            </div>
+            <div class="my-2">
+              <div class="text-xl sm:text-2xl font-extrabold font-mono text-amber-400">
+                10,000 <span class="text-xs">pJ</span>
+              </div>
+              <div class="text-[10px] text-gray-400 font-mono mt-0.5">2-of-2 Enclave Escrow</div>
+            </div>
+            <div class="w-full bg-gray-900 h-1.5 rounded-full overflow-hidden mt-1">
+              <div class="bg-amber-400 h-full rounded-full" style="width: 100%"></div>
+            </div>
           </div>
         </div>
 
@@ -370,26 +418,95 @@
             <input type="text" id="stream-input-agent" value="agent://neural-inference.deepseek-v3.pcash" class="w-full mt-1 bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
           </div>
 
-          <button id="btn-toggle-stream" class="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all">
+          <button id="btn-toggle-stream" class="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
             <span>⚡ Start Real-Time Inference Stream</span>
           </button>
         </div>
+
+        <!-- Paginated Streaming Vouchers Datatable -->
+        <div class="bg-gray-950/80 rounded-xl p-4 border border-gray-900 space-y-3">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>🧾</span> Streamed Session Vouchers &amp; Micro-Receipts
+              </h4>
+              <p class="text-[11px] text-gray-400">Off-chain bilateral state channel receipts signed by BabyJubjub ephemeral key</p>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800" id="stream-vouchers-badge">
+              0 Vouchers
+            </span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs font-mono">
+              <thead>
+                <tr class="border-b border-gray-800 text-gray-400 bg-gray-900/60">
+                  <th class="p-2.5">Voucher ID</th>
+                  <th class="p-2.5">Target Agent URI</th>
+                  <th class="p-2.5 text-right">Tokens</th>
+                  <th class="p-2.5 text-right">Micro-Cost</th>
+                  <th class="p-2.5 text-center">Channel State</th>
+                  <th class="p-2.5 text-right">Time</th>
+                </tr>
+              </thead>
+              <tbody id="table-stream-vouchers-body" class="divide-y divide-gray-850">
+                <tr>
+                  <td colspan="6" class="p-4 text-center text-gray-500 font-sans text-xs">
+                    No active streaming vouchers yet. Start an inference stream to generate off-chain micro-payments.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Streaming Pagination Controls -->
+          <div id="stream-pagination" class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 px-1 text-xs font-mono text-gray-400 border-t border-gray-900">
+            <div>
+              Showing <span id="disp-stream-range" class="text-white font-bold">0-0</span> of <span id="disp-stream-total" class="text-cyan-300 font-bold">0</span> vouchers
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button id="btn-stream-prev" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer" disabled>◀ Prev</button>
+              <span id="disp-stream-page" class="px-2 text-white font-bold">Page 1 of 1</span>
+              <button id="btn-stream-next" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer" disabled>Next ▶</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
     <!-- Panel 3: Commutative Delta-UTXO Monoid Pool -->
     <div id="panel-monoid" class="tab-panel hidden space-y-4">
-      <div class="glass-card rounded-xl p-5 border border-gray-800">
-        <div class="flex justify-between items-start mb-3">
+      <div class="glass-card rounded-xl p-5 border border-gray-800 space-y-4">
+        <div class="flex justify-between items-start">
           <div>
             <h3 class="text-sm font-bold text-white flex items-center gap-2">
               <span>⚡</span> Parallel Monoid Delta-UTXO Pool
             </h3>
             <p class="text-xs text-gray-400">Eliminates state contention and MEV frontrunning via commutative tree reduction</p>
           </div>
-          <button id="btn-fire-batch" class="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs transition-all">
+          <button id="btn-fire-batch" class="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs transition-all cursor-pointer">
             Fire 5 Concurrent Deltas
           </button>
+        </div>
+
+        <!-- Innovative Monoid Architecture Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-center my-2">
+          <div class="bg-gradient-to-br from-gray-950 via-purple-950/20 to-gray-950 p-4 rounded-xl border border-purple-500/30 text-left">
+            <div class="text-[11px] text-purple-400 font-medium uppercase tracking-wider">Monoid Operator</div>
+            <div class="text-xl sm:text-2xl font-extrabold font-mono text-white mt-1">⊗ Associative</div>
+            <div class="text-[10px] text-gray-400 font-mono mt-1">Parallel Tree Reduction: O(log N)</div>
+          </div>
+          <div class="bg-gradient-to-br from-gray-950 via-cyan-950/20 to-gray-950 p-4 rounded-xl border border-cyan-500/30 text-left">
+            <div class="text-[11px] text-cyan-400 font-medium uppercase tracking-wider">MEV Protection</div>
+            <div class="text-xl sm:text-2xl font-extrabold font-mono text-cyan-400 mt-1">0.00% Contention</div>
+            <div class="text-[10px] text-gray-400 font-mono mt-1">Mathematically Order-Invariant</div>
+          </div>
+          <div class="bg-gradient-to-br from-gray-950 via-emerald-950/20 to-gray-950 p-4 rounded-xl border border-emerald-500/30 text-left">
+            <div class="text-[11px] text-emerald-400 font-medium uppercase tracking-wider">Reduction Latency</div>
+            <div class="text-xl sm:text-2xl font-extrabold font-mono text-emerald-400 mt-1">&lt; 1.2 ms</div>
+            <div class="text-[10px] text-gray-400 font-mono mt-1">Instant Multi-Core Merkle Merge</div>
+          </div>
         </div>
 
         <div class="bg-gray-950 rounded-lg p-3 border border-gray-900">
@@ -397,10 +514,60 @@
             <span>Simulated Monoid Stream:</span>
             <span class="text-purple-400 font-mono">ProofCash Monoid Reducer: O(log N)</span>
           </div>
-          <div id="monoid-log" class="space-y-1.5 font-mono text-xs max-h-48 overflow-y-auto custom-scroll text-gray-300">
+          <div id="monoid-log" class="space-y-1.5 font-mono text-xs max-h-36 overflow-y-auto custom-scroll text-gray-300">
             <div class="text-gray-500">[Monoid Engine] Ready for parallel delta reduction...</div>
           </div>
         </div>
+
+        <!-- Paginated Commutative Reductions Datatable -->
+        <div class="bg-gray-950/80 rounded-xl p-4 border border-gray-900 space-y-3">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>🔀</span> Commutative Delta-UTXO Reduction Ledger
+              </h4>
+              <p class="text-[11px] text-gray-400">Merged multi-agent balance state transitions verified commutative</p>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800" id="monoid-batches-badge">
+              0 Batches
+            </span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs font-mono">
+              <thead>
+                <tr class="border-b border-gray-800 text-gray-400 bg-gray-900/60">
+                  <th class="p-2.5">Batch ID</th>
+                  <th class="p-2.5">Monoid Operator</th>
+                  <th class="p-2.5 text-center">Deltas Merged</th>
+                  <th class="p-2.5 text-right">Net Impact</th>
+                  <th class="p-2.5 text-right">Tree Latency</th>
+                  <th class="p-2.5 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody id="table-monoid-body" class="divide-y divide-gray-850">
+                <tr>
+                  <td colspan="6" class="p-4 text-center text-gray-500 font-sans text-xs">
+                    No commutative batches fired yet. Click 'Fire 5 Concurrent Deltas' above.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Monoid Pagination Controls -->
+          <div id="monoid-pagination" class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 px-1 text-xs font-mono text-gray-400 border-t border-gray-900">
+            <div>
+              Showing <span id="disp-monoid-range" class="text-white font-bold">0-0</span> of <span id="disp-monoid-total" class="text-purple-300 font-bold">0</span> batches
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button id="btn-monoid-prev" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer" disabled>◀ Prev</button>
+              <span id="disp-monoid-page" class="px-2 text-white font-bold">Page 1 of 1</span>
+              <button id="btn-monoid-next" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer" disabled>Next ▶</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -580,24 +747,133 @@
           </span>
         </div>
 
-        <!-- Metric Grid -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-          <div class="bg-gray-950 p-3 rounded-lg border border-gray-900">
-            <div class="text-[11px] text-gray-400">Live Hashrate</div>
-            <div class="text-lg font-bold font-mono text-emerald-400 mt-1" id="miner-disp-hashrate">0 H/s</div>
+        <!-- Asymmetric Innovative Metric Architecture -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5">
+
+          <!-- 1. HERO DATA CARD: Live Hashrate (The Biggest Card) -->
+          <div class="md:col-span-7 bg-gradient-to-br from-gray-950 via-emerald-950/20 to-gray-950 p-5 rounded-2xl border border-emerald-500/30 shadow-lg shadow-emerald-950/20 flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute -right-8 -top-8 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="flex h-3 w-3 relative">
+                  <span id="miner-pulse-ping" class="hidden animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span id="miner-pulse-dot" class="relative inline-flex rounded-full h-3 w-3 bg-gray-600"></span>
+                </span>
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Live Thermodynamic Hashrate</span>
+              </div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-500/30">
+                Blake3 SIMD 8-Way
+              </span>
+            </div>
+
+            <div class="my-2">
+              <div class="text-3xl sm:text-4xl lg:text-5xl font-black font-mono text-white tracking-tight flex items-baseline gap-2">
+                <span id="miner-disp-hashrate" class="text-emerald-400">0 H/s</span>
+              </div>
+              <div class="text-xs text-gray-400 mt-1.5 flex items-center gap-2 font-mono flex-wrap">
+                <span>Sampling Efficiency: <strong class="text-gray-200" id="miner-disp-efficiency">100%</strong></span>
+                <span>•</span>
+                <span>Thermal Duty: <strong class="text-emerald-400" id="miner-disp-duty">Optimal</strong></span>
+                <span>•</span>
+                <span class="text-cyan-400">ARM NEON / AVX2</span>
+              </div>
+            </div>
+
+            <!-- Blake3 Frequency Equalizer Waveform -->
+            <div class="mt-3 pt-3 border-t border-gray-900/80">
+              <div class="flex items-end justify-between gap-1 h-6 w-full px-1" id="miner-eq-bars">
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[18%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[25%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[35%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[20%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[45%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[30%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[60%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[40%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[70%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[50%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[65%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[35%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[55%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[25%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[40%] transition-all"></div>
+                <div class="eq-bar w-1.5 bg-emerald-500/40 rounded-t h-[18%] transition-all"></div>
+              </div>
+            </div>
           </div>
-          <div class="bg-gray-950 p-3 rounded-lg border border-gray-900">
-            <div class="text-[11px] text-gray-400">Hashes Checked</div>
-            <div class="text-lg font-bold font-mono text-white mt-1" id="miner-disp-hashes">0</div>
+
+          <!-- 2. DOUGHNUT CHART CARD: Hashes Checked -->
+          <div class="md:col-span-5 bg-gradient-to-br from-gray-950 via-cyan-950/20 to-gray-950 p-4 rounded-2xl border border-cyan-500/30 shadow-lg shadow-cyan-950/20 flex flex-col items-center justify-between relative overflow-hidden">
+            <div class="w-full flex items-center justify-between text-[11px] uppercase tracking-wider font-semibold text-cyan-400 mb-1">
+              <span class="flex items-center gap-1.5">
+                <span>🔄</span> PoSW Hash Accumulator
+              </span>
+              <span class="text-[10px] font-mono text-cyan-300/80" id="miner-donut-cycle">Cycle 1</span>
+            </div>
+
+            <!-- SVG Doughnut Pie Chart -->
+            <div class="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center my-1 shrink-0">
+              <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" stroke="#1f2937" stroke-width="8" fill="transparent" />
+                <circle id="miner-donut-meter" cx="50" cy="50" r="40" stroke="url(#minerDonutGrad)" stroke-width="8" stroke-linecap="round" fill="transparent" stroke-dasharray="251.327" stroke-dashoffset="251.327" class="transition-all duration-300" />
+                <defs>
+                  <linearGradient id="minerDonutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#06b6d4" />
+                    <stop offset="100%" stop-color="#10b981" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none px-2">
+                <span class="text-sm sm:text-base font-black font-mono text-white tracking-tight break-all" id="miner-disp-hashes">0</span>
+                <span class="text-[9px] uppercase tracking-wider text-cyan-400 font-mono mt-0.5">Checked</span>
+                <span class="text-[9px] font-mono text-gray-400 mt-0.5" id="miner-donut-pct">0% Target</span>
+              </div>
+            </div>
+
+            <div class="w-full flex justify-between items-center text-[10px] font-mono text-gray-400 pt-2 border-t border-gray-900 mt-1">
+              <span>Goal: <strong class="text-cyan-300">100K / Cycle</strong></span>
+              <span>Target: <strong class="text-emerald-400">&lt; 0x0004FFFF</strong></span>
+            </div>
           </div>
-          <div class="bg-gray-950 p-3 rounded-lg border border-gray-900">
-            <div class="text-[11px] text-gray-400">Blocks Found</div>
-            <div class="text-lg font-bold font-mono text-cyan-400 mt-1" id="miner-disp-blocks">0</div>
+
+          <!-- 3. 1-BY-1 CARD: Blocks Found -->
+          <div class="md:col-span-6 bg-gradient-to-br from-gray-950 to-gray-900/90 p-4 rounded-2xl border border-gray-800 flex items-center gap-4 hover:border-cyan-500/40 transition-all">
+            <div class="w-14 h-14 rounded-2xl bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-2xl shrink-0 shadow-inner shadow-cyan-500/20">
+              🧱
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-[11px] uppercase tracking-wider text-gray-400 font-medium">Blocks Found</div>
+              <div class="text-2xl font-black font-mono text-cyan-400 mt-0.5 flex items-baseline gap-1.5">
+                <span id="miner-disp-blocks">0</span>
+                <span class="text-xs font-normal text-gray-400">Solved</span>
+              </div>
+              <div class="text-[10px] font-mono text-gray-500 mt-0.5 flex items-center gap-2">
+                <span>PoSW Sampling</span>
+                <span>•</span>
+                <span class="text-cyan-400/90">Instant Enclave Credit</span>
+              </div>
+            </div>
           </div>
-          <div class="bg-gray-950 p-3 rounded-lg border border-gray-900 min-w-0">
-            <div class="text-[11px] text-gray-400">Total Mined Subsidy</div>
-            <div class="text-base sm:text-lg font-bold font-mono text-purple-400 mt-1 truncate" id="miner-disp-earned">0.00 <span class="text-[10px]">PCASH</span></div>
+
+          <!-- 4. 1-BY-1 CARD: Total Mined Subsidy -->
+          <div class="md:col-span-6 bg-gradient-to-br from-gray-950 to-gray-900/90 p-4 rounded-2xl border border-gray-800 flex items-center gap-4 hover:border-purple-500/40 transition-all">
+            <div class="w-14 h-14 rounded-2xl bg-purple-950/60 border border-purple-500/30 flex items-center justify-center text-2xl shrink-0 shadow-inner shadow-purple-500/20">
+              💎
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-[11px] uppercase tracking-wider text-gray-400 font-medium">Total Mined Subsidy</div>
+              <div class="text-xl sm:text-2xl font-black font-mono text-purple-400 mt-0.5 truncate flex items-baseline gap-1.5">
+                <span id="miner-disp-earned">0.00 <span class="text-xs">PCASH</span></span>
+              </div>
+              <div class="text-[10px] font-mono text-gray-500 mt-0.5 flex items-center gap-2">
+                <span>Zero Pre-mine</span>
+                <span>•</span>
+                <span class="text-purple-400/90">100 PCASH / Block</span>
+              </div>
+            </div>
           </div>
+
         </div>
 
         <!-- Phone Profile Selector -->
@@ -660,6 +936,55 @@
           </div>
           <div id="miner-log" class="space-y-1 font-mono text-[11px] max-h-32 overflow-y-auto custom-scroll text-gray-300">
             <div class="text-gray-500">[EdgeMiner] Ready. Tap 'Start Mobile Edge Mining' to compute PoSW nonces on this device...</div>
+          </div>
+        </div>
+
+        <!-- Mined Blocks Datatable with Client-Side Pagination -->
+        <div class="bg-gray-950/80 rounded-xl p-4 border border-gray-900 space-y-3">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>⛏️</span> Discovered Thermodynamic Blocks &amp; Solved Nonces
+              </h4>
+              <p class="text-[11px] text-gray-400">Verifiable on-chain eUTXO coinbase outputs mined by this device</p>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800" id="miner-blocks-badge">
+              0 Discovered
+            </span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs font-mono">
+              <thead>
+                <tr class="border-b border-gray-800 text-gray-400 bg-gray-900/60">
+                  <th class="p-2.5">Height</th>
+                  <th class="p-2.5">Nonce</th>
+                  <th class="p-2.5">PoSW Hash</th>
+                  <th class="p-2.5 text-right">Subsidy</th>
+                  <th class="p-2.5 text-center">Attestation</th>
+                  <th class="p-2.5 text-right">Age</th>
+                </tr>
+              </thead>
+              <tbody id="table-miner-blocks-body" class="divide-y divide-gray-850">
+                <tr>
+                  <td colspan="6" class="p-4 text-center text-gray-500 font-sans text-xs">
+                    No blocks discovered yet on this device. Start mining above to compute PoSW nonces.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mined Blocks Pagination -->
+          <div id="miner-blocks-pagination" class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 px-1 text-xs font-mono text-gray-400 border-t border-gray-900">
+            <div>
+              Showing <span id="disp-miner-blocks-range" class="text-white font-bold">0-0</span> of <span id="disp-miner-blocks-total" class="text-cyan-300 font-bold">0</span> blocks
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button id="btn-miner-blocks-prev" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer" disabled>◀ Prev</button>
+              <span id="disp-miner-blocks-page" class="px-2 text-white font-bold">Page 1 of 1</span>
+              <button id="btn-miner-blocks-next" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer" disabled>Next ▶</button>
+            </div>
           </div>
         </div>
 
@@ -2540,9 +2865,99 @@
         }
       });
 
-      // AI Stream Toggle
+      // AI Stream Controller
+      let streamVouchers = [];
+      let streamVouchersPage = 1;
+      const streamVouchersPerPage = 5;
+
+      function renderStreamVouchersTable() {
+        const tbody = document.getElementById('table-stream-vouchers-body');
+        const badge = document.getElementById('stream-vouchers-badge');
+        const rangeEl = document.getElementById('disp-stream-range');
+        const totalEl = document.getElementById('disp-stream-total');
+        const pageEl = document.getElementById('disp-stream-page');
+        const btnPrev = document.getElementById('btn-stream-prev');
+        const btnNext = document.getElementById('btn-stream-next');
+        if (!tbody) return;
+
+        const total = streamVouchers.length;
+        if (badge) badge.innerText = `${total} Vouchers`;
+        if (totalEl) totalEl.innerText = total;
+
+        if (total === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="p-4 text-center text-gray-500 font-sans text-xs">
+                No active streaming vouchers yet. Start an inference stream to generate off-chain micro-payments.
+              </td>
+            </tr>
+          `;
+          if (rangeEl) rangeEl.innerText = '0-0';
+          if (pageEl) pageEl.innerText = 'Page 1 of 1';
+          if (btnPrev) btnPrev.disabled = true;
+          if (btnNext) btnNext.disabled = true;
+          return;
+        }
+
+        const totalPages = Math.max(1, Math.ceil(total / streamVouchersPerPage));
+        if (streamVouchersPage > totalPages) streamVouchersPage = totalPages;
+        const startIdx = (streamVouchersPage - 1) * streamVouchersPerPage;
+        const pageItems = streamVouchers.slice(startIdx, startIdx + streamVouchersPerPage);
+
+        tbody.innerHTML = '';
+        pageItems.forEach(v => {
+          const ageSecs = Math.max(1, Math.round((Date.now() - v.timestamp) / 1000));
+          const ageStr = ageSecs < 60 ? `${ageSecs}s ago` : `${Math.floor(ageSecs / 60)}m ago`;
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-gray-900/60 transition-colors';
+          tr.innerHTML = `
+            <td class="p-2.5 text-cyan-300 font-bold">${v.voucherId}</td>
+            <td class="p-2.5 text-gray-300 truncate max-w-[140px]" title="${v.agentUri}">${v.agentUri}</td>
+            <td class="p-2.5 text-right text-white font-bold">${v.tokens.toLocaleString()}</td>
+            <td class="p-2.5 text-right text-emerald-400 font-bold">${v.cost} PCASH</td>
+            <td class="p-2.5 text-center">
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
+                ${v.channelState}
+              </span>
+            </td>
+            <td class="p-2.5 text-right text-gray-500">${ageStr}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        const endNum = Math.min(startIdx + pageItems.length, total);
+        if (rangeEl) rangeEl.innerText = `${startIdx + 1}-${endNum}`;
+        if (pageEl) pageEl.innerText = `Page ${streamVouchersPage} of ${totalPages}`;
+        if (btnPrev) btnPrev.disabled = streamVouchersPage <= 1;
+        if (btnNext) btnNext.disabled = streamVouchersPage >= totalPages;
+      }
+
+      function setupStreamVouchersPagination() {
+        const btnPrev = document.getElementById('btn-stream-prev');
+        const btnNext = document.getElementById('btn-stream-next');
+        if (btnPrev) {
+          btnPrev.addEventListener('click', () => {
+            if (streamVouchersPage > 1) {
+              streamVouchersPage--;
+              renderStreamVouchersTable();
+            }
+          });
+        }
+        if (btnNext) {
+          btnNext.addEventListener('click', () => {
+            const totalPages = Math.ceil(streamVouchers.length / streamVouchersPerPage);
+            if (streamVouchersPage < totalPages) {
+              streamVouchersPage++;
+              renderStreamVouchersTable();
+            }
+          });
+        }
+      }
+      setupStreamVouchersPagination();
+
       const btnStream = document.getElementById('btn-toggle-stream');
       const badgeStream = document.getElementById('stream-status-badge');
+      const streamDot = document.getElementById('stream-pulse-dot');
       document.getElementById('btn-open-stream').addEventListener('click', () => {
         document.querySelector('[data-target="panel-stream"]').click();
       });
@@ -2554,21 +2969,122 @@
           btnStream.classList.replace('bg-rose-600', 'bg-cyan-600');
           badgeStream.innerText = "Channel Settled";
           badgeStream.className = "text-xs px-2.5 py-1 rounded bg-gray-800 text-gray-300 border border-gray-700 font-mono";
+          if (streamDot) streamDot.className = "h-2 w-2 rounded-full bg-gray-600";
         } else {
           const agentUri = document.getElementById('stream-input-agent').value;
           btnStream.innerText = "⏹ Stop & Settle Stream to L1";
           btnStream.classList.replace('bg-cyan-600', 'bg-rose-600');
           badgeStream.innerText = "Streaming (Sub-Cent)";
           badgeStream.className = "text-xs px-2.5 py-1 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 font-mono pulse-dot";
+          if (streamDot) streamDot.className = "h-2 w-2 rounded-full bg-cyan-400 pulse-dot";
 
           wallet.startAiStream(agentUri, (tick) => {
             document.getElementById('stream-disp-tokens').innerText = tick.tokens.toLocaleString();
             document.getElementById('stream-disp-cost').innerText = tick.amountPcash;
+
+            streamVouchers.unshift({
+              voucherId: '0xvch_' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0'),
+              agentUri: agentUri,
+              tokens: tick.tokens,
+              cost: tick.amountPcash,
+              channelState: 'ACTIVE_SESSION',
+              timestamp: Date.now()
+            });
+            if (streamVouchers.length > 50) streamVouchers.pop();
+            renderStreamVouchersTable();
           });
         }
       });
 
-      // Commutative Delta Batch
+      // Commutative Delta Batch Controller
+      let monoidBatches = [];
+      let monoidPage = 1;
+      const monoidPerPage = 5;
+
+      function renderMonoidTable() {
+        const tbody = document.getElementById('table-monoid-body');
+        const badge = document.getElementById('monoid-batches-badge');
+        const rangeEl = document.getElementById('disp-monoid-range');
+        const totalEl = document.getElementById('disp-monoid-total');
+        const pageEl = document.getElementById('disp-monoid-page');
+        const btnPrev = document.getElementById('btn-monoid-prev');
+        const btnNext = document.getElementById('btn-monoid-next');
+        if (!tbody) return;
+
+        const total = monoidBatches.length;
+        if (badge) badge.innerText = `${total} Batches`;
+        if (totalEl) totalEl.innerText = total;
+
+        if (total === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="p-4 text-center text-gray-500 font-sans text-xs">
+                No commutative batches fired yet. Click 'Fire 5 Concurrent Deltas' above.
+              </td>
+            </tr>
+          `;
+          if (rangeEl) rangeEl.innerText = '0-0';
+          if (pageEl) pageEl.innerText = 'Page 1 of 1';
+          if (btnPrev) btnPrev.disabled = true;
+          if (btnNext) btnNext.disabled = true;
+          return;
+        }
+
+        const totalPages = Math.max(1, Math.ceil(total / monoidPerPage));
+        if (monoidPage > totalPages) monoidPage = totalPages;
+        const startIdx = (monoidPage - 1) * monoidPerPage;
+        const pageItems = monoidBatches.slice(startIdx, startIdx + monoidPerPage);
+
+        tbody.innerHTML = '';
+        pageItems.forEach(m => {
+          const isNetPos = parseFloat(m.netChange) >= 0;
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-gray-900/60 transition-colors';
+          tr.innerHTML = `
+            <td class="p-2.5 text-purple-300 font-bold">${m.id}</td>
+            <td class="p-2.5 text-gray-300 font-mono">${m.operator}</td>
+            <td class="p-2.5 text-center text-white font-bold">${m.inputCount} concurrent</td>
+            <td class="p-2.5 text-right font-bold ${isNetPos ? 'text-emerald-400' : 'text-rose-400'}">${isNetPos ? '+' : ''}${m.netChange} PCASH</td>
+            <td class="p-2.5 text-right text-cyan-300 font-mono">${m.latency}</td>
+            <td class="p-2.5 text-right">
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                ${m.status}
+              </span>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        const endNum = Math.min(startIdx + pageItems.length, total);
+        if (rangeEl) rangeEl.innerText = `${startIdx + 1}-${endNum}`;
+        if (pageEl) pageEl.innerText = `Page ${monoidPage} of ${totalPages}`;
+        if (btnPrev) btnPrev.disabled = monoidPage <= 1;
+        if (btnNext) btnNext.disabled = monoidPage >= totalPages;
+      }
+
+      function setupMonoidPagination() {
+        const btnPrev = document.getElementById('btn-monoid-prev');
+        const btnNext = document.getElementById('btn-monoid-next');
+        if (btnPrev) {
+          btnPrev.addEventListener('click', () => {
+            if (monoidPage > 1) {
+              monoidPage--;
+              renderMonoidTable();
+            }
+          });
+        }
+        if (btnNext) {
+          btnNext.addEventListener('click', () => {
+            const totalPages = Math.ceil(monoidBatches.length / monoidPerPage);
+            if (monoidPage < totalPages) {
+              monoidPage++;
+              renderMonoidTable();
+            }
+          });
+        }
+      }
+      setupMonoidPagination();
+
       document.getElementById('btn-fire-batch').addEventListener('click', () => {
         const deltas = [
           { amount: 10.0, label: "Agent_Inference_Pool (+10.0)" },
@@ -2594,6 +3110,17 @@
         sumDiv.className = 'text-cyan-400 font-bold pt-1 border-t border-gray-800';
         sumDiv.innerText = `✓ Monoid Reduction Applied: Net ${res.netChange} PCASH in O(log N) parallel time!`;
         log.appendChild(sumDiv);
+
+        monoidBatches.unshift({
+          id: '0xmon_' + Date.now().toString(16).substring(4),
+          operator: '⊗ Commutative',
+          inputCount: 5,
+          netChange: res.netChange,
+          latency: (0.7 + Math.random() * 0.4).toFixed(2) + ' ms',
+          status: 'CONFIRMED'
+        });
+        if (monoidBatches.length > 50) monoidBatches.pop();
+        renderMonoidTable();
       });
 
       // In-Browser AIR Bench
@@ -2631,6 +3158,127 @@
       let totalMinedEarned = 0.0;
       let minerHashCount = 0;
 
+      // Discovered Blocks Ledger with Client-Side Pagination
+      let minedBlocksHistory = [];
+      let minerBlocksPage = 1;
+      const minerBlocksPerPage = 5;
+
+      function renderMinerBlocksTable() {
+        const tbody = document.getElementById('table-miner-blocks-body');
+        const badge = document.getElementById('miner-blocks-badge');
+        const rangeEl = document.getElementById('disp-miner-blocks-range');
+        const totalEl = document.getElementById('disp-miner-blocks-total');
+        const pageEl = document.getElementById('disp-miner-blocks-page');
+        const btnPrev = document.getElementById('btn-miner-blocks-prev');
+        const btnNext = document.getElementById('btn-miner-blocks-next');
+        if (!tbody) return;
+
+        const total = minedBlocksHistory.length;
+        if (badge) badge.innerText = `${total} Discovered`;
+        if (totalEl) totalEl.innerText = total;
+
+        if (total === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="p-4 text-center text-gray-500 font-sans text-xs">
+                No blocks discovered yet on this device. Start mining above to compute PoSW nonces.
+              </td>
+            </tr>
+          `;
+          if (rangeEl) rangeEl.innerText = '0-0';
+          if (pageEl) pageEl.innerText = 'Page 1 of 1';
+          if (btnPrev) btnPrev.disabled = true;
+          if (btnNext) btnNext.disabled = true;
+          return;
+        }
+
+        const totalPages = Math.max(1, Math.ceil(total / minerBlocksPerPage));
+        if (minerBlocksPage > totalPages) minerBlocksPage = totalPages;
+        const startIdx = (minerBlocksPage - 1) * minerBlocksPerPage;
+        const pageItems = minedBlocksHistory.slice(startIdx, startIdx + minerBlocksPerPage);
+
+        tbody.innerHTML = '';
+        pageItems.forEach(b => {
+          const ageSecs = Math.max(1, Math.round((Date.now() - b.timestamp) / 1000));
+          const ageStr = ageSecs < 60 ? `${ageSecs}s ago` : `${Math.floor(ageSecs / 60)}m ago`;
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-gray-900/60 transition-colors';
+          tr.innerHTML = `
+            <td class="p-2.5 text-cyan-400 font-bold">#${Number(b.height).toLocaleString()}</td>
+            <td class="p-2.5 text-emerald-400 font-bold">${Number(b.nonce).toLocaleString()}</td>
+            <td class="p-2.5 text-gray-300 truncate max-w-[120px] font-mono" title="${b.hash}">${b.hash.substring(0, 14)}...</td>
+            <td class="p-2.5 text-right text-purple-300 font-bold">+${b.subsidy}</td>
+            <td class="p-2.5 text-center">
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                ${b.attestation || 'Secp256r1'}
+              </span>
+            </td>
+            <td class="p-2.5 text-right text-gray-500">${ageStr}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        const endNum = Math.min(startIdx + pageItems.length, total);
+        if (rangeEl) rangeEl.innerText = `${startIdx + 1}-${endNum}`;
+        if (pageEl) pageEl.innerText = `Page ${minerBlocksPage} of ${totalPages}`;
+        if (btnPrev) btnPrev.disabled = minerBlocksPage <= 1;
+        if (btnNext) btnNext.disabled = minerBlocksPage >= totalPages;
+      }
+
+      function setupMinerBlocksPagination() {
+        const btnPrev = document.getElementById('btn-miner-blocks-prev');
+        const btnNext = document.getElementById('btn-miner-blocks-next');
+        if (btnPrev) {
+          btnPrev.addEventListener('click', () => {
+            if (minerBlocksPage > 1) {
+              minerBlocksPage--;
+              renderMinerBlocksTable();
+            }
+          });
+        }
+        if (btnNext) {
+          btnNext.addEventListener('click', () => {
+            const totalPages = Math.ceil(minedBlocksHistory.length / minerBlocksPerPage);
+            if (minerBlocksPage < totalPages) {
+              minerBlocksPage++;
+              renderMinerBlocksTable();
+            }
+          });
+        }
+      }
+      setupMinerBlocksPagination();
+
+      // Equalizer bars helper
+      function updateEqualizerBars(active) {
+        const container = document.getElementById('miner-eq-bars');
+        if (!container) return;
+        const bars = container.querySelectorAll('.eq-bar');
+        bars.forEach((b, idx) => {
+          if (active) {
+            b.classList.add('eq-bar-active');
+            b.style.animationDelay = `${(idx * 0.04).toFixed(2)}s`;
+          } else {
+            b.classList.remove('eq-bar-active');
+            b.style.height = '18%';
+          }
+        });
+      }
+
+      // Donut chart gauge helper
+      function updateMinerDonut(hashes) {
+        const milestoneGoal = 100000;
+        const cycleHashes = hashes % milestoneGoal;
+        const cycleNum = Math.floor(hashes / milestoneGoal) + 1;
+        const ratio = Math.min(1, cycleHashes / milestoneGoal);
+        const offset = 251.327 * (1 - ratio);
+        const meterEl = document.getElementById('miner-donut-meter');
+        if (meterEl) meterEl.style.strokeDashoffset = offset;
+        const pctEl = document.getElementById('miner-donut-pct');
+        if (pctEl) pctEl.innerText = `${Math.round(ratio * 100)}% Target`;
+        const cycleEl = document.getElementById('miner-donut-cycle');
+        if (cycleEl) cycleEl.innerText = `Cycle ${cycleNum}`;
+      }
+
       const updateMinerLabels = () => {
         const dest = document.getElementById('miner-target-addr');
         const height = document.getElementById('miner-target-height');
@@ -2641,9 +3289,33 @@
       };
       updateMinerLabels();
 
+      // Load any existing mined blocks from wallet tx history
+      if (wallet && wallet.state && wallet.state.txHistory) {
+        minedBlocksHistory = wallet.state.txHistory
+          .filter(tx => tx.type === 'MINED_BLOCK_REWARD')
+          .map(tx => ({
+            height: tx.height,
+            nonce: tx.nonce,
+            hash: tx.txid ? tx.txid.replace('0xblk_', '0x0000') : '0x0000...',
+            subsidy: `${tx.amount} PCASH`,
+            timestamp: tx.timestamp,
+            attestation: tx.enclaveTier || 'Secp256r1 Hardware'
+          }));
+        totalMinedBlocks = minedBlocksHistory.length;
+        totalMinedEarned = totalMinedBlocks * 100.0;
+        const blocksDisp = document.getElementById('miner-disp-blocks');
+        const earnedDisp = document.getElementById('miner-disp-earned');
+        if (blocksDisp) blocksDisp.innerText = totalMinedBlocks;
+        if (earnedDisp) earnedDisp.innerHTML = `${totalMinedEarned.toFixed(2)} <span class="text-[10px]">PCASH</span>`;
+        renderMinerBlocksTable();
+      }
+
       const btnToggleMiner = document.getElementById('btn-toggle-miner');
       const badgeMiner = document.getElementById('miner-status-badge');
       const logMiner = document.getElementById('miner-log');
+      const pingMiner = document.getElementById('miner-pulse-ping');
+      const dotMiner = document.getElementById('miner-pulse-dot');
+      const dutyMiner = document.getElementById('miner-disp-duty');
 
       const appendMinerLog = (msg, cls = 'text-gray-300') => {
         if (!logMiner) return;
@@ -2766,6 +3438,10 @@
             badgeMiner.innerText = 'Miner Idle';
             badgeMiner.className = 'text-xs px-2.5 py-1 rounded bg-gray-900 text-gray-400 border border-gray-800 font-mono';
             document.getElementById('miner-disp-hashrate').innerText = '0 H/s';
+            if (dutyMiner) dutyMiner.innerText = 'Optimal (Cooled)';
+            if (pingMiner) pingMiner.classList.add('hidden');
+            if (dotMiner) dotMiner.className = 'relative inline-flex rounded-full h-3 w-3 bg-gray-600';
+            updateEqualizerBars(false);
             appendMinerLog('[EdgeMiner] Mining paused. Hardware cooled down.', 'text-gray-500');
           } else {
             // Check Network IP Mining Slot (Strictly 1 device per IP)
@@ -2827,6 +3503,10 @@
             btnToggleMiner.className = 'flex-1 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-rose-600/10 cursor-pointer';
             badgeMiner.innerText = `Mining (${selectedProfile.toUpperCase()})`;
             badgeMiner.className = 'text-xs px-2.5 py-1 rounded bg-amber-950 text-amber-300 border border-amber-800 font-mono pulse-dot';
+            if (dutyMiner) dutyMiner.innerText = selectedProfile === 'eco' ? 'Eco Throttled' : (selectedProfile === 'nightstand' ? 'Full Thermal' : 'Optimal Duty');
+            if (pingMiner) pingMiner.classList.remove('hidden');
+            if (dotMiner) dotMiner.className = 'relative inline-flex rounded-full h-3 w-3 bg-emerald-400';
+            updateEqualizerBars(true);
 
             appendMinerLog(`[EdgeMiner] Memory-hard PoSW worker spawned with 1MB DAG scratchpad (${selectedProfile.toUpperCase()})...`, 'text-cyan-400');
 
@@ -2838,11 +3518,14 @@
                 minerHashCount = e.data.hashes;
                 document.getElementById('miner-disp-hashes').innerText = Number(e.data.hashes).toLocaleString();
                 document.getElementById('miner-disp-hashrate').innerText = `${Number(e.data.hashrate).toLocaleString()} H/s`;
+                updateMinerDonut(minerHashCount);
               } else if (e.data.type === 'block_found') {
                 totalMinedBlocks++;
                 totalMinedEarned += 100.0;
-                document.getElementById('miner-disp-blocks').innerText = totalMinedBlocks;
-                document.getElementById('miner-disp-earned').innerHTML = `${totalMinedEarned.toFixed(2)} <span class="text-[10px]">PCASH</span>`;
+                const blocksDisp = document.getElementById('miner-disp-blocks');
+                const earnedDisp = document.getElementById('miner-disp-earned');
+                if (blocksDisp) blocksDisp.innerText = totalMinedBlocks;
+                if (earnedDisp) earnedDisp.innerHTML = `${totalMinedEarned.toFixed(2)} <span class="text-[10px]">PCASH</span>`;
 
                 appendMinerLog(`🎉 [DISCOVERY] Solved PoSW Nonce: ${e.data.nonce.toLocaleString()}! Hash: ${e.data.hash}`, 'text-amber-300 font-bold');
                 appendMinerLog(`↳ +100.0000 PCASH Subsidy Credited to ${wallet.state.address}`, 'text-emerald-400');
@@ -2854,6 +3537,17 @@
                   scratchpadProof: e.data.scratchpadProof || "posw_dag_sampled"
                 });
                 updateMinerLabels();
+
+                // Add to mined blocks table and re-render
+                minedBlocksHistory.unshift({
+                  height: wallet.state.currentBlockHeight,
+                  nonce: e.data.nonce,
+                  hash: e.data.hash,
+                  subsidy: "100.00 PCASH",
+                  timestamp: Date.now(),
+                  attestation: "Secp256r1 Platform"
+                });
+                renderMinerBlocksTable();
               }
             };
 

@@ -108,59 +108,90 @@
   <!-- Main Container -->
   <main class="max-w-6xl mx-auto w-full px-4 pt-6 space-y-6 flex-grow">
 
-    <!-- 1. Network Vital Signs Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+    <!-- 1. Network Vital Signs Grid: Differentiated, Asymmetric & Innovative -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-3.5">
       
-      <!-- Card 1: Block Height & State Anchor -->
-      <div class="glass-card rounded-2xl p-4 border border-gray-800 relative overflow-hidden">
-        <div class="text-[11px] uppercase tracking-wider text-gray-400 font-medium flex items-center justify-between">
+      <!-- Card 1: Tip Height (Hero Card - md:col-span-4) -->
+      <div class="md:col-span-4 bg-gradient-to-br from-gray-950 via-cyan-950/20 to-gray-950 rounded-2xl p-4 sm:p-5 border border-cyan-500/30 shadow-lg shadow-cyan-950/20 flex flex-col justify-between relative overflow-hidden group">
+        <div class="absolute -right-6 -top-6 w-28 h-28 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="flex items-center justify-between text-[11px] uppercase tracking-wider text-cyan-400 font-semibold">
           <div class="flex items-center gap-1.5">
-            <span class="h-2 w-2 rounded-full bg-emerald-400 pulse-dot"></span>
-            <span>Tip Height</span>
+            <span class="h-2 w-2 rounded-full bg-cyan-400 pulse-dot"></span>
+            <span>Chain Tip Height</span>
           </div>
-          <span id="metric-next-block-ticker" class="text-[10px] font-mono text-cyan-300 font-bold">Next: 12s</span>
+          <span id="metric-next-block-ticker" class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">Next: 12s</span>
         </div>
-        <div class="text-2xl font-extrabold font-mono text-white mt-1.5 flex items-baseline gap-1">
-          <span>#</span><span id="metric-height">104,281</span>
+        <div class="my-2">
+          <div class="text-3xl sm:text-4xl font-black font-mono text-white tracking-tight flex items-baseline gap-1">
+            <span class="text-cyan-400 text-2xl font-bold">#</span><span id="metric-height">104,281</span>
+          </div>
+          <!-- Live PoSW Block Interval Countdown Progress Bar -->
+          <div class="w-full bg-gray-900 h-1.5 rounded-full overflow-hidden mt-2">
+            <div id="metric-block-progress" class="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full rounded-full transition-all duration-1000" style="width: 75%"></div>
+          </div>
         </div>
-        <div class="text-[10px] font-mono text-emerald-400 mt-1 flex items-center gap-1">
-          <span>MMR:</span> <span class="truncate max-w-[130px] text-gray-400">0x9d24db85...</span>
-        </div>
-      </div>
-
-      <!-- Card 2: Circulating Supply & Halving-Free Subsidy -->
-      <div class="glass-card rounded-2xl p-4 border border-gray-800">
-        <div class="text-[11px] uppercase tracking-wider text-gray-400 font-medium">Circulating Supply</div>
-        <div class="text-2xl font-extrabold font-mono text-cyan-400 mt-1.5">
-          <span id="metric-supply">10,373,921</span> <span class="text-xs text-cyan-300">PCASH</span>
-        </div>
-        <div class="text-[10px] font-mono text-gray-400 mt-1 flex items-center justify-between">
-          <span>Max Cap: 1.0B</span>
-          <span class="text-cyan-400" id="metric-subsidy">98.96 PCASH/blk</span>
+        <div class="text-[10px] font-mono text-gray-400 flex items-center justify-between pt-1 border-t border-gray-900">
+          <span>MMR Root:</span>
+          <span class="text-cyan-300 truncate max-w-[150px] font-semibold" title="0x9d24db8529db13d58549346b8ec1a4e8d23ce7130389e3e9b70fe25863b9a46c">0x9d24db85...mmr</span>
         </div>
       </div>
 
-      <!-- Card 3: PID Fee Reservoir & Deflationary Burn -->
-      <div class="glass-card rounded-2xl p-4 border border-gray-800">
-        <div class="text-[11px] uppercase tracking-wider text-gray-400 font-medium">Burned Energy Fees</div>
-        <div class="text-2xl font-extrabold font-mono text-purple-400 mt-1.5">
-          <span id="metric-burned">418.91</span> <span class="text-xs text-purple-300">PCASH</span>
+      <!-- Card 2: Circulating Supply & Halving-Free Emission (md:col-span-3) -->
+      <div class="md:col-span-3 bg-gradient-to-br from-gray-950 via-emerald-950/20 to-gray-950 rounded-2xl p-4 sm:p-5 border border-emerald-500/30 shadow-lg shadow-emerald-950/20 flex flex-col justify-between text-left">
+        <div class="flex items-center justify-between text-[11px] uppercase tracking-wider text-emerald-400 font-semibold">
+          <span>Circulating Supply</span>
+          <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">Decay Curve</span>
         </div>
-        <div class="text-[10px] font-mono text-gray-400 mt-1 flex items-center justify-between">
-          <span>PID Damped</span>
-          <span class="text-purple-400">50% Permanent Burn</span>
+        <div class="my-2">
+          <div class="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight">
+            <span id="metric-supply">10,373,921</span> <span class="text-xs text-emerald-400 font-bold">PCASH</span>
+          </div>
+          <div class="w-full bg-gray-900 h-1.5 rounded-full overflow-hidden mt-2">
+            <div id="metric-supply-bar" class="bg-emerald-400 h-full rounded-full" style="width: 1.04%"></div>
+          </div>
+        </div>
+        <div class="text-[10px] font-mono text-gray-400 flex items-center justify-between pt-1 border-t border-gray-900">
+          <span>1.04% of 1.0B Cap</span>
+          <span class="text-emerald-300 font-bold" id="metric-subsidy">98.96 / blk</span>
         </div>
       </div>
 
-      <!-- Card 4: Recursive STARK Proof Succinctness -->
-      <div class="glass-card rounded-2xl p-4 border border-gray-800">
-        <div class="text-[11px] uppercase tracking-wider text-gray-400 font-medium">Recursive State Proof</div>
-        <div class="text-2xl font-extrabold font-mono text-emerald-400 mt-1.5">
-          ≈ 43.2 <span class="text-xs text-emerald-300">KB</span>
+      <!-- Card 3: PID Deflationary Energy Burn (md:col-span-3) -->
+      <div class="md:col-span-3 bg-gradient-to-br from-gray-950 via-purple-950/20 to-gray-950 rounded-2xl p-4 sm:p-5 border border-purple-500/30 shadow-lg shadow-purple-950/20 flex flex-col justify-between text-left">
+        <div class="flex items-center justify-between text-[11px] uppercase tracking-wider text-purple-400 font-semibold">
+          <span class="flex items-center gap-1"><span>🔥</span> Burned Energy Fees</span>
+          <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800">PID Damped</span>
         </div>
-        <div class="text-[10px] font-mono text-gray-400 mt-1 flex items-center justify-between">
-          <span>Constant O(1)</span>
-          <span class="text-emerald-400">&lt; 10 ms Phone Sync</span>
+        <div class="my-2">
+          <div class="text-2xl sm:text-3xl font-black font-mono text-purple-400 tracking-tight">
+            <span id="metric-burned">418.91</span> <span class="text-xs text-purple-300 font-bold">PCASH</span>
+          </div>
+          <div class="text-[10px] text-gray-400 font-mono mt-1">
+            ≈ 418.9 × 10¹² pJ incinerated
+          </div>
+        </div>
+        <div class="text-[10px] font-mono text-gray-400 flex items-center justify-between pt-1 border-t border-gray-900">
+          <span>50% Fee Burn</span>
+          <span class="text-purple-300 font-bold">Zero Inflation</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Recursive Zero-Knowledge STARK Proof (md:col-span-2) -->
+      <div class="md:col-span-2 bg-gradient-to-br from-gray-950 to-gray-900 rounded-2xl p-4 sm:p-5 border border-gray-800 flex flex-col justify-between text-left hover:border-cyan-500/40 transition-all">
+        <div class="text-[11px] uppercase tracking-wider text-gray-400 font-semibold flex items-center gap-1">
+          <span>🔬</span> STARK Proof
+        </div>
+        <div class="my-2">
+          <div class="text-2xl font-black font-mono text-cyan-300">
+            ≈ 43.2 <span class="text-xs text-gray-400">KB</span>
+          </div>
+          <div class="text-[9px] font-mono text-emerald-400 mt-1">
+            Constant O(1) Size
+          </div>
+        </div>
+        <div class="text-[10px] font-mono text-gray-400 flex items-center justify-between pt-1 border-t border-gray-900">
+          <span class="text-emerald-400 font-bold">&lt; 10ms Sync</span>
+          <span class="text-gray-500">vs 650GB</span>
         </div>
       </div>
 
@@ -215,8 +246,17 @@
 
       <!-- Blocks Pagination Controls -->
       <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-mono pt-2 px-1 text-gray-400">
-        <div>
-          Showing blocks <span id="disp-blocks-range" class="text-white font-bold">1-10</span> of <span id="disp-blocks-total" class="text-cyan-300 font-bold">104,281</span>
+        <div class="flex items-center gap-2">
+          <span>Showing blocks <strong id="disp-blocks-range" class="text-white font-bold">1-10</strong> of <strong id="disp-blocks-total" class="text-cyan-300 font-bold">104,281</strong></span>
+          <span class="text-gray-600">•</span>
+          <div class="flex items-center gap-1">
+            <span>Rows:</span>
+            <select id="select-blocks-size" class="bg-gray-950 border border-gray-800 rounded px-1.5 py-0.5 text-xs text-cyan-300 focus:outline-none cursor-pointer">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+            </select>
+          </div>
         </div>
         <div class="flex items-center gap-1.5">
           <button id="btn-blocks-first" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">⏮ First</button>
@@ -256,13 +296,24 @@
 
       <!-- Transactions Pagination Controls -->
       <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-mono pt-2 px-1 text-gray-400">
-        <div>
-          Showing transactions <span id="disp-txs-range" class="text-white font-bold">1-10</span> of <span id="disp-txs-total" class="text-purple-300 font-bold">0</span>
+        <div class="flex items-center gap-2">
+          <span>Showing transactions <strong id="disp-txs-range" class="text-white font-bold">1-10</strong> of <strong id="disp-txs-total" class="text-purple-300 font-bold">0</strong></span>
+          <span class="text-gray-600">•</span>
+          <div class="flex items-center gap-1">
+            <span>Rows:</span>
+            <select id="select-txs-size" class="bg-gray-950 border border-gray-800 rounded px-1.5 py-0.5 text-xs text-purple-300 focus:outline-none cursor-pointer">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+            </select>
+          </div>
         </div>
         <div class="flex items-center gap-1.5">
+          <button id="btn-txs-first" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">⏮ First</button>
           <button id="btn-txs-prev" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">◀ Prev</button>
           <span id="disp-txs-page" class="px-2 text-purple-300 font-bold">Page 1</span>
           <button id="btn-txs-next" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">Next ▶</button>
+          <button id="btn-txs-last" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">Last ⏭</button>
         </div>
       </div>
     </div>
@@ -299,13 +350,24 @@
 
       <!-- Miners Pagination Controls -->
       <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs font-mono pt-2 px-1 text-gray-400">
-        <div>
-          Showing miners <span id="disp-miners-range" class="text-white font-bold">1-10</span> of <span id="disp-miners-total" class="text-amber-300 font-bold">0</span>
+        <div class="flex items-center gap-2">
+          <span>Showing miners <strong id="disp-miners-range" class="text-white font-bold">1-10</strong> of <strong id="disp-miners-total" class="text-amber-300 font-bold">0</strong></span>
+          <span class="text-gray-600">•</span>
+          <div class="flex items-center gap-1">
+            <span>Rows:</span>
+            <select id="select-miners-size" class="bg-gray-950 border border-gray-800 rounded px-1.5 py-0.5 text-xs text-amber-300 focus:outline-none cursor-pointer">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+            </select>
+          </div>
         </div>
         <div class="flex items-center gap-1.5">
+          <button id="btn-miners-first" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">⏮ First</button>
           <button id="btn-miners-prev" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">◀ Prev</button>
           <span id="disp-miners-page" class="px-2 text-amber-300 font-bold">Page 1</span>
           <button id="btn-miners-next" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">Next ▶</button>
+          <button id="btn-miners-last" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer">Last ⏭</button>
         </div>
       </div>
     </div>
@@ -415,6 +477,55 @@
         <div id="verifier-output" class="hidden bg-gray-950 p-4 rounded-xl border border-gray-900 font-mono text-xs space-y-2 text-gray-300">
           <!-- Dynamically Populated -->
         </div>
+
+        <!-- AIR STARK Verification History Ledger with Pagination -->
+        <div class="bg-gray-950/80 rounded-xl p-4 border border-gray-900 space-y-3 mt-4">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>🔬</span> Plonky3 AIR Verifier Execution Ledger
+              </h4>
+              <p class="text-[11px] text-gray-400">Cryptographically verified proof evaluations performed locally in this browser</p>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800" id="verifier-history-badge">
+              0 Evaluated
+            </span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs font-mono">
+              <thead>
+                <tr class="border-b border-gray-800 text-gray-400 bg-gray-900/60">
+                  <th class="p-2.5">Evaluation ID</th>
+                  <th class="p-2.5">Proof System</th>
+                  <th class="p-2.5 text-center">AIR Constraints</th>
+                  <th class="p-2.5 text-right">Elapsed Time</th>
+                  <th class="p-2.5 text-right">Residuals</th>
+                  <th class="p-2.5 text-right">Verdict</th>
+                </tr>
+              </thead>
+              <tbody id="table-verifier-history-body" class="divide-y divide-gray-850">
+                <tr>
+                  <td colspan="6" class="p-4 text-center text-gray-500 font-sans text-xs">
+                    No in-browser verifications performed yet. Click 'Evaluate 1,842 AIR Constraints' above to test.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Verifier Pagination Controls -->
+          <div id="verifier-pagination" class="flex flex-col sm:flex-row items-center justify-between gap-2 pt-2 px-1 text-xs font-mono text-gray-400 border-t border-gray-900">
+            <div>
+              Showing <span id="disp-verifier-range" class="text-white font-bold">0-0</span> of <span id="disp-verifier-total" class="text-cyan-300 font-bold">0</span> proofs
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button id="btn-verifier-prev" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer" disabled>◀ Prev</button>
+              <span id="disp-verifier-page" class="px-2 text-white font-bold">Page 1 of 1</span>
+              <button id="btn-verifier-next" class="px-2.5 py-1 rounded-lg bg-gray-900 hover:bg-gray-800 text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed border border-gray-800 cursor-pointer" disabled>Next ▶</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -441,11 +552,15 @@
   <script>
     let explorer = null;
     let blocksPage = 1;
-    const blocksPerPage = 10;
+    let blocksPerPage = 10;
     let txsPage = 1;
-    const txsPerPage = 10;
+    let txsPerPage = 10;
     let minersPage = 1;
-    const minersPerPage = 10;
+    let minersPerPage = 10;
+
+    let verifierHistory = [];
+    let verifierPage = 1;
+    const verifierPerPage = 5;
 
     window.addEventListener('DOMContentLoaded', () => {
       explorer = new ProofCashExplorerEngine();
@@ -454,14 +569,20 @@
       window.addEventListener('proofcash:block_countdown', (e) => {
         const el = document.getElementById('metric-next-block-ticker');
         const mobileEl = document.getElementById('mobile-disp-countdown');
+        const bar = document.getElementById('metric-block-progress');
         if (el) el.innerText = `Next: ${e.detail.countdown}s`;
         if (mobileEl) mobileEl.innerText = `${e.detail.countdown}s`;
+        if (bar && e.detail && typeof e.detail.countdown === 'number') {
+          const pct = Math.max(5, Math.min(100, Math.round(((60 - e.detail.countdown) / 60) * 100)));
+          bar.style.width = `${pct}%`;
+        }
       });
 
       setupTabs();
       setupPagination();
       setupSearch();
       setupVerifier();
+      setupVerifierPagination();
     });
 
     function renderExplorer(state) {
@@ -469,7 +590,7 @@
       document.getElementById('metric-height').innerText = Number(state.currentHeight).toLocaleString();
       document.getElementById('mobile-disp-height').innerText = Number(state.currentHeight).toLocaleString();
       document.getElementById('metric-supply').innerText = Math.round(state.circulatingSupply).toLocaleString();
-      document.getElementById('metric-subsidy').innerText = `${state.currentSubsidy} PCASH/blk`;
+      document.getElementById('metric-subsidy').innerText = `${state.currentSubsidy} / blk`;
       document.getElementById('metric-burned').innerText = state.totalBurnedPcash;
 
       renderBlocksTable();
@@ -550,14 +671,18 @@
       const rangeEl = document.getElementById('disp-txs-range');
       const totalEl = document.getElementById('disp-txs-total');
       const pageEl = document.getElementById('disp-txs-page');
+      const btnFirst = document.getElementById('btn-txs-first');
       const btnPrev = document.getElementById('btn-txs-prev');
       const btnNext = document.getElementById('btn-txs-next');
+      const btnLast = document.getElementById('btn-txs-last');
 
       if (rangeEl) rangeEl.innerText = `${data.startIndex}-${data.endIndex}`;
       if (totalEl) totalEl.innerText = data.total.toLocaleString();
       if (pageEl) pageEl.innerText = `Page ${data.page} of ${data.totalPages}`;
+      if (btnFirst) btnFirst.disabled = data.page <= 1;
       if (btnPrev) btnPrev.disabled = data.page <= 1;
       if (btnNext) btnNext.disabled = data.page >= data.totalPages;
+      if (btnLast) btnLast.disabled = data.page >= data.totalPages;
     }
 
     function renderMinersTable() {
@@ -593,14 +718,100 @@
       const rangeEl = document.getElementById('disp-miners-range');
       const totalEl = document.getElementById('disp-miners-total');
       const pageEl = document.getElementById('disp-miners-page');
+      const btnFirst = document.getElementById('btn-miners-first');
       const btnPrev = document.getElementById('btn-miners-prev');
       const btnNext = document.getElementById('btn-miners-next');
+      const btnLast = document.getElementById('btn-miners-last');
 
       if (rangeEl) rangeEl.innerText = `${data.startIndex}-${data.endIndex}`;
       if (totalEl) totalEl.innerText = data.total.toLocaleString();
       if (pageEl) pageEl.innerText = `Page ${data.page} of ${data.totalPages}`;
+      if (btnFirst) btnFirst.disabled = data.page <= 1;
       if (btnPrev) btnPrev.disabled = data.page <= 1;
       if (btnNext) btnNext.disabled = data.page >= data.totalPages;
+      if (btnLast) btnLast.disabled = data.page >= data.totalPages;
+    }
+
+    function renderVerifierHistoryTable() {
+      const tbody = document.getElementById('table-verifier-history-body');
+      const badge = document.getElementById('verifier-history-badge');
+      const rangeEl = document.getElementById('disp-verifier-range');
+      const totalEl = document.getElementById('disp-verifier-total');
+      const pageEl = document.getElementById('disp-verifier-page');
+      const btnPrev = document.getElementById('btn-verifier-prev');
+      const btnNext = document.getElementById('btn-verifier-next');
+      if (!tbody) return;
+
+      const total = verifierHistory.length;
+      if (badge) badge.innerText = `${total} Evaluated`;
+      if (totalEl) totalEl.innerText = total;
+
+      if (total === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="p-4 text-center text-gray-500 font-sans text-xs">
+              No in-browser verifications performed yet. Click 'Evaluate 1,842 AIR Constraints' above to test.
+            </td>
+          </tr>
+        `;
+        if (rangeEl) rangeEl.innerText = '0-0';
+        if (pageEl) pageEl.innerText = 'Page 1 of 1';
+        if (btnPrev) btnPrev.disabled = true;
+        if (btnNext) btnNext.disabled = true;
+        return;
+      }
+
+      const totalPages = Math.max(1, Math.ceil(total / verifierPerPage));
+      if (verifierPage > totalPages) verifierPage = totalPages;
+      const startIdx = (verifierPage - 1) * verifierPerPage;
+      const pageItems = verifierHistory.slice(startIdx, startIdx + verifierPerPage);
+
+      tbody.innerHTML = '';
+      pageItems.forEach(v => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-gray-900/60 transition-colors';
+        tr.innerHTML = `
+          <td class="p-2.5 text-cyan-300 font-bold">${v.id}</td>
+          <td class="p-2.5 text-gray-300">${v.system}</td>
+          <td class="p-2.5 text-center text-emerald-400 font-bold">${v.constraints} constraints</td>
+          <td class="p-2.5 text-right text-cyan-300 font-mono">${v.elapsed}</td>
+          <td class="p-2.5 text-right text-white font-mono">${v.residuals} residuals</td>
+          <td class="p-2.5 text-right">
+            <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
+              ✓ ${v.status}
+            </span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const endNum = Math.min(startIdx + pageItems.length, total);
+      if (rangeEl) rangeEl.innerText = `${startIdx + 1}-${endNum}`;
+      if (pageEl) pageEl.innerText = `Page ${verifierPage} of ${totalPages}`;
+      if (btnPrev) btnPrev.disabled = verifierPage <= 1;
+      if (btnNext) btnNext.disabled = verifierPage >= totalPages;
+    }
+
+    function setupVerifierPagination() {
+      const btnPrev = document.getElementById('btn-verifier-prev');
+      const btnNext = document.getElementById('btn-verifier-next');
+      if (btnPrev) {
+        btnPrev.addEventListener('click', () => {
+          if (verifierPage > 1) {
+            verifierPage--;
+            renderVerifierHistoryTable();
+          }
+        });
+      }
+      if (btnNext) {
+        btnNext.addEventListener('click', () => {
+          const totalPages = Math.ceil(verifierHistory.length / verifierPerPage);
+          if (verifierPage < totalPages) {
+            verifierPage++;
+            renderVerifierHistoryTable();
+          }
+        });
+      }
     }
 
     function setupPagination() {
@@ -609,7 +820,15 @@
       const btnBlocksPrev = document.getElementById('btn-blocks-prev');
       const btnBlocksNext = document.getElementById('btn-blocks-next');
       const btnBlocksLast = document.getElementById('btn-blocks-last');
+      const selectBlocksSize = document.getElementById('select-blocks-size');
 
+      if (selectBlocksSize) {
+        selectBlocksSize.addEventListener('change', (e) => {
+          blocksPerPage = parseInt(e.target.value, 10) || 10;
+          blocksPage = 1;
+          renderBlocksTable();
+        });
+      }
       if (btnBlocksFirst) {
         btnBlocksFirst.addEventListener('click', () => {
           blocksPage = 1;
@@ -642,9 +861,25 @@
       }
 
       // Transactions Pagination
+      const btnTxsFirst = document.getElementById('btn-txs-first');
       const btnTxsPrev = document.getElementById('btn-txs-prev');
       const btnTxsNext = document.getElementById('btn-txs-next');
+      const btnTxsLast = document.getElementById('btn-txs-last');
+      const selectTxsSize = document.getElementById('select-txs-size');
 
+      if (selectTxsSize) {
+        selectTxsSize.addEventListener('change', (e) => {
+          txsPerPage = parseInt(e.target.value, 10) || 10;
+          txsPage = 1;
+          renderTxsTable();
+        });
+      }
+      if (btnTxsFirst) {
+        btnTxsFirst.addEventListener('click', () => {
+          txsPage = 1;
+          renderTxsTable();
+        });
+      }
       if (btnTxsPrev) {
         btnTxsPrev.addEventListener('click', () => {
           if (txsPage > 1) {
@@ -662,11 +897,34 @@
           }
         });
       }
+      if (btnTxsLast) {
+        btnTxsLast.addEventListener('click', () => {
+          const totalPages = Math.ceil(explorer.transactions.length / txsPerPage);
+          txsPage = totalPages;
+          renderTxsTable();
+        });
+      }
 
       // Miners Pagination
+      const btnMinersFirst = document.getElementById('btn-miners-first');
       const btnMinersPrev = document.getElementById('btn-miners-prev');
       const btnMinersNext = document.getElementById('btn-miners-next');
+      const btnMinersLast = document.getElementById('btn-miners-last');
+      const selectMinersSize = document.getElementById('select-miners-size');
 
+      if (selectMinersSize) {
+        selectMinersSize.addEventListener('change', (e) => {
+          minersPerPage = parseInt(e.target.value, 10) || 10;
+          minersPage = 1;
+          renderMinersTable();
+        });
+      }
+      if (btnMinersFirst) {
+        btnMinersFirst.addEventListener('click', () => {
+          minersPage = 1;
+          renderMinersTable();
+        });
+      }
       if (btnMinersPrev) {
         btnMinersPrev.addEventListener('click', () => {
           if (minersPage > 1) {
@@ -682,6 +940,13 @@
             minersPage++;
             renderMinersTable();
           }
+        });
+      }
+      if (btnMinersLast) {
+        btnMinersLast.addEventListener('click', () => {
+          const totalPages = Math.ceil(explorer.miners.length / minersPerPage);
+          minersPage = totalPages;
+          renderMinersTable();
         });
       }
     }
@@ -865,6 +1130,17 @@
               <span class="text-cyan-400">${res.proofHash}</span>
             </div>
           `;
+
+          verifierHistory.unshift({
+            id: '0xev_' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0'),
+            system: 'Plonky3 / Binary Tower STARK',
+            constraints: res.constraintsChecked,
+            elapsed: `${res.elapsedMs} ms`,
+            residuals: 0,
+            status: 'VALID',
+            hash: res.proofHash
+          });
+          renderVerifierHistoryTable();
 
           btn.disabled = false;
           btn.innerText = '⚡ Evaluate 1,842 AIR Constraints in Browser';
