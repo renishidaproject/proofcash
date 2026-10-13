@@ -18,7 +18,8 @@ class ProofCashExplorerEngine {
       ? 'http://127.0.0.1:8332'
       : 'https://rpc.proofcash.org';
 
-    this.networkMode = 'testnet'; // 'testnet' | 'mainnet'
+    this.MAINNET_LAUNCH_TIMESTAMP = 1793458800000; // Nov 1, 2026 00:00:00 JST (Oct 31 15:00:00 UTC)
+    this.networkMode = 'mainnet'; // Default: Mainnet Genesis Pre-Launch
     this.rpcUrl = this.DEFAULT_RPC;
     this.isNodeConnected = false;
 
@@ -39,16 +40,16 @@ class ProofCashExplorerEngine {
       sizeBytes: 43210
     };
 
-    this.currentHeight = 104281;
+    this.currentHeight = 0;
     this.blocks = [];
     this.transactions = [];
     this.nullifiers = new Set();
     this.commitments = new Set();
-    this.totalBurned_pJ = 418914200000000n; // 418.9142 PCASH burned to PID reservoir
+    this.totalBurned_pJ = 100000000000000n; // 100 PCASH burned on genesis
     this.subscribers = [];
 
     // Verified Miner Nodes & Coinbase Activity
-    this.miners = [
+    this.TESTNET_MINERS = [
       {
         address: "pc1q_genesis_community_fair_launch_0x00",
         blocksMined: 1,
@@ -83,9 +84,47 @@ class ProofCashExplorerEngine {
       }
     ];
 
+    this.miners = [];
+
     this.initHistory();
     this.initP2pListener();
     this.startLiveBlockTicker();
+  }
+
+  // --- Network Switching & Countdown ---
+
+  setNetworkMode(mode) {
+    if (this.networkMode === mode) return;
+    this.networkMode = mode;
+    this.initHistory();
+    this.notifySubscribers();
+  }
+
+  getMainnetCountdown() {
+    const diff = Math.max(0, this.MAINNET_LAUNCH_TIMESTAMP - Date.now());
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+    const isLaunched = diff <= 0;
+    return { days, hours, minutes, seconds, totalMs: diff, isLaunched };
+  }
+
+  getMainnetTargetLocalString() {
+    try {
+      const target = new Date(this.MAINNET_LAUNCH_TIMESTAMP);
+      return target.toLocaleString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZoneName: 'short'
+      });
+    } catch (e) {
+      return new Date(this.MAINNET_LAUNCH_TIMESTAMP).toUTCString();
+    }
   }
 
   // --- Supply & Emission Calculations ---
@@ -108,6 +147,63 @@ class ProofCashExplorerEngine {
   initHistory() {
     this.blocks = [];
     this.transactions = [];
+    this.nullifiers = new Set();
+    this.commitments = new Set();
+
+    if (this.networkMode === 'mainnet') {
+      this.currentHeight = 0;
+      this.totalBurned_pJ = 100000000000000n; // 100.0000 PCASH burned from genesis coinbase (strictly 0.0000 premine)
+      
+      const genesisBlk = {
+        height: 0,
+        hash: this.GENESIS.hash,
+        parentHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+        stateRoot: this.GENESIS.stateRoot,
+        poswHash: this.GENESIS.poswHash,
+        nonce: this.GENESIS.nonce,
+        miner: this.GENESIS.miner,
+        subsidy: "100.0000",
+        txCount: 1,
+        timestamp: this.GENESIS.timestamp,
+        sizeBytes: this.GENESIS.sizeBytes,
+        status: "CONFIRMED (Genesis Anchor #0)",
+        zkProofStatus: "AIR_STARK_VERIFIED (1,842 constraints)",
+        headline: this.GENESIS.headline
+      };
+      this.blocks.push(genesisBlk);
+
+      const genesisTx = {
+        txid: "0xcoinbase_genesis_00000000",
+        blockHeight: 0,
+        type: "GENESIS_FAIR_LAUNCH_BURN",
+        nullifier: "0x0000000000000000000000000000000000000000000000000000000000000000",
+        commitment: "0xfd8613449fc24fd4b5f69f68b19449669f9d7adffc75b9c52cfbebe69e631589",
+        amountPcash: "100.0000",
+        feePcash: "0.0000",
+        zkConstraints: 1842,
+        airDurationMs: "0.0",
+        timestamp: this.GENESIS.timestamp,
+        status: "100% BURNED TO NULLIFIER"
+      };
+      this.transactions.push(genesisTx);
+
+      this.miners = [
+        {
+          address: "pc1q_genesis_community_fair_launch_0x00",
+          blocksMined: 1,
+          totalEarned: 0.0,
+          latestBlock: 0,
+          nodeType: "Genesis Fair Launch Anchor",
+          status: "100% Burned (0.0000 Premine)"
+        }
+      ];
+      return;
+    }
+
+    // Testnet Mode:
+    this.currentHeight = 104281;
+    this.totalBurned_pJ = 418914200000000n;
+    this.miners = JSON.parse(JSON.stringify(this.TESTNET_MINERS));
 
     // Seed recent 12 blocks
     const now = Date.now();
@@ -393,6 +489,10 @@ class ProofCashExplorerEngine {
   startLiveBlockTicker() {
     this.countdown = 12; // 12-second thermodynamic block cadence
     setInterval(() => {
+      if (this.networkMode !== 'testnet') {
+        // Mainnet is anchored at Block #0 before official launch
+        return;
+      }
       this.countdown -= 1;
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('proofcash:block_countdown', {
@@ -644,4 +744,7 @@ class ProofCashExplorerEngine {
 // Global Export
 if (typeof window !== 'undefined') {
   window.ProofCashExplorerEngine = ProofCashExplorerEngine;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { ProofCashExplorerEngine };
 }
