@@ -18,7 +18,7 @@ class ProofCashExplorerEngine {
       ? 'http://127.0.0.1:8332'
       : 'https://rpc.proofcash.org';
 
-    this.MAINNET_LAUNCH_TIMESTAMP = 1793458800000; // Nov 1, 2026 00:00:00 JST (Oct 31 15:00:00 UTC)
+    this.MAINNET_LAUNCH_TIMESTAMP = 1798729200000; // Jan 1, 2027 00:00:00 JST (Dec 31 2026 15:00:00 UTC)
     this.networkMode = 'mainnet'; // Default: Mainnet Genesis Pre-Launch
     this.rpcUrl = this.DEFAULT_RPC;
     this.isNodeConnected = false;

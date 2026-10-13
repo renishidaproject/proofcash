@@ -137,11 +137,11 @@
           </div>
           <div class="flex items-center gap-2 mt-2 flex-wrap text-xs font-mono">
             <span class="text-gray-400">Target Launch:</span>
-            <span id="home-disp-launch-local" class="text-cyan-300 font-semibold bg-gray-950/90 px-2.5 py-1 rounded-lg border border-cyan-900/60">Nov 1, 2026</span>
+            <span id="home-disp-launch-local" class="text-cyan-300 font-semibold bg-gray-950/90 px-2.5 py-1 rounded-lg border border-cyan-900/60">Jan 1, 2027</span>
             <span class="text-[11px] text-gray-500 font-sans italic">(Localized to your device's timezone)</span>
           </div>
           <p class="text-xs text-gray-400 mt-2 max-w-2xl leading-relaxed">
-            Mainnet activates on November 1, 2026. Prior to launch, Block #0 is immutable with zero coins in circulation. Testnet Sandbox is active in the Wallet and Explorer for benchmarking.
+            Mainnet activates on January 1, 2027. Prior to launch, Block #0 is immutable with zero coins in circulation. Testnet Sandbox is active in the Wallet and Explorer for benchmarking.
           </p>
         </div>
 
@@ -496,8 +496,8 @@
       elWalletBal.innerText = state.walletBal.toFixed(4);
     }
 
-    // Mainnet Genesis Activation Countdown (Nov 1 2026 00:00:00 JST / Oct 31 15:00:00 UTC)
-    const MAINNET_LAUNCH_TIMESTAMP = 1793458800000;
+    // Mainnet Genesis Activation Countdown (Jan 1 2027 00:00:00 JST / Dec 31 2026 15:00:00 UTC)
+    const MAINNET_LAUNCH_TIMESTAMP = 1798729200000;
     function updateHomeCountdown() {
       const diff = Math.max(0, MAINNET_LAUNCH_TIMESTAMP - Date.now());
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));

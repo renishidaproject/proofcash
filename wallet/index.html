@@ -165,7 +165,7 @@
           </div>
           <div class="flex items-center gap-2 mt-1.5 flex-wrap text-xs font-mono">
             <span class="text-gray-400">Target Launch:</span>
-            <span id="disp-launch-local-time" class="text-cyan-300 font-semibold bg-gray-950/80 px-2 py-0.5 rounded border border-cyan-900/60">Nov 1, 2026</span>
+            <span id="disp-launch-local-time" class="text-cyan-300 font-semibold bg-gray-950/80 px-2 py-0.5 rounded border border-cyan-900/60">Jan 1, 2027</span>
             <span class="text-[10px] text-gray-500 font-sans italic">(Localized to your device's timezone)</span>
           </div>
           <p class="text-xs text-gray-400 mt-1">Strict 0 Pre-mine Genesis Invariant. Stress-test eUTXO circuits and edge mining on Testnet (Chaosnet) before production activation.</p>
@@ -1375,7 +1375,7 @@
     let deferredPrompt = null;
     let feedCurrentPage = 1;
     const feedPageSize = 8;
-    const MAINNET_LAUNCH_TIMESTAMP = 1793458800000; // Nov 1, 2026 00:00:00 JST (15:00:00 UTC Oct 31)
+    const MAINNET_LAUNCH_TIMESTAMP = 1798729200000; // Jan 1, 2027 00:00:00 JST (15:00:00 UTC Dec 31 2026)
 
     // PWA Install Prompt Handler
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -1531,10 +1531,10 @@
         const targetHeightEl = document.getElementById('miner-target-height');
         const btnToggleMiner = document.getElementById('btn-toggle-miner');
         const badgeMiner = document.getElementById('miner-status-badge');
-        if (targetHeightEl) targetHeightEl.innerText = 'Block #1 (Locked until Nov 1, 2026)';
+        if (targetHeightEl) targetHeightEl.innerText = 'Block #1 (Locked until Jan 1, 2027)';
         if (btnToggleMiner && typeof minerActive !== 'undefined' && !minerActive) {
           btnToggleMiner.className = 'flex-1 py-3 rounded-xl bg-gray-900 border border-gray-800 text-gray-500 font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed';
-          btnToggleMiner.innerHTML = '<span>🔒</span> <span>Mainnet Mining Opens Nov 1, 2026 (Genesis Launch)</span>';
+          btnToggleMiner.innerHTML = '<span>🔒</span> <span>Mainnet Mining Opens Jan 1, 2027 (Genesis Launch)</span>';
         }
         if (badgeMiner && typeof minerActive !== 'undefined' && !minerActive) {
           badgeMiner.innerText = 'Mainnet Locked (Pre-Launch)';
@@ -2967,7 +2967,7 @@
       if (btnToggleMiner) {
         btnToggleMiner.addEventListener('click', async () => {
           if (!minerActive && wallet.state.networkMode === 'mainnet') {
-            showToast('🔒 Mainnet mining opens on November 1, 2026. Switch to Testnet Sandbox to benchmark.', 'cyan');
+            showToast('🔒 Mainnet mining opens on January 1, 2027. Switch to Testnet Sandbox to benchmark.', 'cyan');
             return;
           }
 
