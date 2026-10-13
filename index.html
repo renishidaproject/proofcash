@@ -76,8 +76,8 @@
           <span>📄</span> <span>Whitepaper PDF</span>
         </a>
 
-        <a href="./release/RENUNCIATION.md" target="_blank" class="px-3 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white border border-gray-800 font-medium text-xs transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0">
-          <span>📜</span> <span>Exit Statement</span>
+        <a href="./release/RENUNCIATION.md" target="_blank" class="px-3 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 text-gray-300 hover:text-white border border-gray-800 font-medium text-xs transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0" title="Founder Decentralization & Renunciation Statement">
+          <span>📜</span> <span>Renunciation</span>
         </a>
 
         <a href="./explorer/index.html" class="px-3 py-2 rounded-xl bg-cyan-950/60 hover:bg-cyan-900/60 text-cyan-300 hover:text-white border border-cyan-800/60 font-medium text-xs transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0">
@@ -109,6 +109,53 @@
       <div class="text-xs font-mono text-gray-400 text-left md:text-right">
         <div>Block Hash: <span class="text-emerald-400 font-bold">0xef77394f...b09a</span></div>
         <div>PoSW Nonce: <span class="text-cyan-400">7,111</span> • Timestamp: <span class="text-gray-300">1791540000 (09-Oct-2026)</span></div>
+      </div>
+    </div>
+
+    <!-- Mainnet Genesis Countdown Banner -->
+    <div class="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/50 via-gray-900/90 to-emerald-950/40 p-4 sm:p-5 relative overflow-hidden shadow-xl">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="flex h-2.5 w-2.5 relative">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
+            </span>
+            <span class="font-bold text-white text-xs sm:text-sm uppercase tracking-wider">Mainnet Genesis Activation Countdown</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 font-bold">Target: Block #0</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 font-bold">0.0000 Premine</span>
+          </div>
+          <div class="flex items-center gap-2 mt-2 flex-wrap text-xs font-mono">
+            <span class="text-gray-400">Target Launch:</span>
+            <span id="home-disp-launch-local" class="text-cyan-300 font-semibold bg-gray-950/90 px-2.5 py-1 rounded-lg border border-cyan-900/60">Nov 1, 2026</span>
+            <span class="text-[11px] text-gray-500 font-sans italic">(Localized to your device's timezone)</span>
+          </div>
+          <p class="text-xs text-gray-400 mt-2 max-w-2xl leading-relaxed">
+            Mainnet activates on November 1, 2026. Prior to launch, Block #0 is immutable with zero coins in circulation. Testnet Sandbox is active in the Wallet and Explorer for benchmarking.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-1.5 sm:gap-2 font-mono">
+          <div class="text-center px-2.5 sm:px-3 py-2 rounded-xl bg-gray-950/90 border border-gray-800 shadow-inner min-w-[50px]">
+            <div class="text-base sm:text-xl font-extrabold text-cyan-400" id="home-timer-days">--d</div>
+            <div class="text-[8px] sm:text-[9px] text-gray-500 uppercase">Days</div>
+          </div>
+          <span class="text-gray-600 font-bold">:</span>
+          <div class="text-center px-2.5 sm:px-3 py-2 rounded-xl bg-gray-950/90 border border-gray-800 shadow-inner min-w-[50px]">
+            <div class="text-base sm:text-xl font-extrabold text-cyan-400" id="home-timer-hours">--h</div>
+            <div class="text-[8px] sm:text-[9px] text-gray-500 uppercase">Hours</div>
+          </div>
+          <span class="text-gray-600 font-bold">:</span>
+          <div class="text-center px-2.5 sm:px-3 py-2 rounded-xl bg-gray-950/90 border border-gray-800 shadow-inner min-w-[50px]">
+            <div class="text-base sm:text-xl font-extrabold text-cyan-400" id="home-timer-minutes">--m</div>
+            <div class="text-[8px] sm:text-[9px] text-gray-500 uppercase">Mins</div>
+          </div>
+          <span class="text-gray-600 font-bold">:</span>
+          <div class="text-center px-2.5 sm:px-3 py-2 rounded-xl bg-gray-950/90 border border-gray-800 shadow-inner min-w-[50px]">
+            <div class="text-base sm:text-xl font-extrabold text-cyan-400" id="home-timer-seconds">--s</div>
+            <div class="text-[8px] sm:text-[9px] text-gray-500 uppercase">Secs</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -166,14 +213,9 @@
               </h2>
               <p class="text-xs text-gray-400">Zero seed phrases • Secp256r1 Root signs BabyJubjub Session Key</p>
             </div>
-            <div class="flex items-center gap-2">
-              <a href="./wallet/index.html" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 font-medium text-xs flex items-center gap-1 transition-all">
-                <span>📱</span> Open Full PWA App
-              </a>
-              <button id="btn-passkey-auth" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center gap-1.5 transition-all">
-                <span>⚡</span> Enclave Re-Auth
-              </button>
-            </div>
+            <a href="./wallet/index.html" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center gap-1.5 transition-all shadow-md shadow-emerald-500/10">
+              <span>📱</span> Launch Wallet PWA ↗
+            </a>
           </div>
 
           <!-- Wallet State Card -->
@@ -191,7 +233,7 @@
               <span class="text-cyan-400 font-mono font-medium">1,842 constraints (~41.8 ms on phone)</span>
             </div>
             <div class="border-t border-gray-800 pt-3 flex justify-between items-center">
-              <span class="text-xs text-gray-400">Shielded Balance:</span>
+              <span class="text-xs text-gray-400">Shielded Balance (Testnet Simulation):</span>
               <div class="text-right">
                 <span class="text-lg font-bold font-mono text-white" id="wallet-balance">250.0000</span>
                 <span class="text-xs text-gray-400">PCASH</span>
@@ -209,26 +251,24 @@
               </h2>
               <p class="text-xs text-gray-400">Sub-cent continuous payment stream (0.000001 PCASH/token)</p>
             </div>
-            <div class="flex gap-2">
-              <button id="btn-stream-toggle" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-medium text-xs transition-all">
-                Start Agent Stream
-              </button>
-            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-cyan-950 text-cyan-300 border border-cyan-800 text-[11px] font-mono font-medium">
+              Bilateral State Channels
+            </span>
           </div>
 
           <div class="bg-gray-950 border border-gray-800 rounded-lg p-4 space-y-3">
             <div class="grid grid-cols-3 gap-2 text-center">
               <div class="bg-gray-900 p-2 rounded">
-                <div class="text-[11px] text-gray-400">Tokens Streamed</div>
-                <div class="text-base font-mono font-bold text-white mt-1" id="stream-tokens">0</div>
+                <div class="text-[11px] text-gray-400">Throughput Target</div>
+                <div class="text-base font-mono font-bold text-white mt-1">120 tok/sec</div>
               </div>
               <div class="bg-gray-900 p-2 rounded">
-                <div class="text-[11px] text-gray-400">Streamed Amount</div>
-                <div class="text-base font-mono font-bold text-cyan-400 mt-1" id="stream-amount">0.000000</div>
+                <div class="text-[11px] text-gray-400">Micro-Cost</div>
+                <div class="text-base font-mono font-bold text-cyan-400 mt-1">10⁻⁶ PCASH</div>
               </div>
               <div class="bg-gray-900 p-2 rounded">
-                <div class="text-[11px] text-gray-400">L1 Gas Fee Paid</div>
-                <div class="text-base font-mono font-bold text-emerald-400 mt-1">0.0000 (Off-Chain)</div>
+                <div class="text-[11px] text-gray-400">L1 Settlement</div>
+                <div class="text-base font-mono font-bold text-emerald-400 mt-1">0 L1 Gas (Off-Chain)</div>
               </div>
             </div>
             <div class="text-[11px] text-gray-500 flex justify-between">
@@ -247,11 +287,9 @@
               </h2>
               <p class="text-xs text-gray-400">Resolves shared-state contention in parallel without MEV or race locks</p>
             </div>
-            <div class="flex gap-2">
-              <button id="btn-fire-concurrent" class="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs transition-all">
-                Fire 5 Concurrent Deltas
-              </button>
-            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-purple-950 text-purple-300 border border-purple-800 text-[11px] font-mono font-medium">
+              Commutative Monoid
+            </span>
           </div>
 
           <div class="bg-gray-950 border border-gray-800 rounded-lg p-3">
@@ -260,7 +298,7 @@
               <span class="font-mono font-bold text-white text-sm" id="pool-liquidity">50.00 PCASH</span>
             </div>
             <div class="mt-2 space-y-1.5 max-h-32 overflow-y-auto text-xs font-mono" id="delta-log">
-              <div class="text-gray-500">[System] Ready for parallel monoid reduction...</div>
+              <div class="text-gray-400">✓ Associative Monoid Operator: Multi-agent deltas merged concurrently without transaction queue locks.</div>
             </div>
           </div>
         </div>
@@ -293,9 +331,9 @@
               </div>
             </div>
 
-            <button id="btn-mine-block" class="w-full py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs transition-all flex items-center justify-center gap-2">
-              <span>🔨</span> Mine Next Block (PoSW)
-            </button>
+            <a href="./wallet/index.html#miner" class="w-full py-2.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold text-xs transition-all flex items-center justify-center gap-2">
+              <span>⚡</span> Open Mobile Edge Miner in Wallet PWA ↗
+            </a>
           </div>
         </div>
 
@@ -345,11 +383,8 @@
           </h2>
           <p class="text-xs text-gray-400 mb-3">Client-to-client out-of-band audit proof (No on-chain CBDC hooks)</p>
 
-          <button id="btn-generate-audit" class="w-full py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-200 text-xs font-medium transition-all">
-            Generate Zero-Knowledge Tax/AML Proof
-          </button>
-          <div id="audit-result" class="mt-2 text-[11px] font-mono text-gray-400 bg-gray-950 p-2 rounded border border-gray-800 hidden">
-            ✓ Proof π_audit valid: Inputs non-sanctioned. Balance & counterparties 100% confidential.
+          <div class="text-[11px] font-mono text-emerald-400 bg-gray-950 p-3 rounded-lg border border-gray-850">
+            ✓ Proof π_audit: Cryptographically proves non-sanctioned UTXO provenance via ZK membership. Balances, keys, and counterparties remain 100% confidential.
           </div>
         </div>
 
@@ -550,114 +585,49 @@
       elWalletBal.innerText = state.walletBal.toFixed(4);
     }
 
-    document.getElementById('btn-passkey-auth').addEventListener('click', () => {
-      const btn = document.getElementById('btn-passkey-auth');
-      btn.innerText = 'Authenticating Enclave...';
-      btn.classList.add('opacity-50');
+    // Mainnet Genesis Activation Countdown (Nov 1 2026 00:00:00 JST / Oct 31 15:00:00 UTC)
+    const MAINNET_LAUNCH_TIMESTAMP = 1793458800000;
+    function updateHomeCountdown() {
+      const diff = Math.max(0, MAINNET_LAUNCH_TIMESTAMP - Date.now());
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
 
-      setTimeout(() => {
-        btn.innerText = '✓ Authenticated';
-        btn.classList.remove('opacity-50');
-        btn.classList.replace('bg-emerald-500', 'bg-emerald-700');
+      const daysEl = document.getElementById('home-timer-days');
+      const hoursEl = document.getElementById('home-timer-hours');
+      const minsEl = document.getElementById('home-timer-minutes');
+      const secsEl = document.getElementById('home-timer-seconds');
+      const localEl = document.getElementById('home-disp-launch-local');
 
-        const randomHex = Math.random().toString(16).substring(2, 8);
-        document.getElementById('wallet-session-pk').innerText = `bjub:0x${randomHex}92c... (Renewed 144 blks)`;
-        
-        logMempool(`[Passkey] Enclave authenticated session key 0x${randomHex} in 41.8 ms.`);
-        setTimeout(() => {
-          btn.innerText = 'Enclave Re-Auth';
-          btn.classList.replace('bg-emerald-700', 'bg-emerald-500');
-        }, 2000);
-      }, 400);
-    });
+      if (daysEl) daysEl.innerText = `${days}d`;
+      if (hoursEl) hoursEl.innerText = `${String(hours).padStart(2, '0')}h`;
+      if (minsEl) minsEl.innerText = `${String(minutes).padStart(2, '0')}m`;
+      if (secsEl) secsEl.innerText = `${String(seconds).padStart(2, '0')}s`;
 
-    const btnStream = document.getElementById('btn-stream-toggle');
-    btnStream.addEventListener('click', () => {
-      if (state.streamInterval) {
-        clearInterval(state.streamInterval);
-        state.streamInterval = null;
-        btnStream.innerText = 'Start Agent Stream';
-        btnStream.classList.replace('bg-rose-600', 'bg-cyan-600');
-        logMempool(`[Streaming] Channel chan_0x4f128e9a settled optimistically on L1. Total: ${state.streamAmount.toFixed(6)} PCASH.`);
-      } else {
-        btnStream.innerText = 'Stop Agent Stream';
-        btnStream.classList.replace('bg-cyan-600', 'bg-rose-600');
-        state.streamInterval = setInterval(() => {
-          state.streamTokens += 16;
-          const cost = 0.000016;
-          state.streamAmount += cost;
-          state.walletBal -= cost;
-          elStreamTokens.innerText = state.streamTokens.toLocaleString();
-          elStreamAmount.innerText = state.streamAmount.toFixed(6);
-          elWalletBal.innerText = state.walletBal.toFixed(4);
-        }, 150);
+      if (localEl && !localEl.dataset.initialized) {
+        try {
+          localEl.innerText = new Date(MAINNET_LAUNCH_TIMESTAMP).toLocaleString(undefined, {
+            month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', timeZoneName: 'short'
+          });
+        } catch (e) {
+          localEl.innerText = new Date(MAINNET_LAUNCH_TIMESTAMP).toUTCString();
+        }
+        localEl.dataset.initialized = 'true';
       }
-    });
-
-    document.getElementById('btn-fire-concurrent').addEventListener('click', () => {
-      const deltas = [
-        { amount: +10.0, label: 'Agent_1 (Deposit)' },
-        { amount: -5.0,  label: 'User_A (Withdraw)' },
-        { amount: +2.5,  label: 'Agent_2 (Deposit)' },
-        { amount: -3.0,  label: 'User_B (Withdraw)' },
-        { amount: -15.0, label: 'Agent_3 (Withdraw)' }
-      ];
-
-      elDeltaLog.innerHTML = '';
-      let net = 0;
-      deltas.forEach(d => {
-        net += d.amount;
-        const color = d.amount > 0 ? 'text-emerald-400' : 'text-rose-400';
-        const sign = d.amount > 0 ? '+' : '';
-        const item = document.createElement('div');
-        item.className = color;
-        item.innerText = `↳ ${d.label}: ${sign}${d.amount.toFixed(1)} PCASH [Hash: 0x${Math.random().toString(16).substring(2, 6)}]`;
-        elDeltaLog.appendChild(item);
-      });
-
-      state.poolLiquidity += net;
-      elPoolLiq.innerText = `${state.poolLiquidity.toFixed(2)} PCASH`;
-
-      const summary = document.createElement('div');
-      summary.className = 'text-cyan-400 font-bold pt-1 border-t border-gray-800';
-      summary.innerText = `✓ Associative Monoid Sum: Net ${net > 0 ? '+' : ''}${net.toFixed(1)} PCASH applied in parallel. Zero race locks!`;
-      elDeltaLog.appendChild(summary);
-      logMempool(`[Delta-UTXO] Batch of 5 deltas reduced concurrently in 1.4 ms.`);
-    });
-
-    document.getElementById('btn-mine-block').addEventListener('click', () => {
-      const btn = document.getElementById('btn-mine-block');
-      btn.innerText = 'Solving Blake3 & Recursive STARK...';
-      btn.disabled = true;
-
-      setTimeout(() => {
-        state.blockHeight++;
-        state.mmrLeaves += Math.floor(Math.random() * 20) + 5;
-        state.blockReward = 100.0 * Math.exp(-1.0e-7 * state.blockHeight);
-
-        const feesInBlock = 4.2;
-        state.burnedFees += feesInBlock / 2;
-        state.reservoirBal += feesInBlock / 2;
-
-        const payout = updatePid();
-        state.reservoirBal -= payout;
-
-        updateDisplay();
-
-        btn.innerText = '🔨 Mine Next Block (PoSW)';
-        btn.disabled = false;
-
-        logMempool(`[Block ${state.blockHeight}] Mined! Proof size: 43.21 KB • Subsidy: ${state.blockReward.toFixed(2)} PCASH • Reservoir Payout: ${payout.toFixed(2)} PCASH`);
-      }, 500);
-    });
+    }
+    setInterval(updateHomeCountdown, 1000);
+    updateHomeCountdown();
 
     const slider = document.getElementById('slider-hashrate');
     const labelHash = document.getElementById('hashrate-label');
-    slider.addEventListener('input', (e) => {
-      state.hashrate = parseInt(e.target.value);
-      labelHash.innerText = `${state.hashrate}% (${state.hashrate < 80 ? 'Drop' : state.hashrate > 120 ? 'Surge' : 'Normal'})`;
-      updatePid();
-    });
+    if (slider && labelHash) {
+      slider.addEventListener('input', (e) => {
+        state.hashrate = parseInt(e.target.value);
+        labelHash.innerText = `${state.hashrate}% (${state.hashrate < 80 ? 'Drop' : state.hashrate > 120 ? 'Surge' : 'Normal'})`;
+        updatePid();
+      });
+    }
 
     function updatePid() {
       const error = (100.0 - state.hashrate) / 100.0;
@@ -668,21 +638,21 @@
       const mult = Math.max(0.0, Math.min(1.5, 1.0 + pidSignal));
       const payout = (state.reservoirBal * 0.00001) * mult;
 
-      document.getElementById('pid-signal').innerText = pidSignal.toFixed(3);
-      document.getElementById('pid-mult').innerText = `${mult.toFixed(2)}x`;
-      document.getElementById('pid-payout').innerText = `+${payout.toFixed(2)} PCASH`;
+      const elSig = document.getElementById('pid-signal');
+      const elMult = document.getElementById('pid-mult');
+      const elPay = document.getElementById('pid-payout');
+      if (elSig) elSig.innerText = pidSignal.toFixed(3);
+      if (elMult) elMult.innerText = `${mult.toFixed(2)}x`;
+      if (elPay) elPay.innerText = `+${payout.toFixed(2)} PCASH`;
       return payout;
     }
 
-    document.getElementById('btn-generate-audit').addEventListener('click', () => {
-      const box = document.getElementById('audit-result');
-      box.classList.remove('hidden');
-    });
-
     function logMempool(msg) {
-      const item = document.createElement('div');
-      item.innerText = msg;
-      elMempool.prepend(item);
+      if (elMempool) {
+        const item = document.createElement('div');
+        item.innerText = msg;
+        elMempool.prepend(item);
+      }
     }
   </script>
 

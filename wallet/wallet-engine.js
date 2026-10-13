@@ -32,9 +32,9 @@ class ProofCashWalletEngine {
     
     // Core Wallet State
     this.state = {
-      networkMode: 'testnet', // 'testnet' | 'mainnet'
+      networkMode: 'mainnet', // 'mainnet' (Genesis Pre-Launch) | 'testnet' (Sandbox)
       rpcUrl: this.DEFAULT_RPC,
-      currentBlockHeight: 104281,
+      currentBlockHeight: 0,
       activeAccountId: 'acc_1',
       accounts: [],
       balance_pJ: 0n, // Strictly 0.0000 PCASH default initial balance (zero hardcoding)
