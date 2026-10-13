@@ -168,7 +168,7 @@ rad clone rad:zHqa2hHCU4ARpLvjQCDNxJdc487F
 **Active Distributed Seed Mesh:**
 - `iris.radicle.network:8776` (Radicle Bootstrap Seed)
 - `rosa.radicle.network:8776` (Radicle Bootstrap Seed)
-- `seed.proofcash.xyz:8776` (Primary Community Seed)
+- `seed.proofcash.org:8776` (Primary Community Seed)
 
 ---
 
@@ -177,7 +177,7 @@ rad clone rad:zHqa2hHCU4ARpLvjQCDNxJdc487F
 Comprehensive reference guides for operators, miners, and community contributors:
 
 * 📖 [**Mining & Account Recovery Guide**](docs/MINING_AND_RECOVERY_GUIDE.md): Detailed walkthroughs for Mobile Edge Mining, CPU Reference Mining, GPU Prover Rigs, AI Agent Streaming, and the 4 biometric passkey account recovery mechanisms (Zero seed phrases).
-* 🌐 [**Official Domain Setup & Integration Guide**](docs/DOMAIN_INTEGRATION_GUIDE.md): Complete deployment blueprint for `proofcash.xyz`, including DNS records, GitHub Pages SSL binding, WebAuthn Relying Party domain security, P2P seed nodes (`seed.proofcash.xyz`), and high-speed JSON-RPC gateways (`rpc.proofcash.xyz`).
+* 🌐 [**Official Domain Setup & Integration Guide**](docs/DOMAIN_INTEGRATION_GUIDE.md): Complete deployment blueprint for `proofcash.org`, including DNS records, GitHub Pages SSL binding, WebAuthn Relying Party domain security, P2P seed nodes (`seed.proofcash.org`), and high-speed JSON-RPC gateways (`rpc.proofcash.org`).
 
 ---
 

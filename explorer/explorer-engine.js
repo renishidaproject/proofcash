@@ -16,7 +16,7 @@ class ProofCashExplorerEngine {
   constructor() {
     this.DEFAULT_RPC = (typeof window !== 'undefined' && window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
       ? 'http://127.0.0.1:8332'
-      : 'https://rpc.proofcash.xyz';
+      : 'https://rpc.proofcash.org';
 
     this.networkMode = 'testnet'; // 'testnet' | 'mainnet'
     this.rpcUrl = this.DEFAULT_RPC;

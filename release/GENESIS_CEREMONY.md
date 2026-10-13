@@ -60,10 +60,10 @@ Fresh validator nodes and client wallets initialize peer discovery using these c
   "default_p2p_port": 9333,
   "default_rpc_port": 8332,
   "bootstrap_seeds": [
-    "seed.proofcash.xyz:8776",
-    "seed-asia.proofcash.xyz:8776",
-    "seed-nordic.proofcash.xyz:8776",
-    "seed-sa.proofcash.xyz:8776",
+    "seed.proofcash.org:8776",
+    "seed-asia.proofcash.org:8776",
+    "seed-nordic.proofcash.org:8776",
+    "seed-sa.proofcash.org:8776",
     "iris.radicle.network:8776",
     "rosa.radicle.network:8776"
   ]

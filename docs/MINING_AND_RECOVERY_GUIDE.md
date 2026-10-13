@@ -36,7 +36,7 @@ The Mobile Edge Miner operates directly within any modern mobile web browser (iO
 
 ### How It Works
 * **Execution Engine:** Multi-threaded Web Workers running WebAssembly (Wasm) compiled with SIMD / ARM NEON vector extensions.
-* **Access Point:** Navigate to `https://renishidaproject.github.io/proofcash/wallet/` (or `https://proofcash.xyz/wallet/` once domain is active) and select the **⚡ Mobile Edge Miner** tab.
+* **Access Point:** Navigate to `https://renishidaproject.github.io/proofcash/wallet/` (or `https://proofcash.org/wallet/` once domain is active) and select the **⚡ Mobile Edge Miner** tab.
 
 ### Operational Profiles
 To protect your mobile battery longevity and thermal health, three configurable duty cycles are provided:

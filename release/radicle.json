@@ -9,9 +9,9 @@
   "delegate": "did:key:z6MknSLvJoTcCV6wbgTU81P584z7J3Pkn6",
   "version": "1.1.0",
   "seeds": [
-    "seed.proofcash.xyz:8776",
-    "seed-asia.proofcash.xyz:8776",
-    "seed-nordic.proofcash.xyz:8776",
-    "seed-sa.proofcash.xyz:8776"
+    "seed.proofcash.org:8776",
+    "seed-asia.proofcash.org:8776",
+    "seed-nordic.proofcash.org:8776",
+    "seed-sa.proofcash.org:8776"
   ]
 }

@@ -16,7 +16,7 @@ class ProofCashWalletEngine {
     this.MAINNET_LAUNCH_TIMESTAMP = 1793491200000; // November 1, 2026 00:00:00 UTC
     this.DEFAULT_RPC = (typeof window !== 'undefined' && window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
       ? 'http://127.0.0.1:8332'
-      : 'https://rpc.proofcash.xyz';
+      : 'https://rpc.proofcash.org';
 
     // Canonical Genesis Invariants (Block #0)
     this.GENESIS = {
