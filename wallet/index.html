@@ -13,6 +13,7 @@
   <meta name="apple-mobile-web-app-title" content="ProofCash">
   <link rel="apple-touch-icon" href="icon-192.svg">
   <link rel="icon" type="image/svg+xml" href="icon-192.svg">
+  <link rel="alternate icon" href="../favicon.ico">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -1757,9 +1758,9 @@
   <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-2 pointer-events-none"></div>
 
   <!-- Core Scripts with Cache Buster -->
-  <script src="bip39-words.js?v=1.4.3"></script>
-  <script src="passkey-crypto.js?v=1.4.3"></script>
-  <script src="wallet-engine.js?v=1.4.3"></script>
+  <script src="bip39-words.js?v=1.4.5"></script>
+  <script src="passkey-crypto.js?v=1.4.5"></script>
+  <script src="wallet-engine.js?v=1.4.5"></script>
 
   <script>
     // --- UI Controller & Event Wireup ---
@@ -1767,47 +1768,43 @@
     let deferredPrompt = null;
     let feedCurrentPage = 1;
     const feedPageSize = 8;
+    const MAINNET_LAUNCH_TIMESTAMP = 1793458800000; // Nov 1, 2026 00:00:00 JST (15:00:00 UTC Oct 31)
 
     // PWA Install Prompt Handler
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
       const btn = document.getElementById('btn-install-pwa');
-      btn.classList.remove('hidden');
-      btn.classList.add('flex');
-    });
-
-    document.getElementById('btn-install-pwa').addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-          document.getElementById('btn-install-pwa').classList.add('hidden');
-        }
-        deferredPrompt = null;
+      if (btn) {
+        btn.classList.remove('hidden');
+        btn.classList.add('flex');
       }
     });
 
-    // Initialize Wallet
-    window.addEventListener('DOMContentLoaded', async () => {
-      wallet = new ProofCashWalletEngine();
-      await wallet.init();
+    const btnInstallPwa = document.getElementById('btn-install-pwa');
+    if (btnInstallPwa) {
+      btnInstallPwa.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') {
+            btnInstallPwa.classList.add('hidden');
+          }
+          deferredPrompt = null;
+        }
+      });
+    }
 
-      // Subscribe to wallet state mutations
-      wallet.subscribe(renderState);
-
-      setupTabs();
-      setupModals();
-      setupActions();
-
-      // Launch real-time ticking Mainnet countdown timer
-      setInterval(updateCountdownTicker, 1000);
-      updateCountdownTicker();
-    });
-
+    // Real-Time Standalone Mainnet Genesis Countdown Ticker
     function updateCountdownTicker() {
-      if (!wallet) return;
-      const cd = wallet.getMainnetCountdown();
+      const now = Date.now();
+      const diff = Math.max(0, MAINNET_LAUNCH_TIMESTAMP - now);
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+      const isLaunched = diff <= 0;
+
       const elDays = document.getElementById('timer-days');
       const elHours = document.getElementById('timer-hours');
       const elMins = document.getElementById('timer-minutes');
@@ -1816,26 +1813,67 @@
       const elTitle = document.getElementById('banner-mainnet-title');
       const elChip = document.getElementById('banner-mainnet-target-chip');
 
-      if (elLocalTime && typeof wallet.getMainnetTargetLocalString === 'function') {
-        elLocalTime.innerText = wallet.getMainnetTargetLocalString();
+      if (elLocalTime && !elLocalTime.dataset.initialized) {
+        try {
+          const target = new Date(MAINNET_LAUNCH_TIMESTAMP);
+          elLocalTime.innerText = target.toLocaleString(undefined, {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZoneName: 'short'
+          });
+          elLocalTime.dataset.initialized = 'true';
+        } catch (e) {
+          elLocalTime.innerText = new Date(MAINNET_LAUNCH_TIMESTAMP).toUTCString();
+        }
       }
 
-      if (cd.isLaunched) {
-        if (elDays) elDays.innerText = '0d';
-        if (elHours) elHours.innerText = '0h';
-        if (elMins) elMins.innerText = '0m';
-        if (elSecs) elSecs.innerText = '0s';
+      if (isLaunched) {
+        if (elDays) elDays.innerText = '00d';
+        if (elHours) elHours.innerText = '00h';
+        if (elMins) elMins.innerText = '00m';
+        if (elSecs) elSecs.innerText = '00s';
         if (elTitle) elTitle.innerText = 'Mainnet Genesis Activated';
         if (elChip) {
           elChip.className = 'text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-600 font-bold';
           elChip.innerText = '🟢 Block #0 Live';
         }
       } else {
-        if (elDays) elDays.innerText = `${cd.days}d`;
-        if (elHours) elHours.innerText = `${cd.hours}h`;
-        if (elMins) elMins.innerText = `${cd.minutes}m`;
-        if (elSecs) elSecs.innerText = `${cd.seconds}s`;
+        if (elDays) elDays.innerText = `${days}d`;
+        if (elHours) elHours.innerText = `${String(hours).padStart(2, '0')}h`;
+        if (elMins) elMins.innerText = `${String(minutes).padStart(2, '0')}m`;
+        if (elSecs) elSecs.innerText = `${String(seconds).padStart(2, '0')}s`;
       }
+    }
+
+    // Start ticking countdown immediately on script load
+    updateCountdownTicker();
+    setInterval(updateCountdownTicker, 1000);
+
+    // Resilient Wallet App Initialization
+    async function startWalletApp() {
+      try {
+        wallet = new ProofCashWalletEngine();
+        await wallet.init();
+
+        // Subscribe to wallet state mutations
+        wallet.subscribe(renderState);
+      } catch (err) {
+        console.error('Wallet initialization error:', err);
+      }
+
+      setupTabs();
+      setupModals();
+      setupActions();
+    }
+
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', startWalletApp);
+    } else {
+      startWalletApp();
     }
 
     function renderState(state) {

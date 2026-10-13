@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1329"/>
+      <stop offset="100%" stop-color="#050811"/>
+    </linearGradient>
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background Circle/Rounded Rect -->
+  <rect width="192" height="192" rx="42" fill="url(#bgGrad)"/>
+  <rect width="188" height="188" x="2" y="2" rx="40" fill="none" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.3"/>
+
+  <!-- Energy Wave Circuit Ring -->
+  <circle cx="96" cy="96" r="68" fill="none" stroke="#10b981" stroke-width="1.5" stroke-opacity="0.2" stroke-dasharray="4 6"/>
+  <circle cx="96" cy="96" r="54" fill="#10b981" fill-opacity="0.04"/>
+
+  <!-- Glowing Core Symbol (Thermodynamic Flash / ProofCash Key) -->
+  <g filter="url(#glow)">
+    <!-- Shield / Enclave Outline -->
+    <path d="M 96 42 L 132 58 C 132 94 116 126 96 142 C 76 126 60 94 60 58 Z" 
+          fill="none" stroke="url(#emeraldGrad)" stroke-width="3.5" stroke-linejoin="round"/>
+    
+    <!-- Thermodynamic Energy Lightning Bolt Inside Enclave -->
+    <path d="M 99 64 L 80 94 L 95 94 L 92 122 L 114 90 L 98 90 Z" 
+          fill="url(#emeraldGrad)" stroke="#6ee7b7" stroke-width="1"/>
+  </g>
+
+  <!-- Tiny Passkey Biometric Wave Dot -->
+  <circle cx="96" cy="154" r="3" fill="#34d399"/>
+</svg>
