@@ -13,7 +13,7 @@ class ProofCashWalletEngine {
     this.crypto = new PasskeyCrypto();
     this.TESTNET_STORAGE_KEY = 'proofcash_wallet_testnet_v1';
     this.MAINNET_STORAGE_KEY = 'proofcash_wallet_mainnet_v1';
-    this.MAINNET_LAUNCH_TIMESTAMP = 1793491200000; // November 1, 2026 00:00:00 UTC
+    this.MAINNET_LAUNCH_TIMESTAMP = 1793458800000; // November 1, 2026 00:00:00 JST (15:00:00 UTC Oct 31)
     this.DEFAULT_RPC = (typeof window !== 'undefined' && window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
       ? 'http://127.0.0.1:8332'
       : 'https://rpc.proofcash.org';
@@ -68,6 +68,23 @@ class ProofCashWalletEngine {
     const seconds = Math.floor((diff / 1000) % 60);
     const isLaunched = diff <= 0;
     return { days, hours, minutes, seconds, totalMs: diff, isLaunched };
+  }
+
+  getMainnetTargetLocalString() {
+    try {
+      const target = new Date(this.MAINNET_LAUNCH_TIMESTAMP);
+      return target.toLocaleString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZoneName: 'short'
+      });
+    } catch (e) {
+      return new Date(this.MAINNET_LAUNCH_TIMESTAMP).toUTCString();
+    }
   }
 
   // --- Persistence & Multi-Account Initialization ---
