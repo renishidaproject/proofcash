@@ -1,11 +1,12 @@
 // ProofCash Passkey Wallet Service Worker v1.1
 // Offline-first PWA caching & transaction queueing
 
-const CACHE_NAME = 'proofcash-wallet-v1.4';
+const CACHE_NAME = 'proofcash-wallet-v1.5';
 const STATIC_ASSETS = [
   './',
   './index.html',
   './manifest.json',
+  './qrcode.min.js',
   './bip39-words.js',
   './passkey-crypto.js',
   './wallet-engine.js',
