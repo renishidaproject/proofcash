@@ -46,11 +46,13 @@ class ProofCashWalletEngine {
       utxos: [],
       txHistory: [],
       streamingChannel: null,
+      addressBook: [],
       isNodeConnected: false
     };
 
     this.subscribers = [];
     this.processedTxids = new Set();
+    this.clipboardSecurityCache = null;
   }
 
   // --- Network Storage Key & Countdown Helpers ---
@@ -534,6 +536,144 @@ class ProofCashWalletEngine {
       }
     }
     return matched;
+  }
+
+  // --- Anti-Clipboard Hijacking Defense Engine ---
+
+  recordCopiedAddress(address, label = "ProofCash Vault") {
+    if (!address || typeof address !== 'string') return;
+    this.clipboardSecurityCache = {
+      address: address.trim(),
+      label: label,
+      timestamp: Date.now()
+    };
+    console.info(`[Anti-Clipper] Copied address tracked: ${address.substring(0, 10)}... (${label})`);
+  }
+
+  validateAddressFormat(addr) {
+    if (!addr || typeof addr !== 'string') {
+      return { valid: false, error: "Address cannot be empty" };
+    }
+    const clean = addr.trim();
+    if (!clean.startsWith('pc1q')) {
+      return { valid: false, error: "Invalid prefix: ProofCash addresses must begin with 'pc1q'" };
+    }
+    if (clean.length < 24 || clean.length > 64) {
+      return { valid: false, error: `Invalid length (${clean.length} chars): Expected 24 to 64 characters` };
+    }
+    // Check valid address charset: alphanumeric lowercase/uppercase or underscore
+    const dataPart = clean.substring(4);
+    const addrRegex = /^[0-9a-z_]+$/i;
+    if (!addrRegex.test(dataPart)) {
+      return { valid: false, error: "Invalid characters: ProofCash address must only contain alphanumeric characters" };
+    }
+    return { valid: true };
+  }
+
+  verifyPastedAddress(pastedText) {
+    if (!pastedText || typeof pastedText !== 'string') {
+      return { valid: false, error: "Empty input" };
+    }
+    const clean = pastedText.trim();
+    const formatCheck = this.validateAddressFormat(clean);
+    if (!formatCheck.valid) {
+      return formatCheck;
+    }
+
+    // Check if recipient is in saved address book
+    const contact = (this.state.addressBook || []).find(c => c.address.toLowerCase() === clean.toLowerCase());
+
+    // Check if recipient is in previous transactions
+    const isPrevious = (this.state.txHistory || []).some(tx => 
+      tx && tx.recipient && tx.recipient.toLowerCase() === clean.toLowerCase()
+    );
+
+    // Check clipboard hijacking discrepancy
+    let isHijackedWarning = false;
+    let copiedAddress = null;
+    let copiedLabel = null;
+    let timeElapsedSeconds = 0;
+
+    if (this.clipboardSecurityCache) {
+      const elapsed = Date.now() - this.clipboardSecurityCache.timestamp;
+      // If copied within the last 5 minutes (300,000 ms)
+      if (elapsed < 300000) {
+        if (clean.toLowerCase() !== this.clipboardSecurityCache.address.toLowerCase()) {
+          isHijackedWarning = true;
+          copiedAddress = this.clipboardSecurityCache.address;
+          copiedLabel = this.clipboardSecurityCache.label;
+          timeElapsedSeconds = Math.round(elapsed / 1000);
+          console.warn(`[Anti-Clipper Alert] Clipboard mismatch! Copied: ${copiedAddress}, Pasted: ${clean}`);
+        }
+      }
+    }
+
+    return {
+      valid: true,
+      address: clean,
+      isHijackedWarning,
+      copiedAddress,
+      copiedLabel,
+      timeElapsedSeconds,
+      isSavedContact: !!contact,
+      contactName: contact ? contact.name : null,
+      isPreviousRecipient: isPrevious
+    };
+  }
+
+  // --- Trusted Address Book Management ---
+
+  saveContact(name, address) {
+    const val = this.validateAddressFormat(address);
+    if (!val.valid) throw new Error(val.error);
+    const cleanName = (name || "").trim() || "Contact";
+    this.state.addressBook = this.state.addressBook || [];
+    
+    const existingIdx = this.state.addressBook.findIndex(c => c.address.toLowerCase() === address.trim().toLowerCase());
+    if (existingIdx !== -1) {
+      this.state.addressBook[existingIdx].name = cleanName;
+      this.state.addressBook[existingIdx].updatedAt = Date.now();
+    } else {
+      this.state.addressBook.push({
+        id: 'contact_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+        name: cleanName,
+        address: address.trim(),
+        createdAt: Date.now()
+      });
+    }
+    this.saveState();
+    return this.state.addressBook;
+  }
+
+  deleteContact(id) {
+    this.state.addressBook = (this.state.addressBook || []).filter(c => c.id !== id);
+    this.saveState();
+    return this.state.addressBook;
+  }
+
+  getContacts() {
+    return this.state.addressBook || [];
+  }
+
+  getRecentRecipients() {
+    const recents = [];
+    const seen = new Set();
+    const myAddr = (this.state.address || '').toLowerCase();
+
+    (this.state.txHistory || []).forEach(tx => {
+      if (tx && tx.recipient && (tx.type === 'SHIELDED_SPEND' || tx.type === 'PCASH_TRANSFER')) {
+        const addr = tx.recipient.trim();
+        if (addr.toLowerCase() !== myAddr && !seen.has(addr.toLowerCase())) {
+          seen.add(addr.toLowerCase());
+          recents.push({
+            address: addr,
+            lastSent: tx.timestamp || Date.now(),
+            amount: tx.amount || "0"
+          });
+        }
+      }
+    });
+    return recents.slice(0, 5);
   }
 
   // --- Conversions ---

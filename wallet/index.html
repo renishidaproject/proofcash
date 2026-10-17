@@ -280,6 +280,7 @@
 
         <div class="flex items-center gap-2 text-gray-400 min-w-0 max-w-full">
           <span class="shrink-0">Address:</span>
+          <div id="disp-address-identicon" class="w-5 h-5 rounded overflow-hidden shrink-0 flex items-center justify-center border border-gray-700/60 bg-gray-900" title="Deterministic Address Identicon"></div>
           <span class="font-mono text-gray-200 select-all truncate max-w-[120px] xs:max-w-[170px] sm:max-w-xs md:max-w-md" id="disp-address">pc1q...</span>
           <button id="btn-copy-address" class="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer shrink-0">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
@@ -611,9 +612,124 @@
       </div>
 
       <div id="send-form-inputs" class="space-y-3">
-        <div>
-          <label class="text-xs text-gray-400">Recipient ProofCash Address or Agent URI:</label>
-          <input type="text" id="send-input-recipient" placeholder="pc1q... or agent://..." class="w-full mt-1 bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500">
+        <!-- Anti-Clipboard Hijacking Defense Suite (Layers 1 to 5) -->
+        <div class="space-y-2">
+          <!-- Top Row: Label & Direct Bypass Controls -->
+          <div class="flex items-center justify-between text-xs text-gray-400">
+            <label class="flex items-center gap-1.5 font-medium text-gray-300">
+              <span>Recipient Address:</span>
+            </label>
+            <div class="flex items-center gap-1.5">
+              <!-- Layer 4: Paste & Verify -->
+              <button type="button" id="btn-paste-verify" class="px-2 py-0.5 rounded bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-500/30 text-[10px] font-mono flex items-center gap-1 cursor-pointer transition-all" title="Paste and verify address format, checksum, and clipboard integrity">
+                <span>📋</span> <span>Paste &amp; Verify</span>
+              </button>
+              <!-- Layer 5A: Camera QR Scanner -->
+              <button type="button" id="btn-scan-recipient-qr" class="px-2 py-0.5 rounded bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 border border-cyan-500/30 text-[10px] font-mono flex items-center gap-1 cursor-pointer transition-all" title="Scan recipient QR code directly via camera (Zero Clipboard Exposure)">
+                <span>📷</span> <span>Scan QR</span>
+              </button>
+              <!-- Layer 5B: Trusted Address Book & Recents -->
+              <button type="button" id="btn-open-contacts" class="px-2 py-0.5 rounded bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-500/30 text-[10px] font-mono flex items-center gap-1 cursor-pointer transition-all" title="Select from saved contacts or recent recipients (Zero Clipboard Exposure)">
+                <span>📖</span> <span>Contacts</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Input Row: Identicon (Layer 1) + Text Input + Status Icon -->
+          <div class="relative flex items-center">
+            <div id="recipient-identicon" class="absolute left-2.5 w-6 h-6 rounded overflow-hidden flex items-center justify-center border border-gray-700/60 bg-gray-900 shrink-0 pointer-events-none transition-all" title="Recipient Deterministic Identicon">
+              <span class="text-[10px] text-gray-600">?</span>
+            </div>
+            <input type="text" id="send-input-recipient" placeholder="pc1q... or agent://..." class="w-full bg-gray-950 border border-gray-800 rounded-lg pl-11 pr-8 py-2 text-xs font-mono text-white placeholder-gray-600 focus:outline-none focus:border-emerald-500 transition-all">
+            <div id="recipient-status-icon" class="absolute right-2.5 text-xs text-gray-600 pointer-events-none"></div>
+          </div>
+
+          <!-- Layer 3: Visual 4-Character Address Chunking with Core Entropy Highlight -->
+          <div id="recipient-chunked-box" class="hidden p-2 rounded-lg bg-black/60 border border-gray-800/80 space-y-1">
+            <div class="flex items-center justify-between text-[10px]">
+              <span class="text-gray-400 font-sans">Visual Address Verification:</span>
+              <span id="recipient-badge-type" class="font-mono text-[9px] px-1.5 py-0.5 rounded bg-gray-900 text-gray-400">Bech32m</span>
+            </div>
+            <div id="recipient-chunked-display" class="font-mono text-[11px] tracking-wide break-all leading-relaxed select-all"></div>
+          </div>
+
+          <!-- Security Badges (Saved Contact / Previous Recipient / First-time) -->
+          <div id="recipient-security-badges" class="hidden flex items-center justify-between text-[11px] font-sans">
+            <div id="recipient-badge-tag" class="flex items-center gap-1 font-mono text-[10px]"></div>
+            <button type="button" id="btn-save-as-contact" class="hidden text-[10px] text-purple-400 hover:text-purple-300 font-mono flex items-center gap-1 cursor-pointer">
+              <span>+</span> <span>Save to Contacts</span>
+            </button>
+          </div>
+
+          <!-- Layer 2: Tamper Alert Banner (Clipboard Hijacking Detected) -->
+          <div id="clipboard-hijack-alert" class="hidden p-3 rounded-xl bg-red-950/80 border-2 border-red-500/80 space-y-2 text-left shadow-lg animate-pulse">
+            <div class="flex items-center gap-2 text-red-300 font-bold text-xs">
+              <span class="text-base">⚠️</span>
+              <span>POTENTIAL CLIPBOARD HIJACKING DETECTED!</span>
+            </div>
+            <p class="text-[11px] text-red-200/90 leading-tight">
+              The pasted address does <strong class="text-white underline">NOT match</strong> the address copied <span id="hijack-time-ago">just now</span> from your ProofCash session (<span id="hijack-copied-label" class="font-medium text-amber-300">Vault</span>). A malicious clipboard hijacker (clipper malware) may have replaced your clipboard!
+            </p>
+            <div class="space-y-1.5 text-[10px] font-mono bg-black/70 p-2 rounded-lg border border-red-900/50">
+              <div class="text-gray-400">
+                <span class="text-emerald-400 font-semibold">Expected (Copied):</span>
+                <div id="hijack-copied-chunked" class="truncate text-emerald-300"></div>
+              </div>
+              <div class="text-gray-400">
+                <span class="text-red-400 font-semibold">Detected (Pasted):</span>
+                <div id="hijack-pasted-chunked" class="truncate text-red-300"></div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+              <button type="button" id="btn-hijack-revert" class="flex-1 py-1.5 px-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-[11px] transition-all cursor-pointer flex items-center justify-center gap-1">
+                <span>🛡️</span> <span>Use Copied Address</span>
+              </button>
+              <button type="button" id="btn-hijack-override" class="py-1.5 px-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-red-400 hover:text-red-300 text-[10px] transition-all cursor-pointer border border-red-800/40">
+                <span>I Intend This Address</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Layer 5A: Camera QR Scanner Viewfinder for Recipient -->
+          <div id="recipient-qr-scanner-box" class="hidden space-y-2 p-3 bg-black/95 rounded-xl border border-cyan-500/50 text-center">
+            <div class="flex items-center justify-between text-xs pb-1">
+              <span class="text-cyan-300 font-semibold flex items-center gap-1 font-mono">
+                <span>📷</span> Direct Camera Scanner (Anti-Clipper Bypass)
+              </span>
+              <button type="button" id="btn-stop-recipient-scan" class="text-gray-400 hover:text-white text-xs cursor-pointer px-1.5 py-0.5 rounded bg-gray-900">✕ Close</button>
+            </div>
+            <div class="relative w-full aspect-square max-w-[240px] mx-auto rounded-lg overflow-hidden bg-black flex items-center justify-center border border-gray-800">
+              <video id="recipient-qr-video" class="w-full h-full object-cover" playsinline muted></video>
+              <canvas id="recipient-qr-canvas" class="hidden"></canvas>
+              <div class="absolute inset-4 border-2 border-dashed border-cyan-400 pointer-events-none rounded-lg animate-pulse flex items-center justify-center">
+                <span class="text-[10px] text-cyan-300 font-mono bg-black/80 px-2 py-0.5 rounded" id="recipient-qr-hint">Align Recipient QR Code</span>
+              </div>
+            </div>
+            <p class="text-[10px] text-gray-400 font-sans">Reads directly from optical sensor without writing to OS clipboard.</p>
+          </div>
+
+          <!-- Layer 5B: Trusted Address Book & Recents Dropdown Panel -->
+          <div id="contacts-dropdown-panel" class="hidden p-3 rounded-xl bg-gray-950 border border-purple-500/40 space-y-2 text-left">
+            <div class="flex items-center justify-between text-xs pb-1 border-b border-gray-800">
+              <span class="text-purple-300 font-semibold flex items-center gap-1 font-mono">
+                <span>📖</span> Trusted Address Book &amp; Recents
+              </span>
+              <button type="button" id="btn-close-contacts" class="text-gray-400 hover:text-white text-xs cursor-pointer px-1.5 py-0.5 rounded bg-gray-900">✕</button>
+            </div>
+
+            <!-- Add Contact Quick Form -->
+            <div class="flex gap-1.5 pt-1">
+              <input type="text" id="input-contact-name" placeholder="Contact Name (e.g. Satoshi)" class="flex-1 bg-gray-900 border border-gray-800 rounded px-2 py-1 text-[11px] text-white focus:outline-none focus:border-purple-500">
+              <button type="button" id="btn-save-contact-action" class="px-2.5 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white font-medium text-[10px] cursor-pointer shrink-0 transition-all">
+                + Save Current
+              </button>
+            </div>
+
+            <!-- List of Contacts & Recents -->
+            <div id="contacts-list" class="max-h-48 overflow-y-auto custom-scroll space-y-1.5 pt-1 text-xs">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
         </div>
 
         <div>
@@ -671,9 +787,12 @@
             <span class="text-gray-500">Sent Amount:</span>
             <span id="send-receipt-amount" class="text-white font-bold">0.0000 PCASH</span>
           </div>
-          <div class="flex justify-between">
+          <div class="flex items-center justify-between">
             <span class="text-gray-500">Recipient:</span>
-            <span id="send-receipt-recipient" class="text-cyan-400 truncate max-w-[200px]">pc1q...</span>
+            <div class="flex items-center gap-1.5 max-w-[220px]">
+              <div id="send-receipt-identicon" class="w-4 h-4 rounded overflow-hidden shrink-0 flex items-center justify-center border border-gray-800 bg-black"></div>
+              <span id="send-receipt-recipient" class="text-cyan-400 truncate text-[11px]">pc1q...</span>
+            </div>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-500">Network Relay:</span>
@@ -736,9 +855,22 @@
       </div>
 
       <div class="space-y-1.5 text-left">
-        <div class="text-[11px] text-gray-400">Vault Receiving Address:</div>
-        <div class="p-2 bg-gray-950 rounded-lg border border-gray-800 text-xs font-mono text-gray-200 break-all select-all" id="recv-disp-address">
-          pc1q...
+        <div class="flex items-center justify-between text-[11px] text-gray-400">
+          <span>Vault Receiving Address:</span>
+          <span class="text-[10px] text-emerald-400 font-mono">Bech32m Shielded</span>
+        </div>
+        <div class="p-2.5 bg-gray-950 rounded-lg border border-gray-800 space-y-2">
+          <div class="flex items-center gap-2">
+            <div id="recv-address-identicon" class="w-7 h-7 rounded overflow-hidden flex items-center justify-center border border-gray-700/60 bg-gray-900 shrink-0" title="Your Vault Deterministic Identicon"></div>
+            <div class="p-1.5 bg-black/60 rounded flex-1 border border-gray-800/80 font-mono text-[11px] text-gray-200 break-all select-all" id="recv-disp-address">
+              pc1q...
+            </div>
+          </div>
+          <!-- Layer 3 Chunked display for receive address -->
+          <div class="p-2 rounded bg-black/40 border border-gray-900 text-[10px] font-mono space-y-0.5">
+            <div class="text-[9px] text-gray-500 uppercase tracking-wider">Visual 4-Block Breakdown:</div>
+            <div id="recv-chunked-display" class="break-all tracking-wide select-all"></div>
+          </div>
         </div>
       </div>
 
@@ -1367,7 +1499,7 @@
   <script src="jsqr.min.js?v=1.4.8"></script>
   <script src="bip39-words.js?v=1.4.8"></script>
   <script src="passkey-crypto.js?v=1.4.8"></script>
-  <script src="wallet-engine.js?v=1.4.9"></script>
+  <script src="wallet-engine.js?v=1.5.0"></script>
 
   <script>
     // --- UI Controller & Event Wireup ---
@@ -1460,6 +1592,88 @@
     updateCountdownTicker();
     setInterval(updateCountdownTicker, 1000);
 
+    // --- Anti-Clipboard Hijacking Visual Helpers (Layer 1 & Layer 3) ---
+
+    function generateIdenticonSvg(address, size = 32) {
+      if (!address || typeof address !== 'string') {
+        return `<svg width="${size}" height="${size}" viewBox="0 0 32 32" class="rounded"><rect width="32" height="32" fill="#1f2937"/></svg>`;
+      }
+      const clean = address.trim();
+      // Deterministic FNV-1a 32-bit hash for seed
+      let hash = 2166136261 >>> 0;
+      for (let i = 0; i < clean.length; i++) {
+        hash ^= clean.charCodeAt(i);
+        hash = Math.imul(hash, 16777619) >>> 0;
+      }
+
+      const hue1 = hash % 360;
+      const hue2 = (hash >> 8) % 360;
+      const bgHue = (hash >> 16) % 360;
+      const fgColor = `hsl(${hue1}, 78%, 62%)`;
+      const secColor = `hsl(${hue2}, 72%, 48%)`;
+      const bgColor = `hsl(${bgHue}, 45%, 12%)`;
+
+      // 5x5 symmetric grid (3 unique cols mirrored to 5)
+      let rects = '';
+      const cellSize = 6;
+      const pad = 1;
+      let bitIndex = 0;
+      for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 3; c++) {
+          const bit = (hash >> (bitIndex % 28)) & 1;
+          bitIndex++;
+          if (bit === 1) {
+            const color = ((hash >> (bitIndex % 16)) & 1) ? fgColor : secColor;
+            const x1 = pad + c * cellSize;
+            const y = pad + r * cellSize;
+            rects += `<rect x="${x1}" y="${y}" width="${cellSize}" height="${cellSize}" fill="${color}" rx="1"/>`;
+            if (c < 2) {
+              const mirrorCol = 4 - c;
+              const x2 = pad + mirrorCol * cellSize;
+              rects += `<rect x="${x2}" y="${y}" width="${cellSize}" height="${cellSize}" fill="${color}" rx="1"/>`;
+            }
+          }
+        }
+      }
+
+      return `<svg width="${size}" height="${size}" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" class="rounded overflow-hidden"><rect width="32" height="32" fill="${bgColor}"/>${rects}</svg>`;
+    }
+
+    function formatAddressChunked(address) {
+      if (!address || typeof address !== 'string') return '';
+      const clean = address.trim();
+      if (!clean.startsWith('pc1q')) {
+        return `<span class="text-gray-300 font-mono">${clean}</span>`;
+      }
+
+      const prefix = 'pc1q';
+      const body = clean.substring(4);
+      
+      const chunks = [];
+      for (let i = 0; i < body.length; i += 4) {
+        chunks.push(body.substring(i, i + 4));
+      }
+
+      let html = `<span class="text-cyan-400 font-bold tracking-tight">${prefix}</span> `;
+      const total = chunks.length;
+      for (let i = 0; i < total; i++) {
+        const ch = chunks[i];
+        if (i === 0) {
+          html += `<span class="text-cyan-200/90">${ch}</span> `;
+        } else if (i === total - 1) {
+          html += `<span class="text-emerald-400 font-bold">${ch}</span>`;
+        } else if (i === total - 2) {
+          html += `<span class="text-emerald-300">${ch}</span> `;
+        } else if (i >= 2 && i < total - 2) {
+          html += `<span class="text-amber-400 font-bold">${ch}</span> `;
+        } else {
+          html += `<span class="text-gray-300">${ch}</span> `;
+        }
+      }
+
+      return html.trim();
+    }
+
     // Resilient Wallet App Initialization
     async function startWalletApp() {
       try {
@@ -1489,9 +1703,26 @@
       document.getElementById('disp-balance-pj').innerText = Number(state.balance_pJ).toLocaleString();
       document.getElementById('send-max-avail').innerText = wallet.formatPcash(state.balance_pJ);
 
-      // Address & Dynamic Scannable QR Code
+      // Address, Deterministic Identicons & Dynamic Scannable QR Code
       document.getElementById('disp-address').innerText = state.address;
       document.getElementById('recv-disp-address').innerText = state.address;
+
+      // Layer 1: Deterministic Identicons for Vault Address
+      const headerIdenticon = document.getElementById('disp-address-identicon');
+      if (headerIdenticon && state.address) {
+        headerIdenticon.innerHTML = generateIdenticonSvg(state.address, 20);
+      }
+      const recvIdenticon = document.getElementById('recv-address-identicon');
+      if (recvIdenticon && state.address) {
+        recvIdenticon.innerHTML = generateIdenticonSvg(state.address, 28);
+      }
+
+      // Layer 3: Visual 4-Character Address Chunking for Receive Address
+      const recvChunked = document.getElementById('recv-chunked-display');
+      if (recvChunked && state.address) {
+        recvChunked.innerHTML = formatAddressChunked(state.address);
+      }
+
       const qrContainer = document.getElementById('recv-qrcode');
       if (qrContainer && window.QRCode && state.address) {
         qrContainer.innerHTML = '';
@@ -1812,6 +2043,15 @@
         document.getElementById('send-form-inputs')?.classList.remove('hidden');
         document.getElementById('send-receipt-container')?.classList.add('hidden');
         document.getElementById('send-prover-progress')?.classList.add('hidden');
+        document.getElementById('contacts-dropdown-panel')?.classList.add('hidden');
+        document.getElementById('clipboard-hijack-alert')?.classList.add('hidden');
+        document.getElementById('recipient-chunked-box')?.classList.add('hidden');
+        document.getElementById('recipient-security-badges')?.classList.add('hidden');
+        const recIdent = document.getElementById('recipient-identicon');
+        if (recIdent) recIdent.innerHTML = '<span class="text-[10px] text-gray-600">?</span>';
+        const recStatus = document.getElementById('recipient-status-icon');
+        if (recStatus) recStatus.innerHTML = '';
+        if (typeof stopRecipientQrScanner === 'function') stopRecipientQrScanner();
         const btn = document.getElementById('btn-confirm-send');
         if (btn) btn.disabled = false;
         const amtInput = document.getElementById('send-input-amount');
@@ -1830,6 +2070,422 @@
         btnDoneSend.addEventListener('click', () => {
           modalSend.classList.add('hidden');
           resetSendModal();
+        });
+      }
+
+      // --- Anti-Clipboard Hijacking Defense Suite Controller (Layers 1-5) ---
+
+      function updateRecipientSecurityView(addr, isPasteAction = false) {
+        const clean = (addr || "").trim();
+        const identiconEl = document.getElementById('recipient-identicon');
+        const statusIconEl = document.getElementById('recipient-status-icon');
+        const chunkedBox = document.getElementById('recipient-chunked-box');
+        const chunkedDisplay = document.getElementById('recipient-chunked-display');
+        const badgesBox = document.getElementById('recipient-security-badges');
+        const badgeTag = document.getElementById('recipient-badge-tag');
+        const btnSaveAsContact = document.getElementById('btn-save-as-contact');
+        const hijackAlert = document.getElementById('clipboard-hijack-alert');
+
+        if (!clean) {
+          if (identiconEl) identiconEl.innerHTML = `<span class="text-[10px] text-gray-600">?</span>`;
+          if (statusIconEl) statusIconEl.innerHTML = '';
+          if (chunkedBox) chunkedBox.classList.add('hidden');
+          if (badgesBox) badgesBox.classList.add('hidden');
+          if (hijackAlert) hijackAlert.classList.add('hidden');
+          return;
+        }
+
+        // Layer 1: Symmetrical Identicon Fingerprint
+        if (identiconEl) {
+          identiconEl.innerHTML = generateIdenticonSvg(clean, 24);
+        }
+
+        // Layer 4 / Format Validation (Bech32m prefix, length, charset)
+        const formatCheck = wallet.validateAddressFormat(clean);
+        if (!formatCheck.valid) {
+          if (statusIconEl) statusIconEl.innerHTML = `<span class="text-red-400 font-bold" title="${formatCheck.error}">✕</span>`;
+          if (chunkedBox) {
+            chunkedBox.classList.remove('hidden');
+            if (chunkedDisplay) chunkedDisplay.innerHTML = `<span class="text-red-400 text-[10px] font-sans">${formatCheck.error}</span>`;
+          }
+          if (badgesBox) badgesBox.classList.add('hidden');
+          if (hijackAlert) hijackAlert.classList.add('hidden');
+          return;
+        }
+
+        // Format is valid!
+        if (statusIconEl) statusIconEl.innerHTML = `<span class="text-emerald-400 font-bold" title="Valid ProofCash Bech32m Address">✓</span>`;
+
+        // Layer 3: Visual 4-Character Address Chunking with Core Entropy Highlight
+        if (chunkedBox) {
+          chunkedBox.classList.remove('hidden');
+          if (chunkedDisplay) chunkedDisplay.innerHTML = formatAddressChunked(clean);
+        }
+
+        // Verify pasted address against in-memory copy buffer and address book
+        const verification = wallet.verifyPastedAddress(clean);
+
+        // Layer 2: Tamper Alert Check (Warn if clipboard swapped silently)
+        if (isPasteAction && verification.isHijackedWarning) {
+          if (hijackAlert) {
+            hijackAlert.classList.remove('hidden');
+            const timeAgoEl = document.getElementById('hijack-time-ago');
+            const labelEl = document.getElementById('hijack-copied-label');
+            const expChunkedEl = document.getElementById('hijack-copied-chunked');
+            const detChunkedEl = document.getElementById('hijack-pasted-chunked');
+
+            if (timeAgoEl) timeAgoEl.innerText = `${verification.timeElapsedSeconds}s ago`;
+            if (labelEl) labelEl.innerText = verification.copiedLabel || "ProofCash Vault";
+            if (expChunkedEl) expChunkedEl.innerHTML = formatAddressChunked(verification.copiedAddress);
+            if (detChunkedEl) detChunkedEl.innerHTML = formatAddressChunked(verification.address);
+          }
+        } else if (!verification.isHijackedWarning) {
+          if (hijackAlert) hijackAlert.classList.add('hidden');
+        }
+
+        // Layer 5B: Address Book & Recents Badges
+        if (badgesBox && badgeTag) {
+          badgesBox.classList.remove('hidden');
+          if (verification.isSavedContact) {
+            badgeTag.innerHTML = `<span class="px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800/60 font-semibold flex items-center gap-1"><span>📖</span> <span>Contact: ${verification.contactName}</span></span>`;
+            if (btnSaveAsContact) btnSaveAsContact.classList.add('hidden');
+          } else if (verification.isPreviousRecipient) {
+            badgeTag.innerHTML = `<span class="px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/60 flex items-center gap-1"><span>🕒</span> <span>Previous Recipient</span></span>`;
+            if (btnSaveAsContact) btnSaveAsContact.classList.remove('hidden');
+          } else {
+            badgeTag.innerHTML = `<span class="px-1.5 py-0.5 rounded bg-gray-900 text-gray-400 border border-gray-800 flex items-center gap-1"><span>ℹ️</span> <span>First-time Recipient</span></span>`;
+            if (btnSaveAsContact) btnSaveAsContact.classList.remove('hidden');
+          }
+        }
+      }
+
+      // Input listeners for recipient field
+      const recipientInput = document.getElementById('send-input-recipient');
+      if (recipientInput) {
+        recipientInput.addEventListener('input', (e) => {
+          updateRecipientSecurityView(e.target.value, false);
+        });
+        recipientInput.addEventListener('paste', (e) => {
+          setTimeout(() => {
+            updateRecipientSecurityView(recipientInput.value, true);
+          }, 20);
+        });
+      }
+
+      // Layer 4: In-app Paste & Verify Button
+      const btnPasteVerify = document.getElementById('btn-paste-verify');
+      if (btnPasteVerify) {
+        btnPasteVerify.addEventListener('click', async () => {
+          try {
+            let text = '';
+            if (navigator.clipboard && navigator.clipboard.readText) {
+              text = await navigator.clipboard.readText();
+            } else {
+              text = prompt("Paste recipient ProofCash address:") || '';
+            }
+            text = (text || '').trim();
+            if (!text) {
+              showToast("Clipboard is empty", "amber");
+              return;
+            }
+            const input = document.getElementById('send-input-recipient');
+            if (input) input.value = text;
+            updateRecipientSecurityView(text, true);
+            try { if (navigator.vibrate) navigator.vibrate(30); } catch(e) {}
+          } catch (err) {
+            console.warn("[Paste & Verify] Clipboard permission denied:", err);
+            const manual = prompt("Clipboard read permission was blocked. Paste the recipient address here:");
+            if (manual && manual.trim()) {
+              const input = document.getElementById('send-input-recipient');
+              if (input) input.value = manual.trim();
+              updateRecipientSecurityView(manual.trim(), true);
+            }
+          }
+        });
+      }
+
+      // Layer 2: Tamper Alert Action Buttons
+      const btnHijackRevert = document.getElementById('btn-hijack-revert');
+      if (btnHijackRevert) {
+        btnHijackRevert.addEventListener('click', () => {
+          if (wallet.clipboardSecurityCache && wallet.clipboardSecurityCache.address) {
+            const input = document.getElementById('send-input-recipient');
+            if (input) input.value = wallet.clipboardSecurityCache.address;
+            updateRecipientSecurityView(wallet.clipboardSecurityCache.address, false);
+            const hijackAlert = document.getElementById('clipboard-hijack-alert');
+            if (hijackAlert) hijackAlert.classList.add('hidden');
+            showToast("🛡️ Restored verified copied address", 'emerald');
+          }
+        });
+      }
+
+      const btnHijackOverride = document.getElementById('btn-hijack-override');
+      if (btnHijackOverride) {
+        btnHijackOverride.addEventListener('click', () => {
+          const hijackAlert = document.getElementById('clipboard-hijack-alert');
+          if (hijackAlert) hijackAlert.classList.add('hidden');
+          wallet.clipboardSecurityCache = null;
+          showToast("⚠️ Overridden: Using manually confirmed address", 'amber');
+        });
+      }
+
+      // Layer 5A: Camera QR Scanner for Recipient (Direct Optical Input)
+      let recipientQrStream = null;
+      let recipientQrAnimationId = null;
+
+      const stopRecipientQrScanner = () => {
+        if (recipientQrAnimationId) {
+          cancelAnimationFrame(recipientQrAnimationId);
+          recipientQrAnimationId = null;
+        }
+        if (recipientQrStream) {
+          recipientQrStream.getTracks().forEach(t => t.stop());
+          recipientQrStream = null;
+        }
+        const video = document.getElementById('recipient-qr-video');
+        if (video) video.srcObject = null;
+        const box = document.getElementById('recipient-qr-scanner-box');
+        if (box) box.classList.add('hidden');
+      };
+
+      const startRecipientQrScanner = async () => {
+        const box = document.getElementById('recipient-qr-scanner-box');
+        const video = document.getElementById('recipient-qr-video');
+        const canvas = document.getElementById('recipient-qr-canvas');
+        const hint = document.getElementById('recipient-qr-hint');
+        const ctx = canvas ? canvas.getContext('2d') : null;
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          alert("Camera access is not supported on this browser or requires HTTPS.");
+          return;
+        }
+
+        try {
+          box.classList.remove('hidden');
+          if (hint) hint.innerText = "Starting camera...";
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' }
+          });
+          recipientQrStream = stream;
+          video.srcObject = stream;
+          await video.play();
+          if (hint) hint.innerText = "Point camera at Recipient Address QR";
+
+          const hasBarcodeDetector = ('BarcodeDetector' in window);
+          let barcodeDetector = null;
+          if (hasBarcodeDetector) {
+            try { barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] }); } catch (e) {}
+          }
+
+          const scanFrame = async () => {
+            if (!recipientQrStream) return;
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+              let detectedText = null;
+
+              if (barcodeDetector) {
+                try {
+                  const codes = await barcodeDetector.detect(video);
+                  if (codes && codes.length > 0) {
+                    detectedText = codes[0].rawValue;
+                  }
+                } catch (e) {}
+              }
+
+              if (!detectedText && window.jsQR && canvas && ctx) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const qrCode = jsQR(imageData.data, imageData.width, imageData.height, {
+                  inversionAttempts: "dontInvert"
+                });
+                if (qrCode && qrCode.data) {
+                  detectedText = qrCode.data;
+                }
+              }
+
+              if (detectedText) {
+                let cleanAddr = detectedText.trim();
+                if (cleanAddr.toLowerCase().startsWith('proofcash:')) {
+                  cleanAddr = cleanAddr.substring(10).trim();
+                }
+                if (cleanAddr.startsWith('{')) {
+                  try {
+                    const obj = JSON.parse(cleanAddr);
+                    cleanAddr = obj.address || obj.recipient || cleanAddr;
+                  } catch(e) {}
+                }
+                const val = wallet.validateAddressFormat(cleanAddr);
+                if (val.valid) {
+                  try { if (navigator.vibrate) navigator.vibrate([40, 40, 40]); } catch(e) {}
+                  stopRecipientQrScanner();
+                  const input = document.getElementById('send-input-recipient');
+                  if (input) input.value = cleanAddr;
+                  updateRecipientSecurityView(cleanAddr, false);
+                  showToast("✓ Recipient scanned via camera (Zero Clipboard Risk)", 'cyan');
+                  return;
+                }
+              }
+            }
+            recipientQrAnimationId = requestAnimationFrame(scanFrame);
+          };
+
+          recipientQrAnimationId = requestAnimationFrame(scanFrame);
+        } catch (err) {
+          console.error("[Recipient QR Scanner] Camera error:", err);
+          alert("Camera permission denied or camera unavailable: " + err.message);
+          stopRecipientQrScanner();
+        }
+      };
+
+      const btnScanRecipientQr = document.getElementById('btn-scan-recipient-qr');
+      if (btnScanRecipientQr) btnScanRecipientQr.addEventListener('click', startRecipientQrScanner);
+      const btnStopRecipientScan = document.getElementById('btn-stop-recipient-scan');
+      if (btnStopRecipientScan) btnStopRecipientScan.addEventListener('click', stopRecipientQrScanner);
+
+      // Layer 5B: Trusted Address Book & Recents Dropdown
+      const renderContactsDropdown = () => {
+        const listEl = document.getElementById('contacts-list');
+        if (!listEl) return;
+        listEl.innerHTML = '';
+
+        const contacts = wallet.getContacts();
+        const recents = wallet.getRecentRecipients();
+
+        if (contacts.length === 0 && recents.length === 0) {
+          listEl.innerHTML = `<div class="p-3 text-center text-gray-500 font-sans text-[11px] leading-relaxed">No saved contacts or recent recipients yet. Addresses you send to or save will appear here for 1-click clipboard-free selection.</div>`;
+          return;
+        }
+
+        if (contacts.length > 0) {
+          const cHeader = document.createElement('div');
+          cHeader.className = "text-[10px] text-purple-400 font-bold uppercase tracking-wider px-1 pt-0.5 flex items-center justify-between";
+          cHeader.innerHTML = `<span>Saved Contacts (${contacts.length})</span><span class="text-[9px] text-gray-500 font-normal">Encrypted Vault</span>`;
+          listEl.appendChild(cHeader);
+
+          contacts.forEach(c => {
+            const row = document.createElement('div');
+            row.className = "p-2 rounded-lg bg-gray-900/90 hover:bg-gray-800/90 border border-gray-800 flex items-center justify-between gap-2 transition-all";
+            row.innerHTML = `
+              <div class="flex items-center gap-2 min-w-0 flex-1 cursor-pointer select-entry">
+                <div class="w-5 h-5 rounded overflow-hidden shrink-0 flex items-center justify-center border border-gray-800 bg-black">${generateIdenticonSvg(c.address, 20)}</div>
+                <div class="min-w-0 flex-1">
+                  <div class="text-white font-medium text-[11px] truncate">${c.name}</div>
+                  <div class="text-[9px] font-mono text-gray-400 truncate">${c.address.substring(0, 10)}...${c.address.substring(c.address.length - 6)}</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button type="button" class="btn-use-contact px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800/60 hover:bg-purple-900 text-[10px] cursor-pointer">Use</button>
+                <button type="button" class="btn-del-contact text-gray-500 hover:text-red-400 text-xs px-1 cursor-pointer" title="Delete contact">✕</button>
+              </div>
+            `;
+            row.querySelector('.select-entry').addEventListener('click', () => {
+              const input = document.getElementById('send-input-recipient');
+              if (input) input.value = c.address;
+              updateRecipientSecurityView(c.address, false);
+              document.getElementById('contacts-dropdown-panel')?.classList.add('hidden');
+              showToast(`✓ Selected contact: ${c.name}`, 'purple');
+            });
+            row.querySelector('.btn-use-contact').addEventListener('click', () => {
+              const input = document.getElementById('send-input-recipient');
+              if (input) input.value = c.address;
+              updateRecipientSecurityView(c.address, false);
+              document.getElementById('contacts-dropdown-panel')?.classList.add('hidden');
+              showToast(`✓ Selected contact: ${c.name}`, 'purple');
+            });
+            row.querySelector('.btn-del-contact').addEventListener('click', (e) => {
+              e.stopPropagation();
+              if (confirm(`Remove "${c.name}" from saved contacts?`)) {
+                wallet.deleteContact(c.id);
+                renderContactsDropdown();
+                const cur = document.getElementById('send-input-recipient')?.value;
+                if (cur) updateRecipientSecurityView(cur, false);
+              }
+            });
+            listEl.appendChild(row);
+          });
+        }
+
+        if (recents.length > 0) {
+          const rHeader = document.createElement('div');
+          rHeader.className = "text-[10px] text-cyan-400 font-bold uppercase tracking-wider px-1 pt-2 flex items-center justify-between";
+          rHeader.innerHTML = `<span>Recent Recipients (${recents.length})</span><span class="text-[9px] text-gray-500 font-normal">Past Transactions</span>`;
+          listEl.appendChild(rHeader);
+
+          recents.forEach(r => {
+            const row = document.createElement('div');
+            row.className = "p-2 rounded-lg bg-gray-900/60 hover:bg-gray-800/80 border border-gray-800/70 flex items-center justify-between gap-2 transition-all cursor-pointer";
+            row.innerHTML = `
+              <div class="flex items-center gap-2 min-w-0 flex-1">
+                <div class="w-5 h-5 rounded overflow-hidden shrink-0 flex items-center justify-center border border-gray-800 bg-black">${generateIdenticonSvg(r.address, 20)}</div>
+                <div class="min-w-0 flex-1">
+                  <div class="text-[10px] font-mono text-cyan-300 truncate">${r.address.substring(0, 12)}...${r.address.substring(r.address.length - 8)}</div>
+                  <div class="text-[9px] text-gray-500 font-sans">${new Date(r.lastTimestamp).toLocaleDateString()}</div>
+                </div>
+              </div>
+              <button type="button" class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800/60 hover:bg-cyan-900 text-[10px] cursor-pointer shrink-0">Use</button>
+            `;
+            row.addEventListener('click', () => {
+              const input = document.getElementById('send-input-recipient');
+              if (input) input.value = r.address;
+              updateRecipientSecurityView(r.address, false);
+              document.getElementById('contacts-dropdown-panel')?.classList.add('hidden');
+              showToast("✓ Selected recent recipient", 'cyan');
+            });
+            listEl.appendChild(row);
+          });
+        }
+      };
+
+      const btnOpenContacts = document.getElementById('btn-open-contacts');
+      const contactsPanel = document.getElementById('contacts-dropdown-panel');
+      if (btnOpenContacts && contactsPanel) {
+        btnOpenContacts.addEventListener('click', () => {
+          const isHidden = contactsPanel.classList.contains('hidden');
+          if (isHidden) {
+            renderContactsDropdown();
+            contactsPanel.classList.remove('hidden');
+          } else {
+            contactsPanel.classList.add('hidden');
+          }
+        });
+      }
+
+      const btnCloseContacts = document.getElementById('btn-close-contacts');
+      if (btnCloseContacts && contactsPanel) {
+        btnCloseContacts.addEventListener('click', () => contactsPanel.classList.add('hidden'));
+      }
+
+      const btnSaveContactAction = document.getElementById('btn-save-contact-action');
+      if (btnSaveContactAction) {
+        btnSaveContactAction.addEventListener('click', () => {
+          const nameInput = document.getElementById('input-contact-name');
+          const recipientInput = document.getElementById('send-input-recipient');
+          const name = nameInput ? nameInput.value.trim() : '';
+          const addr = recipientInput ? recipientInput.value.trim() : '';
+          if (!addr) {
+            alert("Please enter or paste an address first to save as contact.");
+            return;
+          }
+          try {
+            wallet.saveContact(name || "Contact", addr);
+            if (nameInput) nameInput.value = '';
+            renderContactsDropdown();
+            updateRecipientSecurityView(addr, false);
+            showToast(`✓ Saved "${name || 'Contact'}" to Encrypted Address Book!`, 'purple');
+          } catch(e) {
+            alert("Could not save contact: " + e.message);
+          }
+        });
+      }
+
+      const btnSaveAsContact = document.getElementById('btn-save-as-contact');
+      if (btnSaveAsContact && contactsPanel) {
+        btnSaveAsContact.addEventListener('click', () => {
+          renderContactsDropdown();
+          contactsPanel.classList.remove('hidden');
+          const nameInput = document.getElementById('input-contact-name');
+          if (nameInput) nameInput.focus();
         });
       }
 
@@ -2477,6 +3133,9 @@
       const copyFn = (targetElId, textElId) => {
         const text = wallet.state.address;
         navigator.clipboard.writeText(text);
+        if (wallet && typeof wallet.recordCopiedAddress === 'function') {
+          wallet.recordCopiedAddress(text, 'ProofCash Vault Address');
+        }
         const el = document.getElementById(textElId);
         const orig = el.innerText;
         el.innerText = '✓ Copied!';
@@ -2686,6 +3345,10 @@
           if (receiptContainer) {
             if (receiptAmount) receiptAmount.innerText = `${res.amountPcash} PCASH`;
             if (receiptRecipient) receiptRecipient.innerText = res.recipient;
+            const receiptIdenticon = document.getElementById('send-receipt-identicon');
+            if (receiptIdenticon && res.recipient) {
+              receiptIdenticon.innerHTML = generateIdenticonSvg(res.recipient, 16);
+            }
             if (receiptVoucherInput) receiptVoucherInput.value = res.voucher;
             if (receiptRelay) {
               if (res.cloudRelaySuccess) {
