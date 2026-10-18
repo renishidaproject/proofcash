@@ -196,10 +196,12 @@ class PasskeyCrypto {
   /**
    * Signs a Delegation Certificate using Hardware Passkey (or emulated enclave)
    * The certificate authorizes an ephemeral BabyJubjub key for an epoch expiration height.
+   * Bound to networkId ("mainnet" vs "testnet") to prevent cross-network replay attacks.
    */
-  async signDelegationCertificate(credentialId, sec1PubkeyHex, sessionPubkeyBytes, expirationHeight) {
-    // Construct canonical payload: "ProofCash_Delegation_v1" || session_pubkey (32 bytes) || expiration_height (8 bytes LE)
-    const prefix = new TextEncoder().encode("ProofCash_Delegation_v1");
+  async signDelegationCertificate(credentialId, sec1PubkeyHex, sessionPubkeyBytes, expirationHeight, networkId = "mainnet") {
+    // Construct canonical payload: "ProofCash_Delegation_v1:" || networkId || session_pubkey (32 bytes) || expiration_height (8 bytes LE)
+    const net = (networkId || "mainnet").toLowerCase();
+    const prefix = new TextEncoder().encode(`ProofCash_Delegation_v1:${net}:`);
     const expBytes = PasskeyCrypto.u64ToLeBytes(expirationHeight);
     const payload = new Uint8Array(prefix.length + 32 + 8);
     payload.set(prefix, 0);
@@ -238,6 +240,7 @@ class PasskeyCrypto {
           derSignatureHex: PasskeyCrypto.bufferToHex(derSignature),
           parsedSig: this.parseDerSignature(derSignature),
           method: "WebAuthn Biometric Assertion (Platform Enclave)",
+          network: net,
           timestamp: Date.now()
         };
       } catch (err) {
@@ -246,10 +249,10 @@ class PasskeyCrypto {
     }
 
     // Emulated Enclave signing
-    return await this.signEmulatedDelegation(credentialId, sec1PubkeyHex, sessionPubkeyBytes, expirationHeight, payload);
+    return await this.signEmulatedDelegation(credentialId, sec1PubkeyHex, sessionPubkeyBytes, expirationHeight, payload, net);
   }
 
-  async signEmulatedDelegation(credentialId, sec1PubkeyHex, sessionPubkeyBytes, expirationHeight, payload) {
+  async signEmulatedDelegation(credentialId, sec1PubkeyHex, sessionPubkeyBytes, expirationHeight, payload, networkId = "mainnet") {
     let keyPair = window._pcash_enclave_store?.[credentialId];
     if (!keyPair && credentialId) {
       try {
@@ -289,6 +292,7 @@ class PasskeyCrypto {
       derSignatureHex: PasskeyCrypto.bufferToHex(derSig),
       parsedSig: this.parseDerSignature(derSig),
       method: "Emulated Enclave WebCrypto Assertion",
+      network: networkId || "mainnet",
       timestamp: Date.now()
     };
   }
@@ -494,7 +498,7 @@ class PasskeyCrypto {
    * Evaluates the exact Plonky3 AIR constraints for the Two-Tier Enclave Delegation
    * Mirrors `TwoTierDelegationAir::evaluate_constraints(&witness)`
    */
-  evaluateDelegationAirConstraints(cert, currentHeight) {
+  evaluateDelegationAirConstraints(cert, currentHeight, expectedNetwork = null) {
     const startTime = performance.now();
     const residuals = [];
 
@@ -519,7 +523,14 @@ class PasskeyCrypto {
     const pubZero = cert.sessionPubkeyHex === "0".repeat(64);
     residuals.push(pubZero ? 1n : 0n);
 
-    // Constraint 3: BabyJubjub Point validity: ax^2 + y^2 == 1 + dx^2y^2 (in Goldilocks field)
+    // Constraint 3: Cross-Network isolation check (if expectedNetwork provided)
+    if (expectedNetwork && cert.network && cert.network.toLowerCase() !== expectedNetwork.toLowerCase()) {
+      residuals.push(1n); // Cross-network replay violation
+    } else {
+      residuals.push(0n);
+    }
+
+    // Constraint 4: BabyJubjub Point validity: ax^2 + y^2 == 1 + dx^2y^2 (in Goldilocks field)
     residuals.push(0n); // passes algebraically
 
     const elapsedMs = performance.now() - startTime;
@@ -536,7 +547,8 @@ class PasskeyCrypto {
       },
       durationMs: parseFloat(elapsedMs.toFixed(2)),
       limbs: limbs.map(l => l.toString(16)),
-      remainingBlocks: isExpired ? 0 : Number(delta)
+      remainingBlocks: isExpired ? 0 : Number(delta),
+      network: cert.network || "mainnet"
     };
   }
 

@@ -220,14 +220,31 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+function validatePoSWTarget(blockHashHex) {
+  if (!blockHashHex || typeof blockHashHex !== 'string') return false;
+  const cleanHash = blockHashHex.startsWith('0x') ? blockHashHex.slice(2) : blockHashHex;
+  const prefix = cleanHash.substring(0, 8);
+  const prefixNum = parseInt(prefix, 16);
+  if (isNaN(prefixNum)) return false;
+  return prefixNum <= 0x00050000;
+}
+
   if (req.method === 'POST' && req.url === '/p2p/broadcast') {
     let body = '';
     req.on('data', chunk => body += chunk);
     req.on('end', () => {
       try {
         const packet = JSON.parse(body);
-        mempool.push(packet);
         if (packet.type === 'PROOF_OF_SAMPLING_BLOCK' || packet.miner) {
+          // 1. Verify PoSW target difficulty on mined block submission
+          const blockHash = packet.hash || packet.poswHash;
+          if (!validatePoSWTarget(blockHash)) {
+            console.warn(`[PoSW Guard] Dropped block with invalid thermodynamic target: ${blockHash}`);
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: "ERR_INVALID_POSW_PROOF: Block hash does not satisfy thermodynamic target difficulty.", success: false }));
+            return;
+          }
+
           const clientIp = getClientIp(req);
           const now = Date.now();
           const existing = activeMinerIpSlots.get(clientIp);
@@ -255,8 +272,10 @@ const server = http.createServer((req, res) => {
             blockCount: (existing ? existing.blockCount : 0) + 1
           });
 
+          mempool.push(packet);
           console.log(`[P2P Relay] Block Mined: #${packet.height || blockHeight} by ${packet.miner} (${packet.subsidy || '100.0'} PCASH) [IP: ${clientIp}]`);
         } else {
+          mempool.push(packet);
           console.log(`[P2P Relay] Broadcast received: ${packet.amountPcash || packet.amount} PCASH -> ${packet.recipient} (txid: ${packet.txid})`);
         }
         res.writeHead(200, { 'Content-Type': 'application/json' });

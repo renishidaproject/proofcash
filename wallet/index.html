@@ -305,6 +305,44 @@
 
     <!-- Panel 1: Activity & Ledger -->
     <div id="panel-activity" class="tab-panel space-y-3">
+      <!-- Multi-Device Passkey Re-binding Banner -->
+      <div id="banner-rebind-passkey" class="hidden p-3.5 rounded-xl bg-gradient-to-r from-amber-950/60 via-gray-950 to-amber-950/30 border border-amber-500/40 text-xs space-y-2">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-start gap-2.5">
+            <span class="text-xl shrink-0">📱</span>
+            <div>
+              <div class="font-bold text-amber-300">New / Secondary Device Detected</div>
+              <p class="text-gray-400 text-[11px] mt-0.5">
+                This hardware enclave is not yet paired to this vault. Bind this device's TouchID, FaceID, or Windows Hello passkey to authorize local zero-knowledge spends securely.
+              </p>
+            </div>
+          </div>
+          <button id="btn-dismiss-rebind" class="text-gray-500 hover:text-gray-300 text-sm px-1.5 py-0.5 cursor-pointer" title="Dismiss">✕</button>
+        </div>
+        <div class="flex items-center gap-2 pt-0.5">
+          <button id="btn-rebind-passkey" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-amber-950">
+            <span>🔐</span> <span>Bind This Device's Enclave</span>
+          </button>
+          <span class="text-[10px] text-gray-500 font-mono">WebAuthn NIST P-256 (FIDO2)</span>
+        </div>
+      </div>
+
+      <!-- Offline Outbox Queue Banner -->
+      <div id="banner-outbox-queue" class="hidden p-3 rounded-xl bg-gradient-to-r from-cyan-950/50 via-gray-950 to-cyan-950/30 border border-cyan-500/40 text-xs space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="h-2 w-2 rounded-full bg-cyan-400 pulse-dot shrink-0"></span>
+            <span class="font-bold text-cyan-300">Offline Outbox (<span id="disp-outbox-count">0</span> Queued)</span>
+          </div>
+          <button id="btn-flush-outbox" class="px-2.5 py-1 rounded bg-cyan-900/60 hover:bg-cyan-800 text-cyan-200 border border-cyan-700/50 text-[11px] font-medium flex items-center gap-1 cursor-pointer transition-all">
+            <span>🔄</span> <span>Broadcast Outbox</span>
+          </button>
+        </div>
+        <div id="outbox-items-container" class="space-y-1.5 max-h-36 overflow-y-auto custom-scroll">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
       <!-- Biometric Hardware Enclave Security Bar -->
       <div id="bar-biometric-status" class="p-2.5 sm:p-3 rounded-xl bg-gray-950/80 border border-gray-900 flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 text-xs">
         <div class="flex items-center gap-2 min-w-0">
@@ -2005,6 +2043,53 @@
         }
       }
 
+      // Multi-Device Passkey Re-binding Banner Check
+      const bannerRebind = document.getElementById('banner-rebind-passkey');
+      if (bannerRebind) {
+        const isDismissed = sessionStorage.getItem('dismiss_rebind_banner') === 'true';
+        const isBound = wallet.isPasskeyBoundOnDevice();
+        if (!isBound && !isDismissed && state.address && (state.credentials || []).length > 0) {
+          bannerRebind.classList.remove('hidden');
+        } else {
+          bannerRebind.classList.add('hidden');
+        }
+      }
+
+      // Offline Outbox Queue Banner Update
+      const bannerOutbox = document.getElementById('banner-outbox-queue');
+      const outboxContainer = document.getElementById('outbox-items-container');
+      const dispOutboxCount = document.getElementById('disp-outbox-count');
+      if (bannerOutbox && outboxContainer && dispOutboxCount) {
+        const queue = state.outboxQueue || [];
+        dispOutboxCount.innerText = queue.length;
+        if (queue.length > 0) {
+          bannerOutbox.classList.remove('hidden');
+          outboxContainer.innerHTML = '';
+          queue.forEach(item => {
+            const qDiv = document.createElement('div');
+            qDiv.className = 'bg-gray-900/90 p-2 rounded-lg border border-gray-800 flex justify-between items-center text-[11px]';
+            const toAddr = item.packet?.recipient ? (item.packet.recipient.substring(0, 10) + '...') : 'Recipient';
+            const amt = item.packet?.amountPcash || '0.0000';
+            const attempts = item.attempts || 0;
+            qDiv.innerHTML = `
+              <div class="min-w-0 flex-1 mr-2">
+                <div class="font-mono text-white flex items-center gap-1.5">
+                  <span>📤</span> <span>${amt} PCASH &rarr; ${toAddr}</span>
+                </div>
+                <div class="text-[10px] text-gray-500 font-mono">Attempts: ${attempts} &bull; ID: ${item.id.substring(0, 12)}...</div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="window.retryOutboxTx('${item.id}')" class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800 hover:bg-cyan-900 text-[10px] font-mono cursor-pointer transition-all">Retry</button>
+                <button onclick="window.cancelOutboxTx('${item.id}')" class="px-2 py-0.5 rounded bg-red-950 text-red-300 border border-red-800 hover:bg-red-900 text-[10px] font-mono cursor-pointer transition-all">Cancel</button>
+              </div>
+            `;
+            outboxContainer.appendChild(qDiv);
+          });
+        } else {
+          bannerOutbox.classList.add('hidden');
+        }
+      }
+
       // Biometric Quick Status Pill
       const quickBioDot = document.getElementById('quick-bio-dot');
       const quickBioLabel = document.getElementById('quick-bio-label');
@@ -2096,6 +2181,38 @@
             badgeColor = 'text-cyan-400';
           }
 
+          const isCancelled = tx.status === 'CANCELLED';
+          const isQueued = (state.outboxQueue || []).some(o => o.id === tx.txid) || tx.status === 'QUEUED_OUTBOX';
+
+          // Confirmation Depth calculation
+          const currentHeight = state.currentBlockHeight || 0;
+          const txHeight = (tx.height !== undefined && tx.height !== null) ? Number(tx.height) : 0;
+          const confDepth = (currentHeight >= txHeight && txHeight > 0) ? (currentHeight - txHeight + 1) : 0;
+
+          let confBadge = '';
+          let statusActions = '';
+
+          if (isCancelled) {
+            confBadge = `<span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-gray-900 text-gray-500 border border-gray-800">Cancelled</span>`;
+          } else if (isQueued) {
+            confBadge = `<span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-950/70 text-amber-300 border border-amber-800/80">⏳ Outbox</span>`;
+            statusActions = `
+              <div class="flex items-center justify-end gap-1.5 mt-1">
+                <button onclick="window.retryOutboxTx('${tx.txid}')" class="text-[9px] text-cyan-400 hover:text-cyan-300 underline font-mono cursor-pointer">Retry</button>
+                <span class="text-gray-600 text-[9px]">&bull;</span>
+                <button onclick="window.cancelOutboxTx('${tx.txid}')" class="text-[9px] text-red-400 hover:text-red-300 underline font-mono cursor-pointer">Cancel</button>
+              </div>
+            `;
+          } else if (tx.type === 'ENCLAVE_DELEGATION' || tx.type === 'ACCOUNT_GENESIS') {
+            confBadge = `<span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-gray-900 text-gray-400 border border-gray-800">Local Auth</span>`;
+          } else if (confDepth >= 6) {
+            confBadge = `<span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-800/60" title="Finalized with ${confDepth} PoSW confirmations">✓ 6+ Confirmed</span>`;
+          } else if (confDepth > 0) {
+            confBadge = `<span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-cyan-950/70 text-cyan-300 border border-cyan-800/60 animate-pulse" title="${confDepth} of 6 confirmations required">${confDepth}/6 Confirming</span>`;
+          } else {
+            confBadge = `<span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-950/70 text-amber-300 border border-amber-800/60" title="Zero confirmations (mempool / propagating)">0/6 Pending</span>`;
+          }
+
           const cleanAmount = tx.amount ? tx.amount.toString().replace(/^[+-]/, '') : '';
           const sign = tx.type === 'SHIELDED_SPEND' ? '-' : '+';
 
@@ -2103,13 +2220,17 @@
             <div class="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
               <span class="text-base shrink-0">${icon}</span>
               <div class="min-w-0">
-                <div class="font-semibold text-white truncate text-xs">${title}</div>
-                <div class="text-[10px] text-gray-500 font-mono truncate">${sub}</div>
+                <div class="font-semibold text-white truncate text-xs ${isCancelled ? 'line-through text-gray-500' : ''}">${title}</div>
+                <div class="text-[10px] text-gray-500 font-mono truncate">${isCancelled ? 'Cancelled & Refunded' : sub}</div>
               </div>
             </div>
             <div class="text-right shrink-0">
-              <div class="font-mono font-bold text-xs ${badgeColor}">${tx.amount ? `${sign}${cleanAmount} PCASH` : 'AUTH'}</div>
-              <div class="text-[10px] text-gray-500">${new Date(tx.timestamp).toLocaleTimeString()}</div>
+              <div class="font-mono font-bold text-xs ${isCancelled ? 'line-through text-gray-600' : badgeColor}">${tx.amount ? `${sign}${cleanAmount} PCASH` : 'AUTH'}</div>
+              <div class="flex items-center justify-end gap-1 mt-0.5">
+                ${confBadge}
+                <span class="text-[10px] text-gray-500">${new Date(tx.timestamp).toLocaleTimeString()}</span>
+              </div>
+              ${statusActions}
             </div>
           `;
           feed.appendChild(item);
@@ -3724,6 +3845,50 @@
       }
 
 
+
+      // Outbox & Multi-Device Re-binding Handlers
+      window.retryOutboxTx = async (txid) => {
+        showToast("Broadcasting queued transaction...", "cyan");
+        const success = await wallet.retryOutboxItem(txid);
+        if (success) {
+          showToast("✓ Outbox transaction broadcast successfully!", "emerald");
+        } else {
+          showToast("Relay still unreachable. Retaining in Outbox.", "amber");
+        }
+      };
+
+      window.cancelOutboxTx = (txid) => {
+        const success = wallet.cancelOutboxItem(txid);
+        if (success) {
+          showToast("✓ Outbox transaction cancelled & balance refunded.", "gray");
+        }
+      };
+
+      document.getElementById('btn-rebind-passkey')?.addEventListener('click', async () => {
+        try {
+          showToast("Enrolling local device hardware enclave...", "cyan");
+          const label = `Hardware Enclave (${navigator.platform || 'Device'})`;
+          await wallet.registerPasskey(label);
+          showToast("✓ Local Hardware Enclave successfully bound!", "emerald");
+        } catch (err) {
+          showToast("Passkey Registration Failed: " + (err.message || err), "rose");
+        }
+      });
+
+      document.getElementById('btn-dismiss-rebind')?.addEventListener('click', () => {
+        sessionStorage.setItem('dismiss_rebind_banner', 'true');
+        document.getElementById('banner-rebind-passkey')?.classList.add('hidden');
+      });
+
+      document.getElementById('btn-flush-outbox')?.addEventListener('click', async () => {
+        showToast("Flushing offline outbox...", "cyan");
+        const count = await wallet.flushOutboxQueue();
+        if (count > 0) {
+          showToast(`✓ Flushed ${count} transactions from Outbox!`, "emerald");
+        } else {
+          showToast("No queued transactions broadcasted (Relay offline)", "amber");
+        }
+      });
 
       // Faucet Claim
       document.getElementById('btn-claim-faucet').addEventListener('click', () => {

@@ -7,7 +7,7 @@
 
 ## 1. Executive Summary
 
-In accordance with cypherpunk consensus traditions (established by Satoshi Nakamoto in the Bitcoin Genesis Block), ProofCash anchors its immutable Layer-1 state root to a verifiable real-world global event and mathematically proves **zero pre-mining**.
+In accordance with cypherpunk consensus traditions (established in the original 2009 Genesis Block), ProofCash anchors its immutable Layer-1 state root to a verifiable real-world global event and mathematically proves **zero pre-mining**.
 
 Every node running `proofcashd` independently verifies these exact parameters before accepting block proposals or gossiping peer transactions.
 

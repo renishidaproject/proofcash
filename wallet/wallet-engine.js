@@ -553,6 +553,113 @@ class ProofCashWalletEngine {
     return flushedCount;
   }
 
+  async retryOutboxItem(txid) {
+    if (!this.state.outboxQueue || this.state.outboxQueue.length === 0) return false;
+    const item = this.state.outboxQueue.find(i => i.id === txid);
+    if (!item) return false;
+
+    let broadcastSuccess = false;
+
+    // 1. WebSocket Relay Fast-Path
+    if (this.wsRelay && this.wsRelay.readyState === WebSocket.OPEN) {
+      try {
+        this.wsRelay.send(JSON.stringify({
+          type: "publish",
+          topic: this.getMeshTopic(),
+          payload: item.packet
+        }));
+        broadcastSuccess = true;
+      } catch (wsErr) {}
+    }
+
+    // 2. HTTP Edge Relay
+    if (!broadcastSuccess) {
+      try {
+        const httpBase = this.getRelayHttpUrl();
+        const res = await fetch(`${httpBase}/broadcast`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic: this.getMeshTopic(), packet: item.packet }),
+          signal: AbortSignal.timeout(3500)
+        });
+        if (res.ok) broadcastSuccess = true;
+      } catch (err) {}
+    }
+
+    // 3. Local P2P Relay
+    if (!broadcastSuccess) {
+      try {
+        const localRes = await fetch('http://127.0.0.1:8332/p2p/broadcast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(item.packet),
+          signal: AbortSignal.timeout(2000)
+        });
+        if (localRes.ok) broadcastSuccess = true;
+      } catch (localErr) {}
+    }
+
+    // 4. On-chain Node Broadcast
+    if (this.state.isNodeConnected && item.txEntry) {
+      this.broadcastTransaction(item.txEntry);
+    }
+
+    if (broadcastSuccess) {
+      this.state.outboxQueue = this.state.outboxQueue.filter(i => i.id !== txid);
+      const tx = (this.state.txHistory || []).find(t => t.txid === txid);
+      if (tx) tx.status = "CONFIRMED";
+      this.saveState();
+      this.notifySubscribers();
+      return true;
+    } else {
+      item.attempts = (item.attempts || 0) + 1;
+      this.saveState();
+      this.notifySubscribers();
+      return false;
+    }
+  }
+
+  cancelOutboxItem(txid) {
+    if (!this.state.outboxQueue || this.state.outboxQueue.length === 0) return false;
+    const itemIdx = this.state.outboxQueue.findIndex(i => i.id === txid);
+    if (itemIdx === -1) return false;
+    const item = this.state.outboxQueue[itemIdx];
+
+    // Remove from outbox
+    this.state.outboxQueue.splice(itemIdx, 1);
+
+    // Refund amount and fee to balance since the transaction was never broadcast
+    if (item.txEntry && item.txEntry.amount) {
+      try {
+        const refundPJ = this.pcashToPJ(item.txEntry.amount);
+        const feePJ = this.pcashToPJ(item.txEntry.fee || "0.0001");
+        this.state.balance_pJ += (refundPJ + feePJ);
+        this.syncActiveAccountBalance();
+      } catch (e) {
+        console.warn("[Outbox] Balance refund error:", e);
+      }
+    }
+
+    // Update transaction history item
+    const tx = (this.state.txHistory || []).find(t => t.txid === txid);
+    if (tx) {
+      tx.status = "CANCELLED";
+    }
+
+    this.saveState();
+    this.notifySubscribers();
+    return true;
+  }
+
+  isPasskeyBoundOnDevice() {
+    if (!this.state.credentials || this.state.credentials.length === 0) return false;
+    if (typeof localStorage !== 'undefined') {
+      const bound = localStorage.getItem(`proofcash_passkey_bound_${this.state.address}`);
+      return bound === 'true';
+    }
+    return true;
+  }
+
   handleIncomingP2pTransfer(packet) {
     if (!packet || !packet.txid || !packet.recipient) return false;
     if (packet.network && packet.network !== this.state.networkMode) return false; // Strict network isolation
@@ -772,19 +879,39 @@ class ProofCashWalletEngine {
     return recents.slice(0, 5);
   }
 
-  // --- Conversions ---
+  // --- Conversions (Exact BigInt Fixed-Point, Zero Floating-Point Loss) ---
 
-  formatPcash(pJ) {
-    const val = typeof pJ === 'bigint' ? pJ : BigInt(pJ || 0);
+  formatPcash(pJ, maxDecimals = 4) {
+    let val = typeof pJ === 'bigint' ? pJ : BigInt(pJ || 0);
+    const negative = val < 0n;
+    if (negative) val = -val;
     const whole = val / 1000000000000n;
     const frac = val % 1000000000000n;
-    const fracStr = frac.toString().padStart(12, '0').substring(0, 4);
-    return `${whole}.${fracStr}`;
+    const fracFull = frac.toString().padStart(12, '0');
+    const decDigits = Math.max(0, Math.min(12, maxDecimals));
+    const fracPart = decDigits > 0 ? fracFull.slice(0, decDigits) : '';
+    return (negative ? '-' : '') + (decDigits > 0 ? `${whole}.${fracPart}` : `${whole}`);
   }
 
   pcashToPJ(pcashStr) {
-    const num = parseFloat(pcashStr || "0");
-    return BigInt(Math.round(num * 1e12));
+    if (pcashStr === null || pcashStr === undefined) return 0n;
+    if (typeof pcashStr === 'bigint') return pcashStr;
+    const s = String(pcashStr).trim();
+    if (!s || s === '0') return 0n;
+
+    const isNegative = s.startsWith('-');
+    const clean = isNegative ? s.slice(1).trim() : s;
+    if (!/^\d+(\.\d+)?$/.test(clean)) {
+      throw new Error(`Invalid numeric amount format: "${pcashStr}"`);
+    }
+
+    const parts = clean.split('.');
+    const whole = BigInt(parts[0] || '0');
+    const fracStr = (parts[1] || '').padEnd(12, '0').slice(0, 12);
+    const frac = BigInt(fracStr);
+
+    const total_pJ = (whole * 1000000000000n) + frac;
+    return isNegative ? -total_pJ : total_pJ;
   }
 
   // --- Tier 1 & 2 Enclave Delegation Workflow ---
@@ -804,6 +931,9 @@ class ProofCashWalletEngine {
 
       this.state.credentials.push(credEntry);
       this.state.activeCredentialId = res.credentialId;
+      if (typeof localStorage !== 'undefined' && this.state.address) {
+        localStorage.setItem(`proofcash_passkey_bound_${this.state.address}`, 'true');
+      }
       this.saveState();
 
       // Automatically authorize an initial session key
@@ -826,11 +956,13 @@ class ProofCashWalletEngine {
 
     // Step B: Request Enclave Biometric Assertion to sign DelegationCertificate
     const targetExpiration = this.state.currentBlockHeight + validityBlocks;
+    const currentNetwork = this.state.networkMode || "mainnet";
     const delegation = await this.crypto.signDelegationCertificate(
       cred.id,
       cred.sec1PubkeyHex,
       sessionKey.publicPointBytes,
-      targetExpiration
+      targetExpiration,
+      currentNetwork
     );
 
     if (delegation.success) {
@@ -841,6 +973,7 @@ class ProofCashWalletEngine {
         derSignatureHex: delegation.derSignatureHex,
         parsedSig: delegation.parsedSig,
         method: delegation.method,
+        network: delegation.network || currentNetwork,
         createdAt: Date.now()
       };
 
@@ -865,14 +998,52 @@ class ProofCashWalletEngine {
     if (!this.state.activeSessionKey || !this.state.activeDelegation) return false;
     const hasSecret = Boolean(this.state.activeSessionKey.secretScalarBytes || this.state.activeSessionKey.secretScalarHex);
     if (!hasSecret) return false;
+    // Cross-Network Replay Protection: Delegation must match current active network mode
+    const currentNetwork = (this.state.networkMode || "mainnet").toLowerCase();
+    const certNetwork = (this.state.activeDelegation.network || "mainnet").toLowerCase();
+    if (currentNetwork !== certNetwork) return false;
     return this.state.currentBlockHeight < this.state.activeDelegation.expirationHeight;
   }
 
   // --- Shielded Payment & Real-Time Transfer Reflection ---
 
   async sendShieldedPayment(recipient, amountPcash, memo = "", feePcash = "0.0001") {
+    // 1. Strict Recipient Address Format Validation
+    const cleanRecipient = (recipient || "").trim();
+    const addrCheck = this.validateAddressFormat(cleanRecipient);
+    if (!addrCheck.valid) {
+      throw new Error(`Invalid recipient address: ${addrCheck.error}`);
+    }
+
+    // 2. Exact BigInt Amount & Positive Non-Zero Validation
     const amount_pJ = this.pcashToPJ(amountPcash);
+    if (amount_pJ <= 0n) {
+      throw new Error("Invalid payment amount: Transfer amount must be strictly greater than zero.");
+    }
+
+    // 3. Minimum Network Fee Validation (Min 0.0001 PCASH = 10^8 pJ)
     const fee_pJ = this.pcashToPJ(feePcash || "0.0001");
+    if (fee_pJ < 100000000n) {
+      throw new Error("Invalid transaction fee: Minimum network fee is 0.0001 PCASH (100,000,000 pJ).");
+    }
+
+    // 4. Guarded Mainnet Tier-1 Protocol Caps (Stage 2 Beta Roadmap Invariant)
+    if (this.state.networkMode === 'mainnet') {
+      const MAX_MAINNET_TX_CAP_PJ = 50n * 1000000000000n; // 50.0 PCASH
+      if (amount_pJ > MAX_MAINNET_TX_CAP_PJ) {
+        throw new Error(`ERR_GUARDED_CAP_EXCEEDED: Mainnet Beta enforces a maximum per-transaction limit of 50.0 PCASH to prevent systemic risk during Stage 2 bootstrap. Attempted: ${amountPcash} PCASH.`);
+      }
+
+      // Check recipient vault cap if recipient is an internal account on same device
+      const targetAccIdx = this.state.accounts.findIndex(a => a.address.toLowerCase() === cleanRecipient.toLowerCase());
+      if (targetAccIdx !== -1) {
+        const curTargetBal = BigInt(this.state.accounts[targetAccIdx].balance_pJ || "0");
+        const MAX_VAULT_CAP_PJ = 500n * 1000000000000n; // 500.0 PCASH
+        if (curTargetBal + amount_pJ > MAX_VAULT_CAP_PJ) {
+          throw new Error("ERR_GUARDED_CAP_EXCEEDED: Recipient vault balance would exceed the Mainnet Beta cap of 500.0 PCASH.");
+        }
+      }
+    }
 
     if (this.state.balance_pJ < amount_pJ + fee_pJ) {
       throw new Error(`Insufficient funds: Balance is ${this.formatPcash(this.state.balance_pJ)} PCASH, requested ${amountPcash} PCASH + fee (${feePcash || "0.0001"} PCASH)`);
@@ -883,16 +1054,20 @@ class ProofCashWalletEngine {
       await this.authorizeSessionKey(144);
     }
 
-    // 1. Generate Spend Transaction hash
+    // 5. Generate Spend Transaction hash
     const txNonce = crypto.getRandomValues(new Uint8Array(16));
-    const txPayload = `ProofCash_Spend:${recipient}:${amount_pJ}:${PasskeyCrypto.bufferToHex(txNonce)}`;
+    const txPayload = `ProofCash_Spend:${cleanRecipient}:${amount_pJ}:${PasskeyCrypto.bufferToHex(txNonce)}`;
     const txHash = PasskeyCrypto.bufferToHex(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(txPayload))));
 
-    // 2. Client-side ZK AIR constraint evaluation (< 1,850 constraints)
+    // 6. Client-side ZK AIR constraint evaluation (< 1,850 constraints) with Cross-Network verification
     const airResult = this.crypto.evaluateDelegationAirConstraints(
       this.state.activeDelegation,
-      this.state.currentBlockHeight
+      this.state.currentBlockHeight,
+      this.state.networkMode || "mainnet"
     );
+    if (!airResult.passed) {
+      throw new Error("ZK Constraint Failure: Enclave delegation certificate is invalid or expired for current network.");
+    }
 
     // 3. Sign with BabyJubjub Ephemeral Session Key (< 45 ms)
     let sigResult;
@@ -1111,6 +1286,14 @@ class ProofCashWalletEngine {
 
     if (amount_pJ <= 0n) {
       throw new Error("Invalid voucher: Transfer amount must be positive.");
+    }
+
+    // Guarded Mainnet Tier-1 Protocol Caps: 500.0 PCASH maximum vault balance
+    if (this.state.networkMode === 'mainnet') {
+      const MAX_VAULT_CAP_PJ = 500n * 1000000000000n; // 500.0 PCASH
+      if (this.state.balance_pJ + amount_pJ > MAX_VAULT_CAP_PJ) {
+        throw new Error("ERR_GUARDED_CAP_EXCEEDED: Redeeming this voucher would cause active vault balance to exceed the Mainnet Beta cap of 500.0 PCASH.");
+      }
     }
 
     // Credit active account balance
@@ -1714,6 +1897,11 @@ class ProofCashWalletEngine {
       }
     }
 
+    // Reset device enclave binding for newly restored device
+    if (typeof localStorage !== 'undefined' && this.state.address) {
+      localStorage.removeItem('proofcash_passkey_bound_' + this.state.address);
+    }
+
     this.saveState();
     this.notifySubscribers();
 
@@ -1776,6 +1964,9 @@ class ProofCashWalletEngine {
       }
     ];
 
+    if (typeof localStorage !== 'undefined' && this.state.address) {
+      localStorage.removeItem('proofcash_passkey_bound_' + this.state.address);
+    }
     this.saveState();
     this.notifySubscribers();
 
@@ -1829,6 +2020,9 @@ class ProofCashWalletEngine {
       }
     ];
 
+    if (typeof localStorage !== 'undefined' && this.state.address) {
+      localStorage.removeItem('proofcash_passkey_bound_' + this.state.address);
+    }
     this.saveState();
     this.notifySubscribers();
 

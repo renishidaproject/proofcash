@@ -10,6 +10,7 @@
 const sockets = new Map(); // ws -> Set of topics
 const topicSubscribers = new Map(); // topic -> Set of ws
 const messageBacklog = []; // Circular buffer of last 50 transactions for catching up
+const MAX_PAYLOAD_BYTES = 65536; // Strict 64 KB DoS / Flood protection cap
 
 export default {
   async fetch(request, env, ctx) {
@@ -34,6 +35,7 @@ export default {
         version: '1.0.0',
         activeSockets: sockets.size,
         activeTopics: topicSubscribers.size,
+        maxPayloadBytes: MAX_PAYLOAD_BYTES,
         timestamp: Date.now()
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -45,8 +47,26 @@ export default {
       if (request.method !== 'POST') {
         return new Response('Method Not Allowed', { status: 405, headers: corsHeaders });
       }
+
+      // Check Content-Length header fast-path
+      const contentLength = request.headers.get('content-length');
+      if (contentLength && parseInt(contentLength, 10) > MAX_PAYLOAD_BYTES) {
+        return new Response(JSON.stringify({ error: 'Payload Too Large: Maximum allowed packet size is 64 KB' }), {
+          status: 413,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
       try {
-        const body = await request.json();
+        const rawBody = await request.text();
+        if (rawBody.length > MAX_PAYLOAD_BYTES) {
+          return new Response(JSON.stringify({ error: 'Payload Too Large: Maximum allowed packet size is 64 KB' }), {
+            status: 413,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const body = JSON.parse(rawBody);
         const topic = body.topic || 'proofcash_settlement_mesh_v1';
         const packet = body.packet || body;
 
@@ -124,6 +144,17 @@ function handleSession(server, url) {
 
   server.addEventListener('message', (event) => {
     try {
+      // 64 KB Payload Limit Guard
+      if (typeof event.data === 'string' && event.data.length > MAX_PAYLOAD_BYTES) {
+        try {
+          server.send(JSON.stringify({ event: 'error', error: 'Payload Too Large: Maximum allowed message size is 64 KB' }));
+        } catch (e) {}
+        return;
+      }
+      if (event.data instanceof ArrayBuffer && event.data.byteLength > MAX_PAYLOAD_BYTES) {
+        return;
+      }
+
       const msg = JSON.parse(event.data);
 
       if (msg.type === 'subscribe' && msg.topic) {
