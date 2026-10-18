@@ -1093,20 +1093,32 @@
           <label class="font-semibold text-gray-300">Set Backup Passphrase (min 6 chars):</label>
           <input type="password" id="input-export-passphrase" placeholder="Choose a secure passphrase..." class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500">
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <button id="btn-export-download" class="py-2.5 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer">
-            <span>💾</span> <span>Download File</span>
-          </button>
-          <button id="btn-export-cloud" class="py-2.5 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer" title="Save encrypted backup to Google Drive, Gmail, or Apple iCloud">
-            <span class="flex items-center gap-1.5">
-              <svg class="w-3.5 h-3.5 fill-current inline-block shrink-0" viewBox="0 0 170 170" aria-label="Apple"><path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.7-3.04-7.58-7.71-11.65-14-4.7-7.27-8.39-15.47-11.08-24.6-2.69-9.13-4.04-17.75-4.04-25.86 0-14.24 3.73-25.77 11.2-34.58 7.47-8.81 16.79-13.3 27.96-13.48 4.79 0 10.15 1.34 16.08 4.02 5.93 2.68 9.77 4.07 11.53 4.18 1.48 0 5.48-1.5 12.01-4.49 6.53-2.99 12.18-4.31 16.94-3.97 12.63.88 22.58 5.76 29.85 14.64-10.84 6.57-16.14 15.68-15.9 27.34.25 9.4 3.94 17.29 11.07 23.68 7.13 6.39 15.64 9.99 25.53 10.8-2.31 7.27-5.21 14.78-8.7 22.53zM119.22 31.06c0-7.39 2.66-14.18 7.98-20.37 5.32-6.19 11.83-9.98 19.53-11.37.13 1.13.19 2.12.19 2.97 0 7.39-2.79 14.37-8.37 20.94-5.58 6.57-12.28 10.28-20.1 11.13-.13-.88-.23-1.98-.3-3.3-.64.07-.93 0-.93 0z"/></svg>
-              <svg class="w-3.5 h-3.5 inline-block shrink-0" viewBox="0 0 24 24" aria-label="Gmail"><path fill="#EA4335" d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-            </span>
-            <span>Cloud &amp; Email</span>
-          </button>
-          <button id="btn-export-copy" class="py-2.5 px-3 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer" title="Copy encrypted keystore JSON to clipboard">
-            <span>📋</span> <span>Copy JSON</span>
-          </button>
+        <div class="space-y-2">
+          <!-- Primary Cloud & Email Actions -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button id="btn-export-cloud" class="py-2.5 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm" title="Choose Google Drive, iCloud, or custom sync folder directly">
+              <svg class="w-4 h-4 fill-current inline-block shrink-0" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z"/></svg>
+              <span>Save to Cloud Folder</span>
+            </button>
+            <button id="btn-export-gmail" class="py-2.5 px-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm" title="Open a pre-filled cloud draft in Gmail">
+              <svg class="w-4 h-4 inline-block shrink-0" viewBox="0 0 24 24"><path fill="#ffffff" d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              <span>Email to Gmail (Cloud Draft)</span>
+            </button>
+          </div>
+
+          <!-- Secondary Local & Clipboard Actions -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <button id="btn-export-mail" class="py-2 px-3 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-800 text-gray-200 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer" title="Send encrypted backup via Apple Mail or default mail app">
+              <svg class="w-3.5 h-3.5 fill-current inline-block shrink-0" viewBox="0 0 170 170"><path d="M150.37 130.25c-2.45 5.66-5.35 10.87-8.71 15.66-4.58 6.53-8.33 11.05-11.22 13.56-4.48 4.12-9.28 6.23-14.42 6.35-3.69 0-8.14-1.05-13.32-3.18-5.19-2.12-9.97-3.17-14.34-3.17-4.58 0-9.49 1.05-14.75 3.17-5.26 2.13-9.5 3.24-12.74 3.35-4.35.13-9.16-1.9-14.42-6.08-3.7-3.04-7.58-7.71-11.65-14-4.7-7.27-8.39-15.47-11.08-24.6-2.69-9.13-4.04-17.75-4.04-25.86 0-14.24 3.73-25.77 11.2-34.58 7.47-8.81 16.79-13.3 27.96-13.48 4.79 0 10.15 1.34 16.08 4.02 5.93 2.68 9.77 4.07 11.53 4.18 1.48 0 5.48-1.5 12.01-4.49 6.53-2.99 12.18-4.31 16.94-3.97 12.63.88 22.58 5.76 29.85 14.64-10.84 6.57-16.14 15.68-15.9 27.34.25 9.4 3.94 17.29 11.07 23.68 7.13 6.39 15.64 9.99 25.53 10.8-2.31 7.27-5.21 14.78-8.7 22.53zM119.22 31.06c0-7.39 2.66-14.18 7.98-20.37 5.32-6.19 11.83-9.98 19.53-11.37.13 1.13.19 2.12.19 2.97 0 7.39-2.79 14.37-8.37 20.94-5.58 6.57-12.28 10.28-20.1 11.13-.13-.88-.23-1.98-.3-3.3-.64.07-.93 0-.93 0z"/></svg>
+              <span>Apple / System Mail</span>
+            </button>
+            <button id="btn-export-download" class="py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+              <span>💾</span> <span>Download File</span>
+            </button>
+            <button id="btn-export-copy" class="py-2 px-3 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-800 text-gray-200 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer" title="Copy encrypted keystore JSON to clipboard">
+              <span>📋</span> <span>Copy JSON</span>
+            </button>
+          </div>
         </div>
 
         <!-- Cloud Storage Safety Recommendation -->
@@ -2952,7 +2964,25 @@
         });
       }
 
-      // Cloud & Email backup share (Google Drive / Gmail / Apple iCloud)
+      // Helper: Format human-readable email draft with encrypted keystore payload
+      function buildBackupEmailDraft(envelopeJson, address) {
+        const subject = `ProofCash Encrypted Keystore Backup — ${address ? address.substring(0, 10) : 'Vault'}`;
+        const body = `=== PROOFCASH CRYPTOGRAPHICALLY ENCRYPTED VAULT BACKUP ===\n` +
+          `Date: ${new Date().toUTCString()}\n` +
+          `Primary Address: ${address || 'Shielded Vault'}\n` +
+          `Cipher: AES-256-GCM (100,000 PBKDF2 Rounds)\n\n` +
+          `IMPORTANT: Keep this email safe. Your backup cannot be decrypted without your secret passphrase.\n\n` +
+          `--- BEGIN ENCRYPTED KEYSTORE JSON ---\n` +
+          envelopeJson + `\n` +
+          `--- END ENCRYPTED KEYSTORE JSON ---\n\n` +
+          `=== HOW TO RESTORE THIS WALLET ===\n` +
+          `1. Open ProofCash (https://proofcash.org or local node)\n` +
+          `2. Go to Backup & Recovery -> Restore\n` +
+          `3. Select "Keystore File", paste or upload the JSON above, and enter your passphrase.`;
+        return { subject, body };
+      }
+
+      // 1. Cloud Folder Save (Google Drive / iCloud / Local File System Access API)
       const btnExportCloud = document.getElementById('btn-export-cloud');
       if (btnExportCloud) {
         btnExportCloud.addEventListener('click', async () => {
@@ -2961,31 +2991,52 @@
           try {
             const envelopeJson = await wallet.exportEncryptedBackup(pass);
             const fileName = `proofcash-backup-${(wallet.state.address || 'vault').substring(0, 10)}-${Date.now()}.json`;
-            const file = new File([envelopeJson], fileName, { type: 'application/json' });
 
-            let sharedNatively = false;
+            // Modern Desktop (Windows/macOS/Linux): File System Access API lets user select their synced Google Drive or iCloud folder
+            if (typeof window.showSaveFilePicker === 'function') {
+              try {
+                const handle = await window.showSaveFilePicker({
+                  suggestedName: fileName,
+                  types: [{
+                    description: 'ProofCash Encrypted Keystore (*.json)',
+                    accept: { 'application/json': ['.json'] }
+                  }]
+                });
+                const writable = await handle.createWritable();
+                await writable.write(envelopeJson);
+                await writable.close();
+                if (statusEl) {
+                  statusEl.innerHTML = "✓ <strong>File saved successfully!</strong><br>If saved to your synchronized <strong>Google Drive</strong> or <strong>iCloud Drive</strong> folder, it is now safely backed up in the cloud.";
+                  statusEl.classList.remove('hidden');
+                }
+                showToast("✓ Keystore Saved to Chosen Folder!", 'cyan');
+                return;
+              } catch (pickerErr) {
+                if (pickerErr.name === 'AbortError') return; // User cancelled file dialog
+              }
+            }
+
+            // Mobile devices (iOS/Android): Hand over to native OS share sheet (Google Drive, Files/iCloud, AirDrop)
+            const file = new File([envelopeJson], fileName, { type: 'application/json' });
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
               try {
                 await navigator.share({
                   title: 'ProofCash Encrypted Vault Keystore',
-                  text: 'Save this encrypted ProofCash vault backup to Google Drive, Gmail, or Apple iCloud Drive.',
+                  text: 'Save this encrypted ProofCash vault backup to Google Drive or Apple iCloud Drive.',
                   files: [file]
                 });
-                sharedNatively = true;
-                showToast("✓ Shared to Cloud / Email!", 'cyan');
+                showToast("✓ Shared to Cloud Storage!", 'cyan');
                 if (statusEl) {
-                  statusEl.innerHTML = "✓ Handed over to system share. Select <strong>Google Drive</strong>, <strong>Gmail</strong>, or <strong>iCloud Drive</strong> in the options.";
+                  statusEl.innerHTML = "✓ Handed over to system share. Select <strong>Google Drive</strong> or <strong>iCloud Drive</strong> in the options.";
                   statusEl.classList.remove('hidden');
                 }
                 return;
               } catch (shareErr) {
-                // If user deliberately cancelled the share picker dialog
                 if (shareErr.name === 'AbortError') return;
-                // Otherwise (e.g. Windows Chrome DOMException Permission denied), gracefully fall through to direct file download
               }
             }
 
-            // Fallback: Trigger direct file download and provide clear instructions for Google Drive / iCloud Drive / Gmail
+            // Standard browser download fallback
             const blob = new Blob([envelopeJson], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -2994,10 +3045,58 @@
             a.click();
             URL.revokeObjectURL(url);
             if (statusEl) {
-              statusEl.innerHTML = "✓ <strong>Keystore file saved!</strong><br>To backup to cloud or email: Move <code class='text-white font-bold'>" + fileName + "</code> into your <strong>Google Drive</strong>, <strong>Apple iCloud Drive</strong>, or email it to yourself via <strong>Gmail</strong> for safe keeping.";
+              statusEl.innerHTML = "✓ <strong>Keystore file saved!</strong><br>To store in cloud: Move <code class='text-white font-bold'>" + fileName + "</code> into your <strong>Google Drive</strong> or <strong>Apple iCloud Drive</strong> folder.";
               statusEl.classList.remove('hidden');
             }
-            showToast("✓ Keystore Downloaded: Save to Drive/iCloud/Gmail", 'cyan');
+            showToast("✓ Keystore Downloaded: Save to Drive/iCloud", 'cyan');
+          } catch (err) {
+            alert(err.message);
+          }
+        });
+      }
+
+      // 2. Email to Gmail (Direct Google Cloud Draft)
+      const btnExportGmail = document.getElementById('btn-export-gmail');
+      if (btnExportGmail) {
+        btnExportGmail.addEventListener('click', async () => {
+          const pass = document.getElementById('input-export-passphrase').value;
+          const statusEl = document.getElementById('export-status-msg');
+          try {
+            const envelopeJson = await wallet.exportEncryptedBackup(pass);
+            const draft = buildBackupEmailDraft(envelopeJson, wallet.state.address);
+            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&tf=1&su=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`;
+
+            window.open(gmailUrl, '_blank');
+
+            if (statusEl) {
+              statusEl.innerHTML = "✓ <strong>Gmail compose opened in a new tab!</strong><br>Google automatically saves this draft to your <strong>Google Cloud</strong> storage. You can also type your own email in 'To' and click <strong>Send</strong> for a permanent backup in your Gmail inbox.";
+              statusEl.classList.remove('hidden');
+            }
+            showToast("✓ Gmail Cloud Draft Opened!", 'emerald');
+          } catch (err) {
+            alert(err.message);
+          }
+        });
+      }
+
+      // 3. Apple Mail / Default System Mail
+      const btnExportMail = document.getElementById('btn-export-mail');
+      if (btnExportMail) {
+        btnExportMail.addEventListener('click', async () => {
+          const pass = document.getElementById('input-export-passphrase').value;
+          const statusEl = document.getElementById('export-status-msg');
+          try {
+            const envelopeJson = await wallet.exportEncryptedBackup(pass);
+            const draft = buildBackupEmailDraft(envelopeJson, wallet.state.address);
+            const mailtoUrl = `mailto:?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`;
+
+            window.location.href = mailtoUrl;
+
+            if (statusEl) {
+              statusEl.innerHTML = "✓ <strong>Mail client opened!</strong><br>Send this email to yourself to store your encrypted keystore in your <strong>iCloud Mail</strong> or default mail provider.";
+              statusEl.classList.remove('hidden');
+            }
+            showToast("✓ Opened Mail App!", 'cyan');
           } catch (err) {
             alert(err.message);
           }
