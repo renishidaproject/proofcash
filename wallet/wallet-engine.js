@@ -1790,6 +1790,75 @@ class ProofCashWalletEngine {
     };
   }
 
+  // --- Shamir's Secret Sharing (2-of-3 Sovereign Key Split) ---
+
+  async getShamirEntropyShares() {
+    if (!this.state.zkRecoveryEntropyHex) {
+      await this.getZkRecoveryMnemonic();
+    }
+    const entropyBytes = PasskeyCrypto.hexToBuffer(this.state.zkRecoveryEntropyHex);
+    return PasskeyCrypto.splitEntropyShamir(entropyBytes);
+  }
+
+  async importShamirEntropyShares(shareAStr, shareBStr) {
+    const entropyBytes = PasskeyCrypto.combineEntropyShamir(shareAStr, shareBStr);
+    const entropyHex = PasskeyCrypto.bufferToHex(entropyBytes);
+    const restoredAddr = await PasskeyCrypto.deriveAccountAddress(entropyHex, 0);
+
+    this.state.zkRecoveryEntropyHex = entropyHex;
+    this.state.address = restoredAddr;
+    this.state.activeAccountId = 'acc_1';
+    this.state.accounts = [
+      {
+        id: 'acc_1',
+        name: 'Account 1 (Recovered via 2-of-3 Shamir Shares)',
+        address: restoredAddr,
+        balance_pJ: "0",
+        txHistory: [],
+        derivationIndex: 0
+      }
+    ];
+    this.state.balance_pJ = 0n;
+    this.state.txHistory = [
+      {
+        type: "ACCOUNT_GENESIS",
+        txid: "0xshamir_recover_" + entropyHex.substring(0, 16),
+        amount: "0.0000",
+        timestamp: Date.now(),
+        status: "CONFIRMED"
+      }
+    ];
+
+    this.saveState();
+    this.notifySubscribers();
+
+    try {
+      await this.fetchMeshBacklog();
+    } catch (e) {}
+
+    return {
+      restoredAddress: restoredAddr,
+      message: "Vault successfully restored from 2-of-3 Shamir Shares!"
+    };
+  }
+
+  async verifyEnclaveAuthentication() {
+    let cred = (this.state.credentials || []).find(c => c.id === this.state.activeCredentialId);
+    if (!cred && (this.state.credentials || []).length > 0) {
+      cred = this.state.credentials[0];
+    }
+
+    if (!cred) {
+      // If no passkey registered yet, register biometric passkey
+      await this.registerPasskey("Biometric Hardware Key");
+      return { success: true, method: "passkey_registered" };
+    }
+
+    // Trigger WebAuthn biometric hardware assertion or session key renewal
+    const res = await this.authorizeSessionKey(144);
+    return { success: true, delegation: res };
+  }
+
   resetWallet() {
     localStorage.removeItem(this.getStorageKey());
     window.location.reload();

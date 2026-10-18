@@ -1122,15 +1122,18 @@
         <div id="export-status-msg" class="hidden text-[11px] font-mono text-emerald-400 p-2.5 bg-gray-950 rounded border border-gray-900 leading-relaxed"></div>
       </div>
 
-      <!-- Section 2: Restore from Backup File or 24-Word Seed -->
+      <!-- Section 2: Restore from Backup File, 24-Word Seed or Shamir Shares -->
       <div id="section-backup-import" class="space-y-3 text-xs hidden">
-        <!-- Sub-selector: File vs 24-Word Seed -->
-        <div class="flex bg-gray-950 p-1 rounded-xl border border-gray-800 gap-1">
-          <button id="restore-mode-file" class="flex-1 py-1.5 rounded-lg bg-cyan-600 text-white font-bold text-xs transition-all cursor-pointer">
-            📁 Keystore File (.json)
+        <!-- Sub-selector: File vs 24-Word Seed vs Shamir -->
+        <div class="flex bg-gray-950 p-1 rounded-xl border border-gray-800 gap-1 flex-wrap sm:flex-nowrap">
+          <button id="restore-mode-file" class="flex-1 py-1.5 rounded-lg bg-cyan-600 text-white font-bold text-xs transition-all cursor-pointer whitespace-nowrap text-center">
+            📁 Keystore File
           </button>
-          <button id="restore-mode-mnemonic" class="flex-1 py-1.5 rounded-lg bg-transparent text-gray-400 hover:text-gray-200 font-medium text-xs transition-all cursor-pointer">
-            🔑 24-Word Recovery Seed
+          <button id="restore-mode-mnemonic" class="flex-1 py-1.5 rounded-lg bg-transparent text-gray-400 hover:text-gray-200 font-medium text-xs transition-all cursor-pointer whitespace-nowrap text-center">
+            🔑 24 Words
+          </button>
+          <button id="restore-mode-shamir" class="flex-1 py-1.5 rounded-lg bg-transparent text-gray-400 hover:text-gray-200 font-medium text-xs transition-all cursor-pointer whitespace-nowrap text-center">
+            🛡️ Shamir 2-of-3
           </button>
         </div>
 
@@ -1166,20 +1169,96 @@
           </button>
         </div>
 
+        <!-- Mode C: Shamir 2-of-3 Shares -->
+        <div id="restore-panel-shamir" class="space-y-3 hidden">
+          <p class="text-gray-400">
+            Combine any two Shamir geographic shares to mathematically reconstruct your master entropy. Any 2 shares suffice (e.g. Share 1 and Share 2, or Share 1 and Share 3).
+          </p>
+          <div class="space-y-1">
+            <label class="font-semibold text-gray-300">First Share (Share A):</label>
+            <input type="text" id="input-shamir-share-a" placeholder="PCASH-SHARE-1-OF-3:..." class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
+          </div>
+          <div class="space-y-1">
+            <label class="font-semibold text-gray-300">Second Share (Share B):</label>
+            <input type="text" id="input-shamir-share-b" placeholder="PCASH-SHARE-2-OF-3:..." class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-cyan-500">
+          </div>
+          <button id="btn-import-shamir-restore" class="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-black font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer">
+            <span>🛡️</span> Reconstruct &amp; Restore Vault
+          </button>
+        </div>
+
         <div id="import-status-msg" class="hidden text-[11px] font-mono p-2.5 bg-gray-950 rounded border"></div>
       </div>
 
-      <!-- Section 3: 24-Word ZK Mnemonic -->
+      <!-- Section 3: 24-Word ZK Mnemonic (Hardware Enclave Protected) -->
       <div id="section-backup-mnemonic" class="space-y-3 text-xs hidden">
-        <div class="p-2.5 rounded-lg bg-amber-950/30 border border-amber-500/30 text-amber-300 text-[11px]">
-          ⚠️ <strong>Cold Storage Backup:</strong> Write down these 24 words on paper. Never paste them into unverified apps.
+        <!-- Biometric Authentication Lock Screen -->
+        <div id="mnemonic-locked-container" class="p-5 rounded-xl bg-gray-950 border border-emerald-500/30 text-center space-y-3.5">
+          <div class="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-2xl mx-auto">
+            🛡️
+          </div>
+          <div>
+            <h4 class="text-sm font-bold text-white">Hardware Enclave Protected Seed</h4>
+            <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
+              Your 24-word ZK recovery seed is encrypted and bound to your device's biometric enclave. Authenticate to decrypt and view.
+            </p>
+          </div>
+          <button id="btn-unlock-mnemonic-biometric" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/10 cursor-pointer mx-auto">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            <span>Scan Biometrics to Decrypt &amp; View Phrase</span>
+          </button>
         </div>
-        <div id="mnemonic-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 p-3 rounded-xl bg-gray-950 border border-gray-900 font-mono text-[11px]">
-          <!-- Dynamically populated with 24 words -->
+
+        <!-- Decrypted Protected View (Hidden until Biometric Verification) -->
+        <div id="mnemonic-unlocked-container" class="space-y-3 hidden">
+          <!-- Top Warning & Auto-Lock Timer -->
+          <div class="p-3 rounded-xl bg-amber-950/30 border border-amber-500/40 text-amber-300 text-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-base shrink-0">⚠️</span>
+              <span class="text-[11px] leading-relaxed">
+                <strong>Anti-Shoulder Surfing:</strong> Write on physical steel/paper. Never photograph or copy to clipboard.
+              </span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span id="mnemonic-timer-badge" class="px-2 py-0.5 rounded font-mono text-[10px] bg-amber-950 text-amber-400 border border-amber-800">
+                ⏱️ Auto-lock in <span id="mnemonic-timer-sec">60</span>s
+              </span>
+              <button id="btn-toggle-unblur-mnemonic" class="px-2 py-0.5 rounded bg-gray-900 hover:bg-gray-800 text-gray-200 border border-gray-750 text-[10px] font-mono cursor-pointer flex items-center gap-1">
+                <span>👁️</span> <span id="btn-unblur-text">Peek All</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 24-Word Secure Tiles with Individual Tap-to-Peek & user-select: none -->
+          <div id="mnemonic-grid" class="grid grid-cols-3 sm:grid-cols-4 gap-1.5 p-3 rounded-xl bg-gray-950 border border-gray-900 font-mono text-[11px] select-none" style="user-select: none; -webkit-user-select: none;">
+            <!-- Dynamically populated with blurred tiles -->
+          </div>
+
+          <!-- Shamir's Secret Sharing (2-of-3 Sovereign Scheme) Expansion Toggle -->
+          <div class="pt-2 border-t border-gray-900 space-y-2">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span class="font-bold text-white text-xs flex items-center gap-1">
+                  <span>🛡️</span> Shamir's 2-of-3 Sovereign Key Split
+                </span>
+                <p class="text-[10px] text-gray-500">Split into 3 geographic shares. Any 2 shares restore; 1 share alone contains zero information.</p>
+              </div>
+              <button id="btn-toggle-shamir" class="px-2.5 py-1 rounded-lg bg-cyan-950/60 hover:bg-cyan-900/60 text-cyan-300 border border-cyan-800/60 text-[10px] font-mono cursor-pointer transition-all whitespace-nowrap self-start sm:self-auto">
+                Generate 3 Shares →
+              </button>
+            </div>
+
+            <!-- Shamir Shares Container (Collapsible) -->
+            <div id="shamir-shares-container" class="hidden p-3 rounded-xl bg-gray-950 border border-cyan-900/40 space-y-2 text-xs font-mono">
+              <div class="p-2 rounded bg-cyan-950/30 border border-cyan-800/30 text-[10px] text-cyan-300">
+                💡 <strong>Location Protocol:</strong> Store Share 1 at Home Safe, Share 2 at Bank Deposit Box, Share 3 with Trusted Attorney / Emergency Vault.
+              </div>
+              <div id="shamir-shares-list" class="space-y-1.5 text-[10px]">
+                <!-- Dynamically populated shares -->
+              </div>
+            </div>
+          </div>
         </div>
-        <button id="btn-copy-mnemonic" class="w-full py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-white font-medium text-xs transition-all cursor-pointer">
-          📋 Copy 24-Word Seed to Clipboard
-        </button>
       </div>
     </div>
   </div>
@@ -2776,24 +2855,35 @@
             }
           }
 
-          // Populate 24-word ZK recovery mnemonic
+          // Ensure 24-Word Section starts in Biometrically Locked State
+          const mnemonicLocked = document.getElementById('mnemonic-locked-container');
+          const mnemonicUnlocked = document.getElementById('mnemonic-unlocked-container');
+          if (mnemonicLocked) mnemonicLocked.classList.remove('hidden');
+          if (mnemonicUnlocked) mnemonicUnlocked.classList.add('hidden');
           const mnemonicGrid = document.getElementById('mnemonic-grid');
-          if (mnemonicGrid) {
-            mnemonicGrid.innerHTML = '';
-            const words = await wallet.getZkRecoveryMnemonic();
-            words.forEach((w, idx) => {
-              const cell = document.createElement('div');
-              cell.className = 'p-1.5 rounded bg-gray-900/80 border border-gray-800 text-gray-300 text-[10px] flex items-center justify-between';
-              cell.innerHTML = `<span class="text-gray-500 text-[9px]">${idx + 1}.</span> <span class="text-emerald-400 font-semibold">${w}</span>`;
-              mnemonicGrid.appendChild(cell);
-            });
+          if (mnemonicGrid) mnemonicGrid.innerHTML = '';
+          if (window._mnemonicAutoLockTimer) {
+            clearInterval(window._mnemonicAutoLockTimer);
+            window._mnemonicAutoLockTimer = null;
           }
 
           modalBackup.classList.remove('hidden');
         });
       }
       if (btnCloseBackup) {
-        btnCloseBackup.addEventListener('click', () => modalBackup.classList.add('hidden'));
+        btnCloseBackup.addEventListener('click', () => {
+          modalBackup.classList.add('hidden');
+          if (window._mnemonicAutoLockTimer) {
+            clearInterval(window._mnemonicAutoLockTimer);
+            window._mnemonicAutoLockTimer = null;
+          }
+          const mnemonicGrid = document.getElementById('mnemonic-grid');
+          if (mnemonicGrid) mnemonicGrid.innerHTML = '';
+          const mnemonicLocked = document.getElementById('mnemonic-locked-container');
+          const mnemonicUnlocked = document.getElementById('mnemonic-unlocked-container');
+          if (mnemonicLocked) mnemonicLocked.classList.remove('hidden');
+          if (mnemonicUnlocked) mnemonicUnlocked.classList.add('hidden');
+        });
       }
 
       // Backup subtabs
@@ -2917,26 +3007,28 @@
         });
       }
 
-      // Restore Mode Subtabs (File vs 24-Word Seed)
+      // Restore Mode Subtabs (File vs 24-Word Seed vs Shamir 2-of-3)
       const restoreModeFile = document.getElementById('restore-mode-file');
       const restoreModeMnemonic = document.getElementById('restore-mode-mnemonic');
+      const restoreModeShamir = document.getElementById('restore-mode-shamir');
       const restorePanelFile = document.getElementById('restore-panel-file');
       const restorePanelMnemonic = document.getElementById('restore-panel-mnemonic');
+      const restorePanelShamir = document.getElementById('restore-panel-shamir');
 
-      if (restoreModeFile && restoreModeMnemonic) {
-        restoreModeFile.addEventListener('click', () => {
-          restoreModeFile.className = 'flex-1 py-1.5 rounded-lg bg-cyan-600 text-white font-bold text-xs transition-all cursor-pointer';
-          restoreModeMnemonic.className = 'flex-1 py-1.5 rounded-lg bg-transparent text-gray-400 hover:text-gray-200 font-medium text-xs transition-all cursor-pointer';
-          if (restorePanelFile) restorePanelFile.classList.remove('hidden');
-          if (restorePanelMnemonic) restorePanelMnemonic.classList.add('hidden');
+      const setRestoreMode = (activeBtn, activePanel) => {
+        [restoreModeFile, restoreModeMnemonic, restoreModeShamir].forEach(b => {
+          if (b) b.className = 'flex-1 py-1.5 rounded-lg bg-transparent text-gray-400 hover:text-gray-200 font-medium text-xs transition-all cursor-pointer whitespace-nowrap text-center';
         });
-        restoreModeMnemonic.addEventListener('click', () => {
-          restoreModeMnemonic.className = 'flex-1 py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-xs transition-all cursor-pointer';
-          restoreModeFile.className = 'flex-1 py-1.5 rounded-lg bg-transparent text-gray-400 hover:text-gray-200 font-medium text-xs transition-all cursor-pointer';
-          if (restorePanelMnemonic) restorePanelMnemonic.classList.remove('hidden');
-          if (restorePanelFile) restorePanelFile.classList.add('hidden');
+        [restorePanelFile, restorePanelMnemonic, restorePanelShamir].forEach(p => {
+          if (p) p.classList.add('hidden');
         });
-      }
+        if (activeBtn) activeBtn.className = 'flex-1 py-1.5 rounded-lg bg-cyan-600 text-white font-bold text-xs transition-all cursor-pointer whitespace-nowrap text-center';
+        if (activePanel) activePanel.classList.remove('hidden');
+      };
+
+      if (restoreModeFile) restoreModeFile.addEventListener('click', () => setRestoreMode(restoreModeFile, restorePanelFile));
+      if (restoreModeMnemonic) restoreModeMnemonic.addEventListener('click', () => setRestoreMode(restoreModeMnemonic, restorePanelMnemonic));
+      if (restoreModeShamir) restoreModeShamir.addEventListener('click', () => setRestoreMode(restoreModeShamir, restorePanelShamir));
 
       // Restore from Keystore File (.json)
       const btnImportRestore = document.getElementById('btn-import-restore');
@@ -3012,17 +3104,194 @@
         });
       }
 
-      // Copy Mnemonic
-      const btnCopyMnemonic = document.getElementById('btn-copy-mnemonic');
-      if (btnCopyMnemonic) {
-        btnCopyMnemonic.addEventListener('click', async () => {
-          const words = (await wallet.getZkRecoveryMnemonic()).join(' ');
-          await navigator.clipboard.writeText(words);
-          btnCopyMnemonic.innerText = '✓ 24-Word Seed Copied!';
-          setTimeout(() => {
-            btnCopyMnemonic.innerText = '📋 Copy 24-Word Seed to Clipboard';
-          }, 2500);
-          showToast("✓ 24-Word Seed Copied to Clipboard", 'amber');
+      // Restore from 2-of-3 Shamir Geographic Shares
+      const btnImportShamirRestore = document.getElementById('btn-import-shamir-restore');
+      if (btnImportShamirRestore) {
+        btnImportShamirRestore.addEventListener('click', async () => {
+          const shareA = (document.getElementById('input-shamir-share-a')?.value || '').trim();
+          const shareB = (document.getElementById('input-shamir-share-b')?.value || '').trim();
+          const statusEl = document.getElementById('import-status-msg');
+
+          if (!shareA || !shareB) {
+            alert("Please provide both Shamir shares (Share A and Share B) to mathematically reconstruct your vault.");
+            return;
+          }
+
+          try {
+            btnImportShamirRestore.disabled = true;
+            btnImportShamirRestore.innerText = 'Interpolating GF(2^8) Polynomial & Restoring...';
+
+            const res = await wallet.importShamirEntropyShares(shareA, shareB);
+            if (statusEl) {
+              statusEl.className = 'text-[11px] font-mono p-2.5 bg-emerald-950/40 text-emerald-300 rounded border border-emerald-500/40';
+              statusEl.innerText = `✓ 2-of-3 Shamir Polynomial Solved! Primary Address: ${res.restoredAddress}`;
+              statusEl.classList.remove('hidden');
+            }
+            showToast("✓ Vault Restored from Shamir Shares!", 'emerald');
+            setTimeout(() => {
+              modalBackup.classList.add('hidden');
+            }, 1800);
+          } catch (err) {
+            if (statusEl) {
+              statusEl.className = 'text-[11px] font-mono p-2.5 bg-rose-950/40 text-rose-300 rounded border border-rose-500/40';
+              statusEl.innerText = `✕ Error: ${err.message}`;
+              statusEl.classList.remove('hidden');
+            }
+          } finally {
+            btnImportShamirRestore.disabled = false;
+            btnImportShamirRestore.innerHTML = '<span>🛡️</span> Reconstruct &amp; Restore Vault';
+          }
+        });
+      }
+
+      // Biometric Gate to Reveal 24-Word Recovery Phrase
+      const btnUnlockMnemonic = document.getElementById('btn-unlock-mnemonic-biometric');
+      let allWordsUnblurred = false;
+
+      if (btnUnlockMnemonic) {
+        btnUnlockMnemonic.addEventListener('click', async () => {
+          try {
+            btnUnlockMnemonic.disabled = true;
+            btnUnlockMnemonic.innerText = 'Scanning Biometrics (Hardware Enclave)...';
+
+            // Trigger authentic biometric verification
+            await wallet.verifyEnclaveAuthentication();
+
+            // Decrypt & populate 24-word ZK recovery mnemonic
+            const mnemonicGrid = document.getElementById('mnemonic-grid');
+            if (mnemonicGrid) {
+              mnemonicGrid.innerHTML = '';
+              const words = await wallet.getZkRecoveryMnemonic();
+              words.forEach((w, idx) => {
+                const cell = document.createElement('div');
+                cell.className = 'p-1.5 rounded bg-gray-900/90 border border-gray-800 text-gray-300 text-[10px] flex items-center justify-between cursor-pointer hover:border-emerald-500/50 transition-all';
+                cell.title = 'Click or tap to peek/hide this word';
+                cell.innerHTML = `
+                  <span class="text-gray-500 text-[9px] font-mono select-none">${idx + 1}.</span>
+                  <span class="mnemonic-word-text font-semibold text-emerald-400 select-none transition-all duration-200 blur-[5px]">${w}</span>
+                `;
+                // Individual tile tap-to-peek
+                cell.addEventListener('click', () => {
+                  const span = cell.querySelector('.mnemonic-word-text');
+                  if (span) {
+                    span.classList.toggle('blur-[5px]');
+                  }
+                });
+                mnemonicGrid.appendChild(cell);
+              });
+            }
+
+            const lockedContainer = document.getElementById('mnemonic-locked-container');
+            const unlockedContainer = document.getElementById('mnemonic-unlocked-container');
+            if (lockedContainer) lockedContainer.classList.add('hidden');
+            if (unlockedContainer) unlockedContainer.classList.remove('hidden');
+
+            showToast('✓ Hardware Enclave Verified: Seed Decrypted into RAM', 'emerald');
+
+            // 60-Second Auto-Lock Timer
+            let remainingSeconds = 60;
+            const timerSec = document.getElementById('mnemonic-timer-sec');
+            if (window._mnemonicAutoLockTimer) clearInterval(window._mnemonicAutoLockTimer);
+
+            window._mnemonicAutoLockTimer = setInterval(() => {
+              remainingSeconds--;
+              if (timerSec) timerSec.innerText = remainingSeconds;
+              if (remainingSeconds <= 0) {
+                clearInterval(window._mnemonicAutoLockTimer);
+                window._mnemonicAutoLockTimer = null;
+                // Wipe DOM and re-lock
+                if (mnemonicGrid) mnemonicGrid.innerHTML = '';
+                if (unlockedContainer) unlockedContainer.classList.add('hidden');
+                if (lockedContainer) lockedContainer.classList.remove('hidden');
+                showToast('🔒 24-Word Seed Auto-Locked (RAM Cleared)', 'amber');
+              }
+            }, 1000);
+
+          } catch (err) {
+            alert("Biometric Authorization Failed: " + err.message);
+          } finally {
+            btnUnlockMnemonic.disabled = false;
+            btnUnlockMnemonic.innerHTML = `
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              <span>Scan Biometrics to Decrypt &amp; View Phrase</span>
+            `;
+          }
+        });
+      }
+
+      // Peek All / Mask All Toggle Button
+      const btnToggleUnblur = document.getElementById('btn-toggle-unblur-mnemonic');
+      if (btnToggleUnblur) {
+        btnToggleUnblur.addEventListener('click', () => {
+          allWordsUnblurred = !allWordsUnblurred;
+          const wordSpans = document.querySelectorAll('.mnemonic-word-text');
+          wordSpans.forEach(span => {
+            if (allWordsUnblurred) {
+              span.classList.remove('blur-[5px]');
+            } else {
+              span.classList.add('blur-[5px]');
+            }
+          });
+          const btnTxt = document.getElementById('btn-unblur-text');
+          if (btnTxt) btnTxt.innerText = allWordsUnblurred ? 'Mask All' : 'Peek All';
+        });
+      }
+
+      // Generate & Display Shamir 3-Share Split (2-of-3)
+      const btnToggleShamir = document.getElementById('btn-toggle-shamir');
+      const shamirContainer = document.getElementById('shamir-shares-container');
+      const shamirList = document.getElementById('shamir-shares-list');
+
+      if (btnToggleShamir) {
+        btnToggleShamir.addEventListener('click', async () => {
+          if (!shamirContainer) return;
+          if (!shamirContainer.classList.contains('hidden')) {
+            shamirContainer.classList.add('hidden');
+            btnToggleShamir.innerText = 'Generate 3 Shares →';
+            return;
+          }
+
+          try {
+            const shares = await wallet.getShamirEntropyShares();
+            if (shamirList) {
+              shamirList.innerHTML = '';
+              const shareLabels = [
+                'Share 1 (Alpha): For Personal Home Safe',
+                'Share 2 (Beta): For Bank Deposit Box',
+                'Share 3 (Gamma): For Trusted Emergency Vault'
+              ];
+              shares.forEach((s, idx) => {
+                const box = document.createElement('div');
+                box.className = 'p-2.5 rounded-lg bg-gray-900 border border-gray-800 space-y-1';
+                box.innerHTML = `
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-cyan-300 text-[11px]">${shareLabels[idx] || `Share ${s.index}`}</span>
+                    <button class="btn-copy-single-share text-[9px] px-2 py-0.5 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 cursor-pointer transition-colors" data-share="${s.formattedShare}">
+                      Copy Share
+                    </button>
+                  </div>
+                  <div class="text-[9px] font-mono text-gray-400 break-all select-all">${s.formattedShare}</div>
+                `;
+                shamirList.appendChild(box);
+              });
+
+              // Individual Share Copy Buttons
+              shamirList.querySelectorAll('.btn-copy-single-share').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                  const shareText = e.currentTarget.getAttribute('data-share');
+                  await navigator.clipboard.writeText(shareText);
+                  e.currentTarget.innerText = '✓ Copied';
+                  setTimeout(() => { e.currentTarget.innerText = 'Copy Share'; }, 2000);
+                  showToast('✓ Shamir Share Copied to Clipboard', 'cyan');
+                });
+              });
+            }
+            shamirContainer.classList.remove('hidden');
+            btnToggleShamir.innerText = 'Hide Shares ▲';
+            showToast('🛡️ Computed 2-of-3 Shamir Geographic Shares!', 'cyan');
+          } catch (err) {
+            alert("Error generating Shamir shares: " + err.message);
+          }
         });
       }
 

@@ -633,6 +633,122 @@ class PasskeyCrypto {
     const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", derivationMessage));
     return "pc1q" + PasskeyCrypto.bufferToHex(hash).substring(0, 36);
   }
+
+  // --- Galois Field GF(2^8) Arithmetic for Shamir's Secret Sharing (Irreducible 0x11b) ---
+
+  static initGF256() {
+    if (PasskeyCrypto.gfExp && PasskeyCrypto.gfLog) return;
+    const exp = new Uint8Array(512);
+    const log = new Uint8Array(256);
+    let x = 1;
+    for (let i = 0; i < 255; i++) {
+      exp[i] = x;
+      exp[i + 255] = x;
+      log[x] = i;
+      x = x << 1;
+      if (x & 0x100) x ^= 0x11d; // Reed-Solomon standard primitive irreducible polynomial for generator 2
+    }
+    log[0] = 0;
+    PasskeyCrypto.gfExp = exp;
+    PasskeyCrypto.gfLog = log;
+  }
+
+  static gfMul(a, b) {
+    if (a === 0 || b === 0) return 0;
+    PasskeyCrypto.initGF256();
+    return PasskeyCrypto.gfExp[PasskeyCrypto.gfLog[a] + PasskeyCrypto.gfLog[b]];
+  }
+
+  static gfDiv(a, b) {
+    if (b === 0) throw new Error("GF(2^8) division by zero");
+    if (a === 0) return 0;
+    PasskeyCrypto.initGF256();
+    return PasskeyCrypto.gfExp[(PasskeyCrypto.gfLog[a] + 255 - PasskeyCrypto.gfLog[b]) % 255];
+  }
+
+  /**
+   * Splits a 32-byte entropy into 3 Shamir shares with a 2-of-3 threshold.
+   * Any 2 shares can reconstruct the master entropy.
+   * A single share contains mathematically 0 bits of information about the secret.
+   */
+  static splitEntropyShamir(entropyBytes) {
+    if (!entropyBytes || entropyBytes.length !== 32) {
+      throw new Error("Entropy must be exactly 32 bytes (256 bits)");
+    }
+    PasskeyCrypto.initGF256();
+
+    const shares = [new Uint8Array(32), new Uint8Array(32), new Uint8Array(32)];
+    const randCoeffs = crypto.getRandomValues(new Uint8Array(32));
+
+    for (let i = 0; i < 32; i++) {
+      const s = entropyBytes[i];
+      const a1 = randCoeffs[i];
+      for (let x = 1; x <= 3; x++) {
+        // P(x) = s + a1 * x in GF(2^8)
+        shares[x - 1][i] = s ^ PasskeyCrypto.gfMul(a1, x);
+      }
+    }
+
+    return shares.map((shareBytes, idx) => {
+      const x = idx + 1;
+      const hex = PasskeyCrypto.bufferToHex(shareBytes);
+      return {
+        index: x,
+        threshold: 2,
+        total: 3,
+        shareHex: hex,
+        formattedShare: `PCASH-SHARE-${x}-OF-3:${hex}`
+      };
+    });
+  }
+
+  /**
+   * Reconstructs 32-byte entropy from any 2 Shamir shares (2-of-3 threshold).
+   */
+  static combineEntropyShamir(shareAStr, shareBStr) {
+    if (!shareAStr || !shareBStr) {
+      throw new Error("Two distinct Shamir shares are required for 2-of-3 reconstruction.");
+    }
+    PasskeyCrypto.initGF256();
+
+    const parseShare = (str) => {
+      const clean = str.trim();
+      const match = clean.match(/^PCASH-SHARE-([1-3])-OF-3:([0-9a-fA-F]{64})$/i);
+      if (!match) {
+        throw new Error("Invalid Shamir share format. Expected format: 'PCASH-SHARE-X-OF-3:<64-hex-chars>'");
+      }
+      return {
+        x: parseInt(match[1], 10),
+        bytes: PasskeyCrypto.hexToBuffer(match[2])
+      };
+    };
+
+    const s1 = parseShare(shareAStr);
+    const s2 = parseShare(shareBStr);
+
+    if (s1.x === s2.x) {
+      throw new Error(`Duplicate shares provided (both are Share #${s1.x}). Two DIFFERENT shares are required (e.g. Share 1 and Share 2).`);
+    }
+
+    const reconstructed = new Uint8Array(32);
+    const x1 = s1.x;
+    const x2 = s2.x;
+
+    // Lagrange basis coefficients at x = 0:
+    // L1(0) = (0 - x2) / (x1 - x2) = x2 / (x1 ^ x2)
+    // L2(0) = (0 - x1) / (x2 - x1) = x1 / (x1 ^ x2)
+    const denom = x1 ^ x2;
+    const l1 = PasskeyCrypto.gfDiv(x2, denom);
+    const l2 = PasskeyCrypto.gfDiv(x1, denom);
+
+    for (let i = 0; i < 32; i++) {
+      const term1 = PasskeyCrypto.gfMul(s1.bytes[i], l1);
+      const term2 = PasskeyCrypto.gfMul(s2.bytes[i], l2);
+      reconstructed[i] = term1 ^ term2;
+    }
+
+    return reconstructed;
+  }
 }
 
 // Global export for wallet and node use
