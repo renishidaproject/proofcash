@@ -269,10 +269,7 @@ class PasskeyCrypto {
     }
 
     if (!keyPair) {
-      // Re-create on the fly if needed
-      const res = await this.createEmulatedPasskey("Ren Ishida");
-      keyPair = window._pcash_enclave_store[res.credentialId];
-      sec1PubkeyHex = res.sec1PubkeyHex;
+      throw new Error(`Enclave credential "${credentialId || 'default'}" not found in local vault. Please re-authenticate your Passkey or restore from your 24-word ZK seed.`);
     }
 
     const rawSig = new Uint8Array(await crypto.subtle.sign(
@@ -624,7 +621,24 @@ class PasskeyCrypto {
     }
     return recoveredEntropy;
   }
+
+  /**
+   * Deterministically derives an account address from master entropy and index
+   * Follows canonical hierarchical derivation: "proofcash_entropy_account_" || entropyHex || "_idx_" || index
+   */
+  static async deriveAccountAddress(entropyHex, index = 0) {
+    if (!entropyHex) throw new Error("Entropy hex required for deterministic derivation");
+    const enc = new TextEncoder();
+    const derivationMessage = enc.encode(`proofcash_entropy_account_${entropyHex}_idx_${index}`);
+    const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", derivationMessage));
+    return "pc1q" + PasskeyCrypto.bufferToHex(hash).substring(0, 36);
+  }
 }
 
-// Global export for wallet use
-window.PasskeyCrypto = PasskeyCrypto;
+// Global export for wallet and node use
+if (typeof window !== 'undefined') {
+  window.PasskeyCrypto = PasskeyCrypto;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = PasskeyCrypto;
+}

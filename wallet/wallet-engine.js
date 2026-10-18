@@ -13,7 +13,7 @@ class ProofCashWalletEngine {
     this.crypto = new PasskeyCrypto();
     this.TESTNET_STORAGE_KEY = 'proofcash_wallet_testnet_v1';
     this.MAINNET_STORAGE_KEY = 'proofcash_wallet_mainnet_v1';
-    this.MAINNET_LAUNCH_TIMESTAMP = 1793458800000; // November 1, 2026 00:00:00 JST (15:00:00 UTC Oct 31)
+    this.MAINNET_LAUNCH_TIMESTAMP = 1798729200000; // January 1, 2027 00:00:00 JST (15:00:00 UTC Dec 31, 2026)
     this.DEFAULT_RPC = (typeof window !== 'undefined' && window.location && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
       ? 'http://127.0.0.1:8332'
       : 'https://rpc.proofcash.org';
@@ -47,12 +47,17 @@ class ProofCashWalletEngine {
       txHistory: [],
       streamingChannel: null,
       addressBook: [],
+      outboxQueue: [],
       isNodeConnected: false
     };
 
     this.subscribers = [];
     this.processedTxids = new Set();
     this.clipboardSecurityCache = null;
+
+    if (typeof window !== 'undefined' && window.addEventListener) {
+      window.addEventListener('online', () => this.flushOutboxQueue());
+    }
   }
 
   // --- Network Storage Key & Countdown Helpers ---
@@ -94,9 +99,19 @@ class ProofCashWalletEngine {
   async init() {
     this.loadState();
 
+    // Ensure cryptographically secure unique entropy seed exists for this wallet
+    if (!this.state.zkRecoveryEntropyHex) {
+      const entBytes = crypto.getRandomValues(new Uint8Array(32));
+      this.state.zkRecoveryEntropyHex = PasskeyCrypto.bufferToHex(entBytes);
+      this.saveState();
+    }
+
     // Initialize Default Accounts if none exist
     if (!this.state.accounts || this.state.accounts.length === 0) {
-      const defaultAddr = this.state.address || ("pc1q" + PasskeyCrypto.bufferToHex(crypto.getRandomValues(new Uint8Array(20))));
+      let defaultAddr = this.state.address;
+      if (!defaultAddr) {
+        defaultAddr = await PasskeyCrypto.deriveAccountAddress(this.state.zkRecoveryEntropyHex, 0);
+      }
       const defaultName = this.state.networkMode === 'mainnet' ? 'Account 1 (Mainnet Vault)' : 'Account 1 (Testnet Vault)';
       this.state.accounts = [
         {
@@ -104,7 +119,8 @@ class ProofCashWalletEngine {
           name: defaultName,
           address: defaultAddr,
           balance_pJ: "0",
-          txHistory: []
+          txHistory: [],
+          derivationIndex: 0
         }
       ];
       this.state.activeAccountId = 'acc_1';
@@ -115,13 +131,6 @@ class ProofCashWalletEngine {
     } else {
       // Sync active account fields to top-level state
       this.syncActiveAccountFromList();
-    }
-
-    // Ensure cryptographically secure unique entropy seed exists for this wallet
-    if (!this.state.zkRecoveryEntropyHex) {
-      const entBytes = crypto.getRandomValues(new Uint8Array(32));
-      this.state.zkRecoveryEntropyHex = PasskeyCrypto.bufferToHex(entBytes);
-      this.saveState();
     }
 
     // Ping proofcashd node in background
@@ -144,7 +153,8 @@ class ProofCashWalletEngine {
           networkMode: this.state.networkMode, // Retain selected network mode
           rpcUrl: parsed.rpcUrl || this.DEFAULT_RPC,
           balance_pJ: BigInt(parsed.balance_pJ || "0"),
-          accounts: parsed.accounts || []
+          accounts: parsed.accounts || [],
+          outboxQueue: parsed.outboxQueue || []
         };
         if (parsed.activeSessionKey) {
           const secretHex = parsed.activeSessionKey.secretScalarHex;
@@ -251,24 +261,33 @@ class ProofCashWalletEngine {
     }
   }
 
-  createAccount(name = null) {
-    const nextNum = this.state.accounts.length + 1;
-    const accountName = name || `Account ${nextNum} (${nextNum === 2 ? 'Secondary' : 'Savings'})`;
-    const newAddress = "pc1q" + PasskeyCrypto.bufferToHex(crypto.getRandomValues(new Uint8Array(20)));
+  async createAccount(name = null) {
+    const nextIndex = this.state.accounts.length;
+    const nextNum = nextIndex + 1;
+    const accountName = name || `Account ${nextNum} (${nextNum === 2 ? 'Secondary Vault' : 'Savings Vault'})`;
+    
+    // Deterministic derivation from master 24-word ZK recovery seed
+    let newAddress;
+    if (this.state.zkRecoveryEntropyHex) {
+      newAddress = await PasskeyCrypto.deriveAccountAddress(this.state.zkRecoveryEntropyHex, nextIndex);
+    } else {
+      const entBytes = crypto.getRandomValues(new Uint8Array(32));
+      this.state.zkRecoveryEntropyHex = PasskeyCrypto.bufferToHex(entBytes);
+      newAddress = await PasskeyCrypto.deriveAccountAddress(this.state.zkRecoveryEntropyHex, nextIndex);
+    }
     const newId = `acc_${Date.now()}`;
-
-    // Fresh accounts start with 0.0000 PCASH strictly (zero hardcoding)
-    const initBalance = 0n;
 
     const newAcc = {
       id: newId,
       name: accountName,
       address: newAddress,
-      balance_pJ: initBalance.toString(),
-      txHistory: []
+      balance_pJ: "0",
+      txHistory: [],
+      derivationIndex: nextIndex
     };
 
     this.state.accounts.push(newAcc);
+    this.saveState();
     this.switchAccount(newId);
     return newAcc;
   }
@@ -296,8 +315,12 @@ class ProofCashWalletEngine {
 
   // --- Real-time P2P Mesh & WebSocket Synchronization ---
 
+  getMeshTopic() {
+    return `proofcash_mesh_${this.state.networkMode}_v1`;
+  }
+
   initP2pMesh() {
-    this.meshTopic = 'proofcash_settlement_mesh_v1';
+    this.meshTopic = this.getMeshTopic();
 
     // 1. BroadcastChannel across tabs and browser windows (same browser)
     if (typeof BroadcastChannel !== 'undefined') {
@@ -357,13 +380,14 @@ class ProofCashWalletEngine {
 
   connectPublicRelay() {
     const wsUrl = this.getRelayWsUrl();
+    this.meshTopic = this.getMeshTopic();
 
     try {
       this.wsRelay = new WebSocket(wsUrl);
       this.wsRelay.onopen = () => {
         let hostName = 'Edge Relay';
         try { hostName = new URL(wsUrl).host; } catch(e) {}
-        console.info("[P2P Mesh] Connected to Cloudflare Edge Relay:", wsUrl);
+        console.info(`[P2P Mesh] Connected to Cloudflare Edge Relay (${this.getMeshTopic()}):`, wsUrl);
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('proofcash:mesh_status', {
             detail: { connected: true, relay: `Edge Relay (${hostName})` }
@@ -371,10 +395,12 @@ class ProofCashWalletEngine {
         }
         // Subscribe to mesh topic
         try {
-          this.wsRelay.send(JSON.stringify({ type: 'subscribe', topic: this.meshTopic }));
+          this.wsRelay.send(JSON.stringify({ type: 'subscribe', topic: this.getMeshTopic() }));
         } catch(e) {}
         // Catch up on any transfers sent while this browser was closed or offline
         this.fetchMeshBacklog();
+        // Flush any offline queued outbox transfers
+        this.flushOutboxQueue();
       };
 
       this.wsRelay.onmessage = (event) => {
@@ -420,7 +446,7 @@ class ProofCashWalletEngine {
     // 1. Poll Cloudflare Edge Relay Backlog
     try {
       const httpBase = this.getRelayHttpUrl();
-      const resp = await fetch(`${httpBase}/poll?topic=${this.meshTopic}&since=0`, {
+      const resp = await fetch(`${httpBase}/poll?topic=${this.getMeshTopic()}&since=0`, {
         signal: AbortSignal.timeout(3500)
       });
       if (resp.ok) {
@@ -455,6 +481,76 @@ class ProofCashWalletEngine {
     }
 
     return newlyCredited;
+  }
+
+  async flushOutboxQueue() {
+    if (!this.state.outboxQueue || this.state.outboxQueue.length === 0) return 0;
+    if (this._isFlushingOutbox) return 0;
+    this._isFlushingOutbox = true;
+
+    let flushedCount = 0;
+    const remainingQueue = [];
+
+    for (const item of this.state.outboxQueue) {
+      let broadcastSuccess = false;
+
+      // 1. WebSocket Relay Fast-Path
+      if (this.wsRelay && this.wsRelay.readyState === WebSocket.OPEN) {
+        try {
+          this.wsRelay.send(JSON.stringify({
+            type: "publish",
+            topic: this.getMeshTopic(),
+            payload: item.packet
+          }));
+          broadcastSuccess = true;
+        } catch (wsErr) {}
+      }
+
+      // 2. HTTP Relay Fallback
+      if (!broadcastSuccess) {
+        try {
+          const httpBase = this.getRelayHttpUrl();
+          const pubRes = await fetch(`${httpBase}/broadcast`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topic: this.getMeshTopic(), packet: item.packet }),
+            signal: AbortSignal.timeout(3000)
+          });
+          if (pubRes.ok) broadcastSuccess = true;
+        } catch (httpErr) {}
+      }
+
+      // 3. Local Daemon Relay
+      if (!broadcastSuccess) {
+        try {
+          const localRes = await fetch('http://127.0.0.1:8332/p2p/broadcast', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(item.packet),
+            signal: AbortSignal.timeout(1500)
+          });
+          if (localRes.ok) broadcastSuccess = true;
+        } catch (localErr) {}
+      }
+
+      // 4. On-chain Node Broadcast
+      if (this.state.isNodeConnected && item.txEntry) {
+        this.broadcastTransaction(item.txEntry);
+      }
+
+      if (broadcastSuccess) {
+        flushedCount++;
+        console.info(`[Outbox] Flushed queued transaction ${item.id} successfully!`);
+      } else {
+        item.attempts = (item.attempts || 0) + 1;
+        remainingQueue.push(item);
+      }
+    }
+
+    this.state.outboxQueue = remainingQueue;
+    this.saveState();
+    this._isFlushingOutbox = false;
+    return flushedCount;
   }
 
   handleIncomingP2pTransfer(packet) {
@@ -774,12 +870,12 @@ class ProofCashWalletEngine {
 
   // --- Shielded Payment & Real-Time Transfer Reflection ---
 
-  async sendShieldedPayment(recipient, amountPcash, memo = "") {
+  async sendShieldedPayment(recipient, amountPcash, memo = "", feePcash = "0.0001") {
     const amount_pJ = this.pcashToPJ(amountPcash);
-    const fee_pJ = 100000000n; // 0.0001 PCASH thermodynamic base fee
+    const fee_pJ = this.pcashToPJ(feePcash || "0.0001");
 
     if (this.state.balance_pJ < amount_pJ + fee_pJ) {
-      throw new Error(`Insufficient funds: Balance is ${this.formatPcash(this.state.balance_pJ)} PCASH, requested ${amountPcash} PCASH + fee`);
+      throw new Error(`Insufficient funds: Balance is ${this.formatPcash(this.state.balance_pJ)} PCASH, requested ${amountPcash} PCASH + fee (${feePcash || "0.0001"} PCASH)`);
     }
 
     // Ensure session key is active and authorized
@@ -822,7 +918,7 @@ class ProofCashWalletEngine {
       txid: "0x" + txHash,
       recipient: recipient,
       amount: amountPcash,
-      fee: "0.0001",
+      fee: feePcash || "0.0001",
       memo: memo,
       height: this.state.currentBlockHeight,
       constraints: airResult.constraintCount,
@@ -902,7 +998,7 @@ class ProofCashWalletEngine {
       try {
         this.wsRelay.send(JSON.stringify({
           type: "publish",
-          topic: this.meshTopic,
+          topic: this.getMeshTopic(),
           payload: p2pPacket
         }));
         cloudRelaySuccess = true;
@@ -918,12 +1014,26 @@ class ProofCashWalletEngine {
       const pubRes = await fetch(`${httpBase}/broadcast`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: this.meshTopic, packet: p2pPacket }),
+        body: JSON.stringify({ topic: this.getMeshTopic(), packet: p2pPacket }),
         signal: AbortSignal.timeout(3500)
       });
       if (pubRes.ok) cloudRelaySuccess = true;
     } catch (err) {
       // Cloud broadcast notice
+    }
+
+    // Queue in Outbox if offline / both relays failed
+    if (!cloudRelaySuccess && !localRelaySuccess) {
+      this.state.outboxQueue = this.state.outboxQueue || [];
+      this.state.outboxQueue.push({
+        id: txEntry.txid,
+        packet: p2pPacket,
+        txEntry: txEntry,
+        timestamp: Date.now(),
+        attempts: 0
+      });
+      this.saveState();
+      console.info(`[Outbox] Queued transaction ${txEntry.txid} to outboxQueue (offline / relay unreachable)`);
     }
 
     // Rail E: JSON-RPC proofcashd node broadcast
@@ -950,9 +1060,11 @@ class ProofCashWalletEngine {
       txid: txEntry.txid,
       recipient: recipient.trim(),
       amountPcash: amountPcash,
+      feePcash: feePcash || "0.0001",
       voucher: voucherString,
       cloudRelaySuccess: cloudRelaySuccess,
       localRelaySuccess: localRelaySuccess,
+      outboxQueued: (!cloudRelaySuccess && !localRelaySuccess),
       airVerification: airResult,
       sessionSignature: sigResult
     };
@@ -1185,6 +1297,9 @@ class ProofCashWalletEngine {
   // --- Mobile / Edge Mining Reward ---
 
   creditMinedBlock(nonce, hash, subsidyPcash = "100.0", extraData = {}) {
+    if (this.state.networkMode === 'mainnet' && Date.now() < this.MAINNET_LAUNCH_TIMESTAMP) {
+      throw new Error("Genesis Invariant Violation: Mobile Edge Mining is strictly locked on Mainnet until activation on January 1, 2027 00:00:00 JST.");
+    }
     const subsidy_pJ = this.pcashToPJ(subsidyPcash);
     this.state.balance_pJ += subsidy_pJ;
     this.state.currentBlockHeight += 1;
@@ -1237,6 +1352,40 @@ class ProofCashWalletEngine {
     };
   }
 
+  broadcastToPublicRelays(packet) {
+    if (!packet) return;
+    if (this.wsRelay && typeof WebSocket !== 'undefined' && this.wsRelay.readyState === WebSocket.OPEN) {
+      try {
+        this.wsRelay.send(JSON.stringify({
+          type: "publish",
+          topic: this.getMeshTopic(),
+          payload: packet
+        }));
+      } catch (e) {}
+    }
+    try {
+      const httpBase = this.getRelayHttpUrl();
+      if (typeof fetch !== 'undefined') {
+        fetch(`${httpBase}/broadcast`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic: this.getMeshTopic(), packet: packet }),
+          signal: AbortSignal.timeout(3000)
+        }).catch(() => {});
+      }
+    } catch (e) {}
+    try {
+      if (typeof fetch !== 'undefined') {
+        fetch('http://127.0.0.1:8332/p2p/broadcast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(packet),
+          signal: AbortSignal.timeout(1500)
+        }).catch(() => {});
+      }
+    } catch (e) {}
+  }
+
   // --- JSON-RPC proofcashd Integration ---
 
   async pingNode() {
@@ -1255,8 +1404,41 @@ class ProofCashWalletEngine {
       if (resp.ok) {
         const data = await resp.json();
         this.state.isNodeConnected = true;
-        if (data.result && data.result.height) {
+        if (data.result && data.result.height !== undefined) {
           this.state.currentBlockHeight = data.result.height;
+        }
+
+        // Reconcile on-chain balance if address is set
+        if (this.state.address) {
+          try {
+            const balCtrl = new AbortController();
+            const balTimeout = setTimeout(() => balCtrl.abort(), 1500);
+            const balResp = await fetch(this.state.rpcUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                jsonrpc: "2.0",
+                id: 2,
+                method: "getaddressbalance",
+                params: [this.state.address]
+              }),
+              signal: balCtrl.signal
+            });
+            clearTimeout(balTimeout);
+            if (balResp.ok) {
+              const balData = await balResp.json();
+              if (balData && balData.result && balData.result.balance_pJ !== undefined) {
+                const onChain_pJ = BigInt(balData.result.balance_pJ);
+                if (onChain_pJ !== this.state.balance_pJ) {
+                  console.info(`[Node Sync] Reconciled balance with on-chain node: ${this.formatPcash(onChain_pJ)} PCASH`);
+                  this.state.balance_pJ = onChain_pJ;
+                  this.saveState();
+                }
+              }
+            }
+          } catch (balErr) {
+            // Balance query silent
+          }
         }
       } else {
         this.state.isNodeConnected = false;
@@ -1270,6 +1452,30 @@ class ProofCashWalletEngine {
   async broadcastTransaction(tx) {
     if (!this.state.isNodeConnected) return;
     try {
+      const canonicalTx = {
+        txid: tx.txid || ("0x" + PasskeyCrypto.bufferToHex(crypto.getRandomValues(new Uint8Array(32)))),
+        network: this.state.networkMode,
+        sender: tx.sender || this.state.address,
+        recipient: tx.recipient,
+        amount_pJ: tx.amount ? this.pcashToPJ(tx.amount).toString() : (tx.amount_pJ || "0"),
+        public_fee: tx.fee ? this.pcashToPJ(tx.fee).toString() : "100000000",
+        nullifiers: [tx.txid ? "0xnull_" + tx.txid.replace(/^0x/, '').substring(0, 32) : "0xnull_0"],
+        outputs: [
+          {
+            recipient: tx.recipient,
+            amount_pJ: tx.amount ? this.pcashToPJ(tx.amount).toString() : (tx.amount_pJ || "0"),
+            memo: tx.memo || ""
+          }
+        ],
+        zk_proof: {
+          type: "BABYJUBJUB_SESSION_DELEGATION",
+          signature: tx.signature || "",
+          constraints: tx.constraints || 1842,
+          airDurationMs: tx.airDurationMs || 34
+        },
+        timestamp: tx.timestamp || Date.now()
+      };
+
       await fetch(this.state.rpcUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1277,7 +1483,7 @@ class ProofCashWalletEngine {
           jsonrpc: "2.0",
           id: Date.now(),
           method: "sendrawtransaction",
-          params: [JSON.stringify(tx)]
+          params: [canonicalTx]
         })
       });
     } catch (e) {
@@ -1294,15 +1500,26 @@ class ProofCashWalletEngine {
     this.pingNode();
   }
 
-  setNetworkMode(mode) {
+  async setNetworkMode(mode) {
     if (this.state.networkMode === mode) return;
     this.saveState(); // Persist current network mode ledger first
     this.state.networkMode = mode;
     this.loadState(); // Load target network mode ledger from isolated storage key
 
+    // Close existing WebSocket to clean up previous network topic
+    if (this.wsRelay) {
+      try { this.wsRelay.close(); } catch(e) {}
+      this.wsRelay = null;
+    }
+
     // If no accounts exist in the newly loaded network state, initialize a clean zero-balance vault
     if (!this.state.accounts || this.state.accounts.length === 0) {
-      const defaultAddr = "pc1q" + PasskeyCrypto.bufferToHex(crypto.getRandomValues(new Uint8Array(20)));
+      let defaultAddr;
+      if (this.state.zkRecoveryEntropyHex) {
+        defaultAddr = await PasskeyCrypto.deriveAccountAddress(this.state.zkRecoveryEntropyHex, 0);
+      } else {
+        defaultAddr = "pc1q" + PasskeyCrypto.bufferToHex(crypto.getRandomValues(new Uint8Array(20)));
+      }
       const defaultName = mode === 'mainnet' ? 'Account 1 (Mainnet Vault)' : 'Account 1 (Testnet Vault)';
       this.state.accounts = [
         {
@@ -1310,7 +1527,8 @@ class ProofCashWalletEngine {
           name: defaultName,
           address: defaultAddr,
           balance_pJ: "0",
-          txHistory: []
+          txHistory: [],
+          derivationIndex: 0
         }
       ];
       this.state.activeAccountId = 'acc_1';
@@ -1327,6 +1545,12 @@ class ProofCashWalletEngine {
         this.state.currentBlockHeight = 104281;
       }
     }
+
+    // Reconnect to public relay with new topic for this network
+    this.connectPublicRelay();
+    this.fetchMeshBacklog();
+    this.flushOutboxQueue();
+
     this.notifySubscribers();
     this.pingNode();
   }
@@ -1525,9 +1749,8 @@ class ProofCashWalletEngine {
     const entropyBytes = await PasskeyCrypto.mnemonicToEntropy(words);
     const entropyHex = PasskeyCrypto.bufferToHex(entropyBytes);
 
-    // Deterministically derive primary address from entropy
-    const addrBytes = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("proofcash_entropy_address_" + entropyHex)));
-    const restoredAddr = "pc1q" + PasskeyCrypto.bufferToHex(addrBytes).substring(0, 36);
+    // Deterministically derive primary vault address (index 0) from entropy
+    const restoredAddr = await PasskeyCrypto.deriveAccountAddress(entropyHex, 0);
 
     this.state.zkRecoveryEntropyHex = entropyHex;
     this.state.address = restoredAddr;
@@ -1538,7 +1761,8 @@ class ProofCashWalletEngine {
         name: 'Account 1 (Recovered via 24-Word Seed)',
         address: restoredAddr,
         balance_pJ: "0",
-        txHistory: []
+        txHistory: [],
+        derivationIndex: 0
       }
     ];
     this.state.balance_pJ = 0n;
@@ -1570,7 +1794,53 @@ class ProofCashWalletEngine {
     localStorage.removeItem(this.getStorageKey());
     window.location.reload();
   }
+
+  exportHistoryCsv() {
+    const history = this.state.txHistory || [];
+    const headers = ["Timestamp", "Date (ISO)", "Type", "TxID", "Amount (PCASH)", "Fee (PCASH)", "Recipient", "Sender", "Height", "Status", "Memo"];
+    const rows = [headers.join(",")];
+
+    for (const tx of history) {
+      const dateIso = tx.timestamp ? new Date(tx.timestamp).toISOString() : "";
+      const row = [
+        tx.timestamp || "",
+        `"${dateIso}"`,
+        `"${tx.type || ""}"`,
+        `"${tx.txid || ""}"`,
+        `"${tx.amount || "0.0000"}"`,
+        `"${tx.fee || "0.0000"}"`,
+        `"${tx.recipient || ""}"`,
+        `"${tx.sender || ""}"`,
+        tx.height !== undefined ? tx.height : "",
+        `"${tx.status || "CONFIRMED"}"`,
+        `"${(tx.memo || "").replace(/"/g, '""')}"`
+      ];
+      rows.push(row.join(","));
+    }
+
+    const csvContent = rows.join("\r\n");
+
+    // Trigger browser download if window/document is available
+    if (typeof document !== 'undefined' && document.createElement) {
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `proofcash_history_${this.state.networkMode}_${this.state.address ? this.state.address.substring(0, 10) : 'vault'}_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    return csvContent;
+  }
 }
 
-// Global export
-window.ProofCashWalletEngine = ProofCashWalletEngine;
+// Global export for wallet and node use
+if (typeof window !== 'undefined') {
+  window.ProofCashWalletEngine = ProofCashWalletEngine;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = ProofCashWalletEngine;
+}

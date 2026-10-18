@@ -320,7 +320,12 @@
 
       <div class="flex justify-between items-center text-xs text-gray-400">
         <span>Recent Transactions &amp; Enclave Events</span>
-        <span class="font-mono text-[11px] text-emerald-400">eUTXO State: Synchronized</span>
+        <div class="flex items-center gap-2.5">
+          <button id="btn-export-csv" class="text-[11px] font-mono px-2 py-0.5 rounded bg-gray-900 hover:bg-gray-800 text-gray-300 border border-gray-850 hover:border-gray-700 cursor-pointer flex items-center gap-1 transition-all" title="Export Transaction History as CSV">
+            <span>📥</span> <span>Export CSV</span>
+          </button>
+          <span class="font-mono text-[11px] text-emerald-400 hidden sm:inline">eUTXO State: Synchronized</span>
+        </div>
       </div>
 
       <div id="activity-feed" class="space-y-2.5">
@@ -743,10 +748,19 @@
           </div>
         </div>
 
+        <!-- Dynamic Thermodynamic Fee Priority Selector -->
+        <div>
+          <label class="block text-xs font-medium text-gray-400 mb-1">Fee Priority (Thermodynamic Rate):</label>
+          <select id="send-input-fee" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-emerald-500">
+            <option value="0.0001" selected>Standard — 0.0001 PCASH (~34ms AIR proof, Next Block)</option>
+            <option value="0.0005">Priority — 0.0005 PCASH (Immediate Fast-Path Mempool Relay)</option>
+          </select>
+        </div>
+
         <div class="bg-gray-950 p-3 rounded-lg border border-gray-900 text-xs font-mono space-y-1">
           <div class="flex justify-between text-gray-400">
             <span>Thermodynamic Fee:</span>
-            <span class="text-emerald-400">0.0001 PCASH (PID Damped)</span>
+            <span id="disp-send-fee" class="text-emerald-400">0.0001 PCASH (PID Damped)</span>
           </div>
           <div class="flex justify-between text-gray-400">
             <span>ZK Prover Constraints:</span>
@@ -3186,16 +3200,48 @@
       if (btnHdrTestnet) btnHdrTestnet.addEventListener('click', () => wallet.setNetworkMode('testnet'));
 
       const btnHdrMainnet = document.getElementById('btn-header-mainnet');
-      if (btnHdrMainnet) btnHdrMainnet.addEventListener('click', () => wallet.setNetworkMode('mainnet'));
+      if (btnHdrMainnet) btnHdrMainnet.addEventListener('click', () => {
+        if (typeof minerActive !== 'undefined' && minerActive && typeof btnToggleMiner !== 'undefined' && btnToggleMiner) {
+          btnToggleMiner.click();
+        }
+        wallet.setNetworkMode('mainnet');
+      });
 
       const btnBannerSwitchTestnet = document.getElementById('btn-banner-switch-testnet');
       if (btnBannerSwitchTestnet) btnBannerSwitchTestnet.addEventListener('click', () => wallet.setNetworkMode('testnet'));
 
       const btnBannerSwitchMainnet = document.getElementById('btn-banner-switch-mainnet');
-      if (btnBannerSwitchMainnet) btnBannerSwitchMainnet.addEventListener('click', () => wallet.setNetworkMode('mainnet'));
+      if (btnBannerSwitchMainnet) btnBannerSwitchMainnet.addEventListener('click', () => {
+        if (typeof minerActive !== 'undefined' && minerActive && typeof btnToggleMiner !== 'undefined' && btnToggleMiner) {
+          btnToggleMiner.click();
+        }
+        wallet.setNetworkMode('mainnet');
+      });
 
       const btnBannerFaucet = document.getElementById('btn-banner-faucet');
       if (btnBannerFaucet) btnBannerFaucet.addEventListener('click', () => wallet.claimFaucet("50.0"));
+
+      // Export Transaction History CSV
+      const btnExportCsv = document.getElementById('btn-export-csv');
+      if (btnExportCsv) {
+        btnExportCsv.addEventListener('click', () => {
+          wallet.exportHistoryCsv();
+          showToast('📥 Transaction history exported to CSV', 'emerald');
+        });
+      }
+
+      // Dynamic Fee Priority Selector Wireup
+      const selectFee = document.getElementById('send-input-fee');
+      if (selectFee) {
+        selectFee.addEventListener('change', (e) => {
+          const disp = document.getElementById('disp-send-fee');
+          if (disp) {
+            disp.innerText = e.target.value === '0.0005'
+              ? '0.0005 PCASH (Fast-Path Priority)'
+              : '0.0001 PCASH (Standard PID Damped)';
+          }
+        });
+      }
 
       // Multi-Account Switcher & Creation Wireup
       const selectAcc = document.getElementById('select-active-account');
@@ -3209,11 +3255,11 @@
 
       const btnCreateAcc = document.getElementById('btn-create-account');
       if (btnCreateAcc) {
-        btnCreateAcc.addEventListener('click', () => {
+        btnCreateAcc.addEventListener('click', async () => {
           const accCount = (wallet.state.accounts || []).length + 1;
           const name = prompt("Enter a label for the new account (e.g. 'Bob Vault', 'Merchant'):", `Account ${accCount} (${accCount === 2 ? 'Bob Vault' : 'Savings'})`);
           if (name && name.trim()) {
-            const acc = wallet.createAccount(name.trim());
+            const acc = await wallet.createAccount(name.trim());
             showToast(`✓ Created new account: ${acc.name}! Address: ${acc.address.substring(0, 10)}...`, 'emerald');
           }
         });
@@ -3328,7 +3374,9 @@
         bar.style.width = "75%";
 
         try {
-          const res = await wallet.sendShieldedPayment(recipient, amount, "Passkey PWA Spend");
+          const feeSelect = document.getElementById('send-input-fee');
+          const feePcash = feeSelect ? feeSelect.value : "0.0001";
+          const res = await wallet.sendShieldedPayment(recipient, amount, "Passkey PWA Spend", feePcash);
           const elapsed = (performance.now() - t0).toFixed(1);
           msEl.innerText = `${elapsed} ms`;
           stage.innerText = "✓ Proof π_spend verified & broadcasted!";
@@ -3343,7 +3391,7 @@
           const sendFormElements = document.getElementById('send-form-inputs');
 
           if (receiptContainer) {
-            if (receiptAmount) receiptAmount.innerText = `${res.amountPcash} PCASH`;
+            if (receiptAmount) receiptAmount.innerText = `${res.amountPcash} PCASH (Fee: ${res.feePcash || "0.0001"})`;
             if (receiptRecipient) receiptRecipient.innerText = res.recipient;
             const receiptIdenticon = document.getElementById('send-receipt-identicon');
             if (receiptIdenticon && res.recipient) {
@@ -3351,7 +3399,9 @@
             }
             if (receiptVoucherInput) receiptVoucherInput.value = res.voucher;
             if (receiptRelay) {
-              if (res.cloudRelaySuccess) {
+              if (res.outboxQueued) {
+                receiptRelay.innerHTML = `<span class="text-amber-400">● Queued in Offline Outbox (Will auto-broadcast when online)</span>`;
+              } else if (res.cloudRelaySuccess) {
                 receiptRelay.innerHTML = `<span class="text-emerald-400">● Global P2P Mesh (Broadcast Confirmed)</span>`;
               } else if (res.localRelaySuccess) {
                 receiptRelay.innerHTML = `<span class="text-cyan-400">● Local Daemon Relay (Broadcast Confirmed)</span>`;
