@@ -164,18 +164,28 @@ docker exec proofcash-seed-node rad node status
 
 ## 6. Step 5: Launching the High-Speed JSON-RPC Gateway (rpc.proofcash.org:443)
 
-Mobile wallets and lightweight edge miners need to submit transactions, evaluate Plonky3 AIR constraints, and query Delta-UTXO state without running a heavy full node locally.
+> **Important Distinction:**  
+> The web wallet frontend lives on **GitHub Pages** ([`https://proofcash.org`](https://proofcash.org)), which is a static CDN.  
+> The **backend node** must live on a 24/7 Linux server (VPS) because GitHub Pages cannot run background processes, open ports, or compile Rust code. The VPS runs [`proofcashd`](file:///c:/xampp/htdocs/2026/proofcash/crates/proofcash-node/src/main.rs) and proxies requests from the web wallet via Nginx or Caddy.
 
-### 1. Run the Consensus Daemon
+### Method A: 1-Click Automated Setup (Recommended)
+On your fresh Ubuntu 22.04 / 24.04 VPS:
 ```bash
-# Run proofcashd listening on local port 8332
+curl -sSfL https://raw.githubusercontent.com/renishidaproject/proofcash/main/scripts/setup_node.sh | bash -s -- rpc.proofcash.org renishida@proton.me mainnet
+```
+This automatically compiles `proofcashd`, installs the systemd background service, sets up Nginx with the 64 KB anti-DoS cap, and provisions a Let's Encrypt SSL certificate.
+
+### Method B: Manual Configuration
+1. Run the Consensus Daemon:
+```bash
 ./proofcashd \
-  --rpc-bind 127.0.0.1:8332 \
-  --rpc-cors "https://proofcash.org" \
-  --datadir /var/lib/proofcash/chaindata
+  --network mainnet \
+  --rpc-port 8332 \
+  --datadir /var/lib/proofcash/chaindata \
+  --daemon
 ```
 
-### 2. Configure Caddy or Nginx with Automatic HTTPS
+2. Configure Caddy or Nginx with Automatic HTTPS:
 Using **Caddy** (simplest 4-line configuration with automatic Let's Encrypt certificates):
 
 ```caddyfile

@@ -57,7 +57,22 @@ All core protocol components must satisfy the following cryptographic and econom
 
 ## 3. Node Operator Deployment Runbook
 
-### 3.1 Building and Running `proofcashd`
+### 3.0 Architecture: Why GitHub Pages + VPS Node?
+A foundational concept in decentralized web3 architecture:
+* **GitHub Pages (The Static Frontend):**
+  GitHub Pages hosts the public portal, mobile PWA wallet, and Public Explorer at [`https://proofcash.org`](https://proofcash.org). It is globally distributed, zero-cost, and maintenance-free. However, GitHub Pages only serves static files (HTML, JS, CSS, WASM); it **cannot run persistent background binaries** or host the blockchain state database.
+* **VPS + Nginx (The Live Blockchain Node & RPC):**
+  A sovereign blockchain requires a 24/7 background process (`proofcashd`) to store the Merkle Mountain Range (MMR) ledger, manage the mempool, and listen for incoming blocks.
+  - `proofcashd` runs locally on the VPS listening on `127.0.0.1:8332`.
+  - **Nginx** (or Caddy) runs on that same VPS on port 443 with Let's Encrypt SSL, serving as the secure HTTPS gateway [`https://rpc.proofcash.org`](https://rpc.proofcash.org). When mobile wallets on `https://proofcash.org` send transactions, they talk to `rpc.proofcash.org`.
+
+#### 1-Click Automated Turnkey Installer
+You can deploy the reference node daemon and Nginx gateway on any fresh Ubuntu/Debian VPS with one command:
+```bash
+curl -sSfL https://raw.githubusercontent.com/renishidaproject/proofcash/main/scripts/setup_node.sh | bash -s -- rpc.proofcash.org renishida@proton.me mainnet
+```
+
+### 3.1 Building and Running `proofcashd` Manually
 
 The reference node daemon `proofcashd` can be built and launched on Linux, macOS, or Windows:
 
